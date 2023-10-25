@@ -41,6 +41,7 @@ dependencies {
     implementation files('lib/core-0.4.13.jar')
 
     implementation 'org.openftc:easyopencv:1.7.0'
+    implementation 'org.ftclib.ftclib:core:2.1.1'
 
 //    implementation "com.acmerobotics.roadrunner:ftc:0.1.8"
 //    implementation "com.acmerobotics.dashboard:dashboard:0.4.13"
