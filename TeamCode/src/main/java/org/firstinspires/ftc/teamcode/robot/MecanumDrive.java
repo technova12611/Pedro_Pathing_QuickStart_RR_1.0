@@ -33,6 +33,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -40,6 +41,8 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.roadrunner.Localizer;
 import org.firstinspires.ftc.teamcode.roadrunner.PoseMessage;
+import org.firstinspires.ftc.teamcode.roadrunner.TwoDeadWheelLocalizer;
+import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 
 import java.lang.Math;
 import java.util.Arrays;
@@ -48,16 +51,17 @@ import java.util.List;
 
 @Config
 public final class MecanumDrive {
+
     public static class Params {
         // drive model parameters
-        public double inPerTick = 0;
-        public double lateralInPerTick = 1;
-        public double trackWidthTicks = 0;
+        public double inPerTick = 24.0 / 44593.0;
+        public double lateralInPerTick = 0.0003894187147584737;
+        public double trackWidthTicks = 20418.477702556804;
 
         // feedforward parameters (in tick units)
-        public double kS = 0;
-        public double kV = 0;
-        public double kA = 0;
+        public double kS = 1.2;
+        public double kV = 0.00009;
+        public double kA = 0.00001;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
@@ -69,13 +73,13 @@ public final class MecanumDrive {
         public double maxAngAccel = Math.PI;
 
         // path controller gains
-        public double axialGain = 0.0;
-        public double lateralGain = 0.0;
-        public double headingGain = 0.0; // shared with turn
+        public double axialGain = 1.0;
+        public double lateralGain = 1.0;
+        public double headingGain = 1.0; // shared with turn
 
-        public double axialVelGain = 0.0;
-        public double lateralVelGain = 0.0;
-        public double headingVelGain = 0.0; // shared with turn
+        public double axialVelGain = 0;
+        public double lateralVelGain = 0;
+        public double headingVelGain = 0.1; // shared with turn
     }
 
     public static Params PARAMS = new Params();
@@ -85,13 +89,11 @@ public final class MecanumDrive {
 
     public final TurnConstraints defaultTurnConstraints = new TurnConstraints(
             PARAMS.maxAngVel, -PARAMS.maxAngAccel, PARAMS.maxAngAccel);
-    public final VelConstraint defaultVelConstraint =
-            new MinVelConstraint(Arrays.asList(
-                    kinematics.new WheelVelConstraint(PARAMS.maxWheelVel),
-                    new AngularVelConstraint(PARAMS.maxAngVel)
-            ));
-    public final AccelConstraint defaultAccelConstraint =
-            new ProfileAccelConstraint(PARAMS.minProfileAccel, PARAMS.maxProfileAccel);
+    public final VelConstraint defaultVelConstraint = new MinVelConstraint(Arrays.asList(
+            kinematics.new WheelVelConstraint(PARAMS.maxWheelVel),
+            new AngularVelConstraint(PARAMS.maxAngVel)));
+    public final AccelConstraint defaultAccelConstraint = new ProfileAccelConstraint(PARAMS.minProfileAccel,
+            PARAMS.maxProfileAccel);
 
     public final DcMotorEx leftFront, leftBack, rightBack, rightFront;
 
@@ -104,69 +106,6 @@ public final class MecanumDrive {
 
     private final LinkedList<Pose2d> poseHistory = new LinkedList<>();
 
-    public class DriveLocalizer implements Localizer {
-        public final Encoder leftFront, leftBack, rightBack, rightFront;
-
-        private int lastLeftFrontPos, lastLeftBackPos, lastRightBackPos, lastRightFrontPos;
-        private Rotation2d lastHeading;
-
-        public DriveLocalizer() {
-            leftFront = new OverflowEncoder(new RawEncoder(MecanumDrive.this.leftFront));
-            leftBack = new OverflowEncoder(new RawEncoder(MecanumDrive.this.leftBack));
-            rightBack = new OverflowEncoder(new RawEncoder(MecanumDrive.this.rightBack));
-            rightFront = new OverflowEncoder(new RawEncoder(MecanumDrive.this.rightFront));
-
-            lastLeftFrontPos = leftFront.getPositionAndVelocity().position;
-            lastLeftBackPos = leftBack.getPositionAndVelocity().position;
-            lastRightBackPos = rightBack.getPositionAndVelocity().position;
-            lastRightFrontPos = rightFront.getPositionAndVelocity().position;
-
-            lastHeading = Rotation2d.exp(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
-        }
-
-        @Override
-        public Twist2dDual<Time> update() {
-            PositionVelocityPair leftFrontPosVel = leftFront.getPositionAndVelocity();
-            PositionVelocityPair leftBackPosVel = leftBack.getPositionAndVelocity();
-            PositionVelocityPair rightBackPosVel = rightBack.getPositionAndVelocity();
-            PositionVelocityPair rightFrontPosVel = rightFront.getPositionAndVelocity();
-
-            Rotation2d heading = Rotation2d.exp(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
-            double headingDelta = heading.minus(lastHeading);
-
-            Twist2dDual<Time> twist = kinematics.forward(new MecanumKinematics.WheelIncrements<>(
-                    new DualNum<Time>(new double[]{
-                            (leftFrontPosVel.position - lastLeftFrontPos),
-                            leftFrontPosVel.velocity,
-                    }).times(PARAMS.inPerTick),
-                    new DualNum<Time>(new double[]{
-                            (leftBackPosVel.position - lastLeftBackPos),
-                            leftBackPosVel.velocity,
-                    }).times(PARAMS.inPerTick),
-                    new DualNum<Time>(new double[]{
-                            (rightBackPosVel.position - lastRightBackPos),
-                            rightBackPosVel.velocity,
-                    }).times(PARAMS.inPerTick),
-                    new DualNum<Time>(new double[]{
-                            (rightFrontPosVel.position - lastRightFrontPos),
-                            rightFrontPosVel.velocity,
-                    }).times(PARAMS.inPerTick)
-            ));
-
-            lastLeftFrontPos = leftFrontPosVel.position;
-            lastLeftBackPos = leftBackPosVel.position;
-            lastRightBackPos = rightBackPosVel.position;
-            lastRightFrontPos = rightFrontPosVel.position;
-
-            lastHeading = heading;
-
-            return new Twist2dDual<>(
-                    twist.line,
-                    DualNum.cons(headingDelta, twist.angle.drop(1))
-            );
-        }
-    }
-
     public MecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
         this.pose = pose;
 
@@ -176,10 +115,13 @@ public final class MecanumDrive {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
-        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
-        leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
-        rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
-        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+        leftFront = HardwareCreator.createMotor(hardwareMap, "leftFront");
+        leftBack = HardwareCreator.createMotor(hardwareMap, "leftBack");
+        rightBack = HardwareCreator.createMotor(hardwareMap, "rightBack");
+        rightFront = HardwareCreator.createMotor(hardwareMap, "rightFront");
+
+        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
 
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -188,13 +130,13 @@ public final class MecanumDrive {
 
         imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
+                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+                RevHubOrientationOnRobot.UsbFacingDirection.DOWN));
         imu.initialize(parameters);
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-        localizer = new DriveLocalizer();
+        localizer = new TwoDeadWheelLocalizer(hardwareMap, imu, PARAMS.inPerTick);
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
@@ -225,7 +167,7 @@ public final class MecanumDrive {
 
             List<Double> disps = com.acmerobotics.roadrunner.Math.range(
                     0, t.path.length(),
-                    Math.max(2, (int) Math.ceil(t.path.length() / 2)));
+                    (int) Math.ceil(t.path.length() / 2));
             xPoints = new double[disps.size()];
             yPoints = new double[disps.size()];
             for (int i = 0; i < disps.size(); i++) {
@@ -260,14 +202,14 @@ public final class MecanumDrive {
 
             PoseVelocity2dDual<Time> command = new HolonomicController(
                     PARAMS.axialGain, PARAMS.lateralGain, PARAMS.headingGain,
-                    PARAMS.axialVelGain, PARAMS.lateralVelGain, PARAMS.headingVelGain
-            )
+                    PARAMS.axialVelGain, PARAMS.lateralVelGain, PARAMS.headingVelGain)
                     .compute(txWorldTarget, pose, robotVelRobot);
 
             MecanumKinematics.WheelVelocities<Time> wheelVels = kinematics.inverse(command);
             double voltage = voltageSensor.getVoltage();
 
-            final MotorFeedforward feedforward = new MotorFeedforward(PARAMS.kS, PARAMS.kV / PARAMS.inPerTick, PARAMS.kA / PARAMS.inPerTick);
+            final MotorFeedforward feedforward = new MotorFeedforward(PARAMS.kS, PARAMS.kV / PARAMS.inPerTick,
+                    PARAMS.kA / PARAMS.inPerTick);
             leftFront.setPower(feedforward.compute(wheelVels.leftFront) / voltage);
             leftBack.setPower(feedforward.compute(wheelVels.leftBack) / voltage);
             rightBack.setPower(feedforward.compute(wheelVels.rightBack) / voltage);
@@ -343,13 +285,13 @@ public final class MecanumDrive {
 
             PoseVelocity2dDual<Time> command = new HolonomicController(
                     PARAMS.axialGain, PARAMS.lateralGain, PARAMS.headingGain,
-                    PARAMS.axialVelGain, PARAMS.lateralVelGain, PARAMS.headingVelGain
-            )
+                    PARAMS.axialVelGain, PARAMS.lateralVelGain, PARAMS.headingVelGain)
                     .compute(txWorldTarget, pose, robotVelRobot);
 
             MecanumKinematics.WheelVelocities<Time> wheelVels = kinematics.inverse(command);
             double voltage = voltageSensor.getVoltage();
-            final MotorFeedforward feedforward = new MotorFeedforward(PARAMS.kS, PARAMS.kV / PARAMS.inPerTick, PARAMS.kA / PARAMS.inPerTick);
+            final MotorFeedforward feedforward = new MotorFeedforward(PARAMS.kS, PARAMS.kV / PARAMS.inPerTick,
+                    PARAMS.kA / PARAMS.inPerTick);
             leftFront.setPower(feedforward.compute(wheelVels.leftFront) / voltage);
             leftBack.setPower(feedforward.compute(wheelVels.leftBack) / voltage);
             rightBack.setPower(feedforward.compute(wheelVels.rightBack) / voltage);
@@ -429,7 +371,6 @@ public final class MecanumDrive {
                 beginPose, 1e-6, 0.0,
                 defaultTurnConstraints,
                 defaultVelConstraint, defaultAccelConstraint,
-                0.25, 0.1
-        );
+                0.25, 0.1);
     }
 }

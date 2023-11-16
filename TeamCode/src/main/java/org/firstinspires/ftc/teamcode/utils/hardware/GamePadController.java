@@ -39,6 +39,7 @@ public class GamePadController {
     public void disable() {
         active = false;
         update();
+        update();
     }
     public boolean isActive() {
         return active;
@@ -167,8 +168,13 @@ public class GamePadController {
 
     public boolean bReleased() {return bReleased;}
 
-
-
+    /**
+     * Reset all iteration counts to zero.
+     */
+    public void reset() {
+        disable();
+        enable();
+    }
     /* Rumble Support */
 
     /**
