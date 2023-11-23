@@ -11,29 +11,33 @@ import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
 
 @Config
-public class Plane {
-    public static double LATCH_SCORED = 0.6;
-    public static double LATCH_CLOSED = 0.87;
-    public static double HOLDER_OPEN = 0.15;
-    public static double HOLDER_CLOSED = 0.30;
+public class Drone {
+    public static double LATCH_SCORED = 0.4;
+    public static double LATCH_CLOSED = 0.285;
+
+    public static double LATCH_LOADING = 0.33;
+
+    // Drone Tilt is Axon Mini Servo
+    public static double TILT_INIT = 0.3;
+    public static double TILT_LAUNCH = 0.55;
 
     final Servo latch;
-    final Servo holder;
+    final Servo tilt;
 
-    public Plane(HardwareMap hardwareMap) {
-        this.latch = HardwareCreator.createServo(hardwareMap, "planeLatch");
-        this.holder = HardwareCreator.createServo(hardwareMap, "planeHolder");
+    public Drone(HardwareMap hardwareMap) {
+        this.latch = HardwareCreator.createServo(hardwareMap, "droneLatch");
+        this.tilt = HardwareCreator.createServo(hardwareMap, "droneTilt");
     }
 
     public void initialize() {
         latch.setPosition(LATCH_CLOSED);
-        holder.setPosition(HOLDER_CLOSED);
+        tilt.setPosition(TILT_INIT);
     }
 
-    public Action scorePlane() {
+    public Action scoreDrone() {
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(holder, HOLDER_OPEN),
-                new SleepAction(0.4),
+                new ActionUtil.ServoPositionAction(tilt, TILT_LAUNCH),
+                new SleepAction(1.0),
                 new ActionUtil.ServoPositionAction(latch, LATCH_SCORED)
         );
     }

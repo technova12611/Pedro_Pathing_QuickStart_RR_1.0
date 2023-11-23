@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.subsystem;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -15,30 +17,49 @@ import org.firstinspires.ftc.teamcode.utils.control.PIDCoefficients;
 public class Outtake {
     public static PIDCoefficients outtakePID = new PIDCoefficients(0.01, 0, 0.0004);
     public static int OUTTAKE_TELEOP = 660;
-    public static int OUTTAKE_MID = 1200;
-    public static int OUTTAKE_LOW = 400;
-    public static double LATCH_SCORING = 0.855;
-    public static double LATCH_OPEN = 0.8;
-    public static double LATCH_CLOSED = 0.885;
-    public static double WRIST_STORED = 0.66;
-    public static double WRIST_SCORING = 0.41;
-    public static double WRIST_HOLDING = 0.8;
+
+    public static int OUTTAKE_SLIDE_HIGH = 1800;
+    public static int OUTTAKE_SLIDE_MID = 1200;
+    public static int OUTTAKE_SLIDE_LOW = 400;
+    public static int OUTTAKE_SLIDE_INIT = 0;
+
+    public static double LATCH_CLOSED = 0.545;
+    public static double LATCH_SCORE_1 = 0.415;
+    public static double LATCH_SCORE_2 = 0.8;
+
+    public static double OUTTAKE_PIVOT_INIT = 0.17;
+    public static double OUTTAKE_PIVOT_SLIDE = 0.23;
+    public static double OUTTAKE_PIVOT_DUMP = 0.29;
+
+    public static double SLIDE_PIVOT_INIT = 0.47;
+    public static double SLIDE_PIVOT_DUMP = 0.3;
+    public static double SLIDE_PIVOT_HIGH = 0.05;
+
+    public static double OUTTAKE_WIRE_DOWN = 0.81;
+    public static double OUTTAKE_WIRE_MIDDLE = 0.5;
+    public static double OUTTAKE_WIRE_HIGH = 0.4;
+
     final MotorWithPID slide;
     public boolean slidePIDEnabled = true;
     final Servo latch;
-    final Servo wrist;
+    final Servo slidePivot;
+    final Servo outtakePivot;
+
+    final Servo outtakeWireServo;
 
     public Outtake(HardwareMap hardwareMap) {
         if (Memory.outtakeSlide != null) { // Preserve motor zero position
             this.slide = Memory.outtakeSlide;
         } else {
-            this.slide = new MotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtakeSlide"), outtakePID);
+            this.slide = new MotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtake"), outtakePID);
             Memory.outtakeSlide = this.slide;
         }
         this.slide.setMaxPower(1.0);
         this.slide.getMotor().setDirection(DcMotorSimple.Direction.REVERSE);
         this.latch = HardwareCreator.createServo(hardwareMap, "outtakeLatch");
-        this.wrist = HardwareCreator.createServo(hardwareMap, "outtakeWrist");
+        this.slidePivot = HardwareCreator.createServo(hardwareMap, "outtakeSlidePivot");
+        this.outtakePivot = HardwareCreator.createServo(hardwareMap, "outtakePivot");
+        this.outtakeWireServo = HardwareCreator.createServo(hardwareMap, "outtakeWireServo");
     }
 
     public void prepTeleop() {
@@ -51,8 +72,10 @@ public class Outtake {
 
     public void initialize() {
         this.slide.setTargetPosition(0);
-        this.wrist.setPosition(WRIST_STORED);
+        this.slidePivot.setPosition(SLIDE_PIVOT_INIT);
+        this.outtakePivot.setPosition(OUTTAKE_PIVOT_INIT);
         this.latch.setPosition(LATCH_CLOSED);
+        this.outtakeWireServo.setPosition(OUTTAKE_WIRE_DOWN);
     }
 
     public void resetMotors() {
@@ -74,39 +97,62 @@ public class Outtake {
     }
 
     public Action extendOuttakeMidBlocking() {
-        return this.slide.setTargetPositionActionBlocking(OUTTAKE_MID);
+        return this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_MID);
     }
 
     public Action extendOuttakeTeleopBlocking() {
         return this.slide.setTargetPositionActionBlocking(OUTTAKE_TELEOP);
     }
     public Action extendOuttakeLowBlocking() {
-        return this.slide.setTargetPositionActionBlocking(OUTTAKE_LOW);
+        return this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_LOW);
     }
     public Action retractOuttake() {
-        return this.slide.setTargetPositionAction(0);
+        return new SequentialAction(
+                prepareSlide(),
+                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_INIT)
+        );
     }
 
-    public Action latchOpen() {
-        return new ActionUtil.ServoPositionAction(latch, LATCH_OPEN);
+    public Action latchScore1() {
+        return new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_1);
     }
 
-    public Action latchScoring() {
-        return new ActionUtil.ServoPositionAction(latch, LATCH_SCORING);
+    public Action latchScoring2() {
+        return new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_2);
     }
 
     public Action latchClosed() {
         return new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED);
     }
 
-    public Action wristStored() {
-        return new ActionUtil.ServoPositionAction(wrist, WRIST_STORED);
+    public Action extendOuttakeLow() {
+        return new SequentialAction(
+                prepareSlide(),
+                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_LOW)
+        );
     }
 
-    public Action wristScoring() {
-        return new ActionUtil.ServoPositionAction(wrist, WRIST_SCORING);
+    public Action extendOuttakeMid() {
+        return new SequentialAction(
+                prepareSlide(),
+                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_MID)
+        );
     }
-    public Action wristHolding() {
-        return new ActionUtil.ServoPositionAction(wrist, WRIST_HOLDING);
+
+    public Action extendOuttakeHigh() {
+        return new SequentialAction(
+                prepareSlide(),
+                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_HIGH)
+        );
     }
+
+    public Action prepareSlide() {
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED),
+                new ActionUtil.ServoPositionAction(outtakePivot, OUTTAKE_PIVOT_SLIDE),
+                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_INIT),
+                new SleepAction(0.2)
+        );
+    }
+
 }

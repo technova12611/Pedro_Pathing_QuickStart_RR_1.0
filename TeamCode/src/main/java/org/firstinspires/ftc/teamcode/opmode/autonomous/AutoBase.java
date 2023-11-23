@@ -11,11 +11,12 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDir
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.pipeline.PropPipeline;
 import org.firstinspires.ftc.teamcode.pipeline.Side;
+import org.firstinspires.ftc.teamcode.robot.Globals;
 import org.firstinspires.ftc.teamcode.robot.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Memory;
 import org.firstinspires.ftc.teamcode.subsystem.Outtake;
-import org.firstinspires.ftc.teamcode.subsystem.Plane;
+import org.firstinspires.ftc.teamcode.subsystem.Drone;
 import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 import org.firstinspires.ftc.vision.VisionPortal;
 
@@ -25,14 +26,14 @@ public abstract class AutoBase extends LinearOpMode {
     protected Outtake outtake;
     protected Intake intake;
 //    protected Vision vision;
-    protected Plane plane;
+    protected Drone plane;
     protected AutoActionScheduler sched;
 
     private PropPipeline propPipeline;
     private VisionPortal portal;
 
-    public static Side side = Side.CENTER;
-    public static int SPIKE = 1;
+    public static Side side = Side.RIGHT;
+    public static int SPIKE = 2;
 
     final public void update() {
         telemetry.addData("Time left", 30 - getRuntime());
@@ -52,7 +53,7 @@ public abstract class AutoBase extends LinearOpMode {
         this.intake = new Intake(hardwareMap);
         this.outtake = new Outtake(hardwareMap);
 //        this.vision = new Vision(hardwareMap);
-        this.plane = new Plane(hardwareMap);
+        this.plane = new Drone(hardwareMap);
         this.sched = new AutoActionScheduler(this::update);
 
         outtake.resetMotors();
@@ -62,7 +63,7 @@ public abstract class AutoBase extends LinearOpMode {
 
         propPipeline = new PropPipeline();
         portal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, "Webcam"))
+                .setCamera(hardwareMap.get(WebcamName.class, Globals.FRONT_WEBCAM_NAME))
                 .setCameraResolution(new Size(1920, 1080))
                 .setCamera(BuiltinCameraDirection.BACK)
                 .addProcessor(propPipeline)

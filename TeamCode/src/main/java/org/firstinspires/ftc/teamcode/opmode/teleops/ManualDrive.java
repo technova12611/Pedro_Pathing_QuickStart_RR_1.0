@@ -14,13 +14,13 @@ import org.firstinspires.ftc.teamcode.subsystem.Hang;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Memory;
 import org.firstinspires.ftc.teamcode.subsystem.Outtake;
-import org.firstinspires.ftc.teamcode.subsystem.Plane;
+import org.firstinspires.ftc.teamcode.subsystem.Drone;
 import org.firstinspires.ftc.teamcode.utils.software.ActionScheduler;
 import org.firstinspires.ftc.teamcode.utils.hardware.GamePadController;
 import org.firstinspires.ftc.teamcode.utils.software.SmartGameTimer;
 
 @Config
-@TeleOp(group = "Drive")
+@TeleOp(group = "Drive", name="Manual Drive")
 public class ManualDrive extends LinearOpMode {
     public static double TURN_SPEED = 0.75;
     public static double DRIVE_SPEED = 1;
@@ -34,7 +34,7 @@ public class ManualDrive extends LinearOpMode {
     private Intake intake;
     private Outtake outtake;
     private Hang hang;
-    private Plane plane;
+    private Drone plane;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -51,7 +51,7 @@ public class ManualDrive extends LinearOpMode {
         intake = new Intake(hardwareMap);
         outtake = new Outtake(hardwareMap);
         hang = new Hang(hardwareMap);
-        plane = new Plane(hardwareMap);
+        plane = new Drone(hardwareMap);
 
         if (Memory.RAN_AUTO) {
             smartGameTimer = new SmartGameTimer(true);
@@ -93,7 +93,7 @@ public class ManualDrive extends LinearOpMode {
             sched.update();
             outtake.update();
             intake.update();
-            hang.update();
+//            hang.update();
 
             telemetry.addData("Time left", smartGameTimer.formattedString() + " (" + smartGameTimer.status() + ")");
             telemetry.update();
@@ -121,27 +121,23 @@ public class ManualDrive extends LinearOpMode {
     private void subsystemControls() {
         // Intake controls
         if (g1.aOnce()) {
-            if (intake.intakeState == Intake.IntakeState.On) {
+            if (intake.intakeState == Intake.IntakeState.ON) {
                 sched.queueAction(intake.intakeOff());
-                sched.queueAction(outtake.latchClosed());
             } else {
                 sched.queueAction(intake.intakeOn());
-                sched.queueAction(outtake.latchOpen());
             }
         }
         if (g1.b()) {
             if (slideHigh) {
                 slideHigh = false;
                 sched.queueAction(outtake.retractOuttake());
-                sched.queueAction(outtake.wristStored());
-                sched.queueAction(outtake.latchClosed());
             }
-            if (intake.intakeState == Intake.IntakeState.On) {
+            if (intake.intakeState == Intake.IntakeState.ON) {
                 sched.queueAction(outtake.latchClosed());
             }
             sched.queueAction(intake.intakeReverse());
         }
-        if (!g1.b() && intake.intakeState == Intake.IntakeState.Reversing) {
+        if (!g1.b() && intake.intakeState == Intake.IntakeState.REVERSING) {
             sched.queueAction(intake.intakeOff());
         }
 
@@ -149,26 +145,28 @@ public class ManualDrive extends LinearOpMode {
         if (g1.yOnce()) {
             if (slideHigh) {
                 sched.queueAction(new SequentialAction(
-                        outtake.wristHolding(),
+ //                       outtake.wristHolding(),
                         new SleepAction(0.5),
-                        outtake.latchOpen(),
-                        new SleepAction(0.5),
-                        outtake.latchClosed(),
-                        new SleepAction(0.3),
-                        outtake.wristScoring()
+//                        outtake.latchOpen(),
+                        new SleepAction(0.5)
+//                        outtake.latchClosed(),
+//                        new SleepAction(0.3),
+//                        outtake.wristScoring()
                 ));
             } else {
                 slideHigh = true;
                 sched.queueAction(intake.intakeOff());
                 sched.queueAction(new SequentialAction(outtake.latchClosed(), new SleepAction(0.1)));
-                sched.queueAction(new ParallelAction(
-                        new SequentialAction(new SleepAction(0.4), outtake.wristScoring()),
-                        outtake.extendOuttakeTeleopBlocking()
-                ));
+//                sched.queueAction(new ParallelAction(
+//                        new SequentialAction(
+//                                new SleepAction(0.4)//,
+////                                outtake.wristScoring()),
+//                        outtake.extendOuttakeTeleopBlocking()
+//                ));
             }
         }
         if (g1.xOnce()) {
-            sched.queueAction(outtake.latchScoring());
+//            sched.queueAction(outtake.latchScoring());
         }
         if (Math.abs(g1.right_stick_y) > 0.01  && slideHigh) {
             outtake.slidePIDEnabled = false;
@@ -180,13 +178,13 @@ public class ManualDrive extends LinearOpMode {
 
         // Other subsystems
         if (g1.dpadUpOnce()) {
-            sched.queueAction(hang.extendHang());
+//            sched.queueAction(hang.extendHang());
         }
         if (g1.dpadDownOnce()) {
-            sched.queueAction(hang.retractHang());
+//            sched.queueAction(hang.retractHang());
         }
-        if (g1.startOnce()) {
-            sched.queueAction(plane.scorePlane());
+        if (g1.startOnce() & (!g1.aOnce() || !g1.bOnce())) {
+            sched.queueAction(plane.scoreDrone());
         }
     }
 }

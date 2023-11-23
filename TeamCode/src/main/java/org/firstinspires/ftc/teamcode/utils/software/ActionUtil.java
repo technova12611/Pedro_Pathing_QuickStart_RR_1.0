@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.utils.software;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -35,6 +36,22 @@ public class ActionUtil {
       @Override
       public boolean run(TelemetryPacket packet) {
          servo.setPosition(position);
+         return false;
+      }
+   }
+
+   public static class CRServoAction implements Action {
+      double power;
+      CRServo servo;
+
+      public CRServoAction(CRServo servo, double power) {
+         this.servo = servo;
+         this.power = power;
+      }
+
+      @Override
+      public boolean run(TelemetryPacket packet) {
+         servo.setPower(power);
          return false;
       }
    }

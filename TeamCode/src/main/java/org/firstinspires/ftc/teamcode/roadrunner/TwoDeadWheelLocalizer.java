@@ -12,16 +12,20 @@ import com.acmerobotics.roadrunner.ftc.OverflowEncoder;
 import com.acmerobotics.roadrunner.ftc.PositionVelocityPair;
 import com.acmerobotics.roadrunner.ftc.RawEncoder;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 
 @Config
 public final class TwoDeadWheelLocalizer implements Localizer {
     public static class Params {
-        public double parYTicks = 0.0; // y position of the parallel encoder (in tick units)
-        public double perpXTicks = 0.0; // x position of the perpendicular encoder (in tick units)
+        /*public double parYTicks = 6.5 / (24.0 / 44593.0); // y position of the parallel encoder (in tick units)
+        public double perpXTicks = -5 / (24.0 / 44593.0); // x position of the perpendicular encoder (in tick units)*/
+        public double parYTicks = 11110.24332364755; // y position of the parallel encoder (in tick units)
+        public double perpXTicks = -9980.239241262898; // x position of the perpendicular encoder (in tick units)
     }
 
     public static Params PARAMS = new Params();
@@ -37,8 +41,9 @@ public final class TwoDeadWheelLocalizer implements Localizer {
     private double lastRawHeadingVel, headingVelOffset;
 
     public TwoDeadWheelLocalizer(HardwareMap hardwareMap, IMU imu, double inPerTick) {
-        par = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "par")));
-        perp = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "perp")));
+        par = new OverflowEncoder(new RawEncoder(HardwareCreator.createMotor(hardwareMap, "leftFront")));
+        par.setDirection(DcMotorSimple.Direction.REVERSE);
+        perp = new OverflowEncoder(new RawEncoder(HardwareCreator.createMotor(hardwareMap, "rightFront")));
         this.imu = imu;
 
         lastParPos = par.getPositionAndVelocity().position;
@@ -80,13 +85,11 @@ public final class TwoDeadWheelLocalizer implements Localizer {
                         new DualNum<Time>(new double[] {
                                 perpPosDelta - PARAMS.perpXTicks * headingDelta,
                                 perpPosVel.velocity - PARAMS.perpXTicks * headingVel,
-                        }).times(inPerTick)
-                ),
+                        }).times(inPerTick)),
                 new DualNum<>(new double[] {
                         headingDelta,
                         headingVel,
-                })
-        );
+                }));
 
         lastParPos = parPosVel.position;
         lastPerpPos = perpPosVel.position;

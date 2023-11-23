@@ -12,9 +12,16 @@ import org.firstinspires.ftc.teamcode.utils.software.AutoConstants;
 @Config
 @Autonomous(name = "Red Left Auto", group = "Auto", preselectTeleOp = "Manual Drive")
 public class RedLeftAuto extends AutoBase {
-   public static Pose2d[] spike = {new Pose2d(-33, -40, Math.toRadians(-135)), new Pose2d(-36, -38, Math.toRadians(-90)), new Pose2d(-48, -44, Math.toRadians(-90))};
+   public static Pose2d[] spike = {
+           new Pose2d(-33, -40, Math.toRadians(-135)),
+           new Pose2d(-36, -38, Math.toRadians(-90)),
+           new Pose2d(-48, -44, Math.toRadians(-90))
+   };
    // 0 = right, 1 = middle, 2 = left
-   public static Pose2d[] spikeBackedOut =  {new Pose2d(-41, -50, Math.toRadians(-135)), new Pose2d(-36, -49, Math.toRadians(-90)), new Pose2d(-48, -50, Math.toRadians(-90))};
+   public static Pose2d[] spikeBackedOut =  {
+           new Pose2d(-41, -50, Math.toRadians(-135)),
+           new Pose2d(-36, -49, Math.toRadians(-90)),
+           new Pose2d(-48, -50, Math.toRadians(-90))};
    public static Pose2d start = new Pose2d(-36, -64, Math.toRadians(-90));
    public static Pose2d parking = new Pose2d(56, -12, Math.toRadians(180));
    public static Pose2d intermediate = new Pose2d(-40, -56, Math.toRadians(180));
@@ -71,12 +78,12 @@ public class RedLeftAuto extends AutoBase {
    private void scorePreload() {
       sched.addAction(
               new SequentialAction(
-                      outtake.wristScoring(),
+//                      outtake.wristScoring(),
                       outtake.extendOuttakeLowBlocking(),
                       drive.actionBuilder(AutoConstants.redScoring[SPIKE])
                               .strafeToLinearHeading(AutoConstants.redScoring[SPIKE].position.plus(new Vector2d(10, 0)), AutoConstants.redScoring[SPIKE].heading) // Correct for any turning that occured during the previous move
                               .build(),
-                      outtake.latchScoring(),
+//                      outtake.latchScoring(),
                       new SleepAction(0.5),
                       outtake.extendOuttakeMidBlocking()
               )
@@ -89,8 +96,8 @@ public class RedLeftAuto extends AutoBase {
                                    AutoConstants.redScoring[SPIKE].heading))
                            .strafeToLinearHeading(AutoConstants.redScoring[SPIKE].position, AutoConstants.redScoring[SPIKE].heading)
                            .afterDisp(10, new SequentialAction(
-                                   outtake.wristStored(),
-                                   new SleepAction(0.5),
+//                                   outtake.wristStored(),
+//                                   new SleepAction(0.5),
                                    outtake.retractOuttake(),
                                    outtake.latchClosed(),
                                    new SleepAction(0.5)

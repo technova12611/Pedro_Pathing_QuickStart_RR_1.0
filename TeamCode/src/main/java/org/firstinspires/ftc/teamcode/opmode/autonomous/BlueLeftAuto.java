@@ -12,9 +12,16 @@ import org.firstinspires.ftc.teamcode.utils.software.AutoConstants;
 @Config
 @Autonomous(name = "Blue Left Auto", group = "Auto", preselectTeleOp = "Manual Drive")
 public class BlueLeftAuto extends AutoBase {
-   public static Pose2d[] spike = {new Pose2d(9, 42, Math.toRadians(45)), new Pose2d(12, 41, Math.toRadians(90)), new Pose2d(24, 42, Math.toRadians(90))};
+   public static Pose2d[] spike = {
+           new Pose2d(9, 42, Math.toRadians(45)),
+           new Pose2d(12, 41, Math.toRadians(90)),
+           new Pose2d(24, 42, Math.toRadians(90))
+   };
    // 0 = right, 1 = middle, 2 = left
-   public static Pose2d[] spikeBackedOut =  {new Pose2d(17, 50, Math.toRadians(45)), new Pose2d(12, 49, Math.toRadians(90)), new Pose2d(24, 50, Math.toRadians(90))};
+   public static Pose2d[] spikeBackedOut =  {
+           new Pose2d(17, 50, Math.toRadians(45)),
+           new Pose2d(12, 49, Math.toRadians(90)),
+           new Pose2d(24, 50, Math.toRadians(90))};
    public static Pose2d start = new Pose2d(12, 64, Math.toRadians(90));
    public static Pose2d parking = new Pose2d(56, 58, Math.toRadians(180));
 
@@ -25,7 +32,7 @@ public class BlueLeftAuto extends AutoBase {
 
    @Override
    protected void printDescription() {
-      telemetry.addData("Description", "Red Right Auto");
+      telemetry.addData("Description", "Blue Left Auto");
    }
 
    @Override
@@ -62,12 +69,12 @@ public class BlueLeftAuto extends AutoBase {
                               .strafeToLinearHeading(spikeBackedOut[SPIKE].position, spikeBackedOut[SPIKE].heading)
                               .strafeToLinearHeading(AutoConstants.blueScoring[SPIKE].position, AutoConstants.blueScoring[SPIKE].heading)
                               .build(),
-                      outtake.wristScoring(),
+//                      outtake.wristScoring(),
                       outtake.extendOuttakeLowBlocking(),
                       drive.actionBuilder(AutoConstants.blueScoring[SPIKE])
                               .strafeToLinearHeading(AutoConstants.blueScoring[SPIKE].position.plus(new Vector2d(10, 0)), AutoConstants.blueScoring[SPIKE].heading) // Correct for any turning that occured during the previous move
                               .build(),
-                      outtake.latchScoring(),
+//                      outtake.latchScoring(),
                       new SleepAction(0.5),
                       outtake.extendOuttakeMidBlocking()
               )
@@ -80,13 +87,7 @@ public class BlueLeftAuto extends AutoBase {
                    drive.actionBuilder(new Pose2d(AutoConstants.blueScoring[SPIKE].position.plus(new Vector2d(10, 0)),
                                    AutoConstants.blueScoring[SPIKE].heading))
                            .strafeToLinearHeading(AutoConstants.blueScoring[SPIKE].position, AutoConstants.blueScoring[SPIKE].heading)
-                           .afterDisp(10, new SequentialAction(
-                                   outtake.wristStored(),
-                                   new SleepAction(0.5),
-                                   outtake.retractOuttake(),
-                                   outtake.latchClosed(),
-                                   new SleepAction(0.5)
-                           ))
+                           .afterDisp(10,outtake.retractOuttake())
                            .strafeToLinearHeading(new Vector2d(AutoConstants.blueScoring[SPIKE].position.x, parking.position.y), parking.heading)
                            .strafeToLinearHeading(parking.position, parking.heading)
                            .build()
