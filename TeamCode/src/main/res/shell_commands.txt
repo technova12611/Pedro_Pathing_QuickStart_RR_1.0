@@ -1,0 +1,32 @@
+// connect to Control Hub from MacOs
+// ---------------------------------------------------------
+
+// PID: the 3rd number after LISTEN
+// do this after WIFI connect to the Control Hub
+
+netstat -anv -p tcp | grep 127.0.0.1.5037 | grep LISTEN
+
+kill -9 PID
+
+// connect to the control hub
+adb connect 192.168.43.1:5555
+
+// check if device is connected
+adb devices
+
+// Git command
+
+// check the changes in local
+git status
+
+// stage all files
+// add only the files you want to split the commits
+git add -A
+
+// commit the stage files
+git commit -m "message"
+
+// push the latest code to the github remote server
+git push -u origin main
+
+
