@@ -41,7 +41,9 @@ public class IRBeamBreakerTest extends LinearOpMode {
                 counter++;
             }
 
-            prevState = state;
+            if(state != prevState) {
+                prevState = state;
+            }
 
             telemetry.addData("Beam Breaker State: ", beamBreaker1.getState());
             telemetry.addData("Beam_Breaker_State: ", state?1:0);

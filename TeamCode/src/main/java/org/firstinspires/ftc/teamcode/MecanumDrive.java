@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.robot;
+package org.firstinspires.ftc.teamcode;
 
 import androidx.annotation.NonNull;
 
@@ -54,7 +54,7 @@ public final class MecanumDrive {
 
     public static class Params {
         // drive model parameters
-        public double inPerTick = 24.0 / 44593.0;
+        public double inPerTick = 24.0 / 8235.0;
         public double lateralInPerTick = 0.0003894187147584737;
         public double trackWidthTicks = 20418.477702556804;
 

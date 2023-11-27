@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -18,7 +19,7 @@ import org.firstinspires.ftc.teamcode.utils.control.PIDCoefficients;
 
 @Config
 public class Intake {
-    public static int INTAKE_SPEED = 900;
+    public static int INTAKE_SPEED = 800;
 
     final MotorWithVelocityPID intakeMotor;
     public static PIDCoefficients intakeMotorPid = new PIDCoefficients(0.0007, 0, 0.1);
@@ -31,12 +32,12 @@ public class Intake {
 
     public static double STACK_INTAKE_LEFT_INIT = 0.01;
     public static double STACK_INTAKE_LEFT_PRELOAD = 0.19;
-    public static double STACK_INTAKE_LEFT_1ST_PIXEL = 0.54;
+    public static double STACK_INTAKE_LEFT_1ST_PIXEL = 0.64;
     public static double STACK_INTAKE_LEFT_2nd_PIXEL = 1.0;
 
     public static double STACK_INTAKE_RIGHT_INIT = 0.01;
     public static double STACK_INTAKE_RIGHT_PRELOAD = 0.19;
-    public static double STACK_INTAKE_RIGHT_1ST_PIXEL = 0.54;
+    public static double STACK_INTAKE_RIGHT_1ST_PIXEL = 0.64;
     public static double STACK_INTAKE_RIGHT_2nd_PIXEL = 1.0;
 
     public static double STACK_INTAKE_LINKAGE_INIT = 0.95;
@@ -50,11 +51,12 @@ public class Intake {
     public Intake(HardwareMap hardwareMap) {
         this.intakeMotor = new MotorWithVelocityPID(HardwareCreator.createMotor(hardwareMap, "intake"), intakeMotorPid);
         this.intakeMotor.setMaxPower(1.0);
+        this.intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         stackIntakeServoLeft = HardwareCreator.createServo(hardwareMap, "stackIntakeServoLeft");
         stackIntakeServoRight = HardwareCreator.createServo(hardwareMap, "stackIntakeServoRight");
         stackIntakeLinkage = HardwareCreator.createServo(hardwareMap, "stackIntakeLinkage");
-        bottomRollerServo = HardwareCreator.createCRServo(hardwareMap, "bottomRollerServo");
+        bottomRollerServo = HardwareCreator.createCRServo(hardwareMap, "bottomRollerServo", HardwareCreator.ServoType.AXON);
 
         beamBreaker1 = hardwareMap.get(DigitalChannel.class, "beamBreaker1");
         beamBreaker2 = hardwareMap.get(DigitalChannel.class, "beamBreaker2");
@@ -62,15 +64,16 @@ public class Intake {
 
     public void initialize(boolean isAuto) {
         if( isAuto) {
+            stackIntakeLinkage.setPosition(STACK_INTAKE_LINKAGE_INIT);
             stackIntakeServoLeft.setPosition(STACK_INTAKE_LEFT_PRELOAD);
             stackIntakeServoRight.setPosition(STACK_INTAKE_RIGHT_PRELOAD);
         }
         else {
+            stackIntakeLinkage.setPosition(STACK_INTAKE_LINKAGE_UP);
             stackIntakeServoLeft.setPosition(STACK_INTAKE_LEFT_INIT);
             stackIntakeServoRight.setPosition(STACK_INTAKE_RIGHT_INIT);
         }
 
-        stackIntakeLinkage.setPosition(STACK_INTAKE_LINKAGE_INIT);
         intakeState = IntakeState.OFF;
         stackIntakeState = StackIntakeState.INIT;
     }
@@ -164,7 +167,7 @@ public class Intake {
 
     public Action prepareTeleOpsIntake() {
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(stackIntakeLinkage, STACK_INTAKE_LINKAGE_INIT),
+                new ActionUtil.ServoPositionAction(stackIntakeLinkage, STACK_INTAKE_LINKAGE_UP),
                 new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_INIT),
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_INIT),
                 new StackIntakeStateAction(StackIntakeState.UP)
@@ -175,21 +178,23 @@ public class Intake {
         return new SequentialAction(
                 intakeOn(),
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_1ST_PIXEL),
-                new SleepAction(0.2),
+                new SleepAction(0.25),
                 new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_1ST_PIXEL),
-                new SleepAction(0.2),
+                new SleepAction(0.5),
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_2nd_PIXEL),
-                new SleepAction(0.2),
-                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_2nd_PIXEL)
+                new SleepAction(0.25),
+                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_2nd_PIXEL),
+                new SleepAction(0.5)
         );
     }
 
     public Action scorePurplePreload() {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(stackIntakeLinkage, STACK_INTAKE_LINKAGE_DOWN),
-                new SleepAction(0.2),
+                new SleepAction(0.25),
                 new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_INIT),
-                new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_INIT)
+                new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_INIT),
+                new SleepAction(0.25)
         );
     }
 

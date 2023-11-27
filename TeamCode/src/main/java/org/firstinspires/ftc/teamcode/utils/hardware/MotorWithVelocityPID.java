@@ -158,4 +158,8 @@ public class MotorWithVelocityPID {
     public void setDirection(DcMotorSimple.Direction direction) {
         motor.setDirection(direction);
     }
+
+    public DcMotor.RunMode getMode() {
+        return motor.getMode();
+    }
 }

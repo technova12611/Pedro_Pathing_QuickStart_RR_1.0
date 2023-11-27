@@ -8,12 +8,11 @@ import org.firstinspires.ftc.robotcore.external.function.Consumer;
 import org.firstinspires.ftc.robotcore.external.function.Continuation;
 import org.firstinspires.ftc.robotcore.external.stream.CameraStreamSource;
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
-import org.firstinspires.ftc.teamcode.robot.Globals;
+import org.firstinspires.ftc.teamcode.Globals;
+import org.firstinspires.ftc.teamcode.utils.software.MovingArrayList;
 import org.firstinspires.ftc.vision.VisionProcessor;
-import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
@@ -26,60 +25,71 @@ public class PropPipeline implements VisionProcessor, CameraStreamSource {
     private final AtomicReference<Bitmap> lastFrame = new AtomicReference<>(Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565));
 
     private Side location = Side.RIGHT;
-    public MatOfKeyPoint keyPoints = new MatOfKeyPoint();
 
-    public Rect leftZoneArea;
+    public Rect sideZoneArea;
     public Rect centerZoneArea;
 
     private Mat finalMat = new Mat();
 
-    public static int blueLeftX = 800;
-    public static int blueLeftY = 550;
+    public static int blueLeftX = 750;
+    public static int blueLeftY = 100;
 
-    public static int blueCenterX = 1175;
-    public static int blueCenterY = 175;
+    public static int blueCenterX = 1275;
+    public static int blueCenterY = 40;
 
-    public static int redLeftX = 780;
-    public static int redLeftY = 175;
+    public static int redCenterX = 985;
+    public static int redCenterY = 0;
 
-    public static int redCenterX = 1250;
-    public static int redCenterY = 100;
+    public static int redRightX = 1600;
+    public static int redRightY = 100;
 
-    public static int width = 200;
-    public static int height = 200;
+    public static int width = 180;
+    public static int height = 180;
 
-    public static double redLeftThreshold = 5.95;
-    public static double redCenterThreshold = 5.15;
-    public static double blueThreshold = 0.2;
-    public static double threshold = 0;
+    public static double blueThreshold = 1.75;
+    public static double redThreshold = 5.25;
+    public static double threshold = 0.0;
 
-    public double leftColor = 0.0;
+    public double sideColor = 0.0;
     public double centerColor = 0.0;
 
-    public Scalar left = new Scalar(0,0,0);
+    public double meanSideColor = 0.0;
+    public double meanCenterColor = 0.0;
+
+    public Scalar side = new Scalar(0,0,0);
     public Scalar center = new Scalar(0,0,0);
 
+    private MovingArrayList sideZoneColorList;
+    private MovingArrayList centerZoneColorList;
+
+    private long startTime;
+    public long elapsedTime;
+
+    public int arraySize = 0;
+
+    public static AlliancePosition allianceColor;
+
+    // BGR
     private final Scalar
             YELLOW  = new Scalar(255, 255, 0),
-            CYAN    = new Scalar(0, 255, 255),
-            MAGENTA = new Scalar(255, 0, 255),
-
-            GREEN = new Scalar(0, 255, 0);
+            BLUE  = new Scalar(255, 0, 0),
+            GREEN = new Scalar(0, 255, 0),
+            RED = new Scalar(0, 255, 0);
 
     @Override
     public void init(int width, int height, CameraCalibration calibration) {
-        if (Globals.COLOR == Side.RED) {
-            threshold = redCenterThreshold;
-        } else {
-            threshold = blueThreshold;
-        }
+        allianceColor = Globals.COLOR;
+        sideZoneColorList = new MovingArrayList(100);
+        centerZoneColorList = new MovingArrayList(100);
+
+        startTime = System.currentTimeMillis();
     }
 
     @Override
     public Mat processFrame(Mat frame, long captureTimeNanos) {
-
-        if (Globals.COLOR == Side.RED) {
-            threshold = redCenterThreshold;
+        allianceColor = Globals.COLOR;
+        if (allianceColor == AlliancePosition.RED) {
+            threshold = redThreshold;
         } else {
             threshold = blueThreshold;
         }
@@ -87,57 +97,72 @@ public class PropPipeline implements VisionProcessor, CameraStreamSource {
         frame.copyTo(finalMat);
         Imgproc.GaussianBlur(finalMat, finalMat, new Size(5, 5), 0.0);
 
-        leftZoneArea = new Rect(Globals.COLOR == Side.RED? redLeftX : blueLeftX, Globals.COLOR == Side.RED? redLeftY : blueLeftY, width, height);
-        centerZoneArea = new Rect(Globals.COLOR == Side.RED?redCenterX:blueCenterX, Globals.COLOR == Side.RED?redCenterY:blueCenterY, width, height);
+        sideZoneArea = new Rect(allianceColor == AlliancePosition.RED? redRightX : blueLeftX,
+                allianceColor == AlliancePosition.RED? redRightY : blueLeftY, width, height);
+        centerZoneArea = new Rect(Globals.COLOR == AlliancePosition.RED?redCenterX:blueCenterX,
+                allianceColor == AlliancePosition.RED?redCenterY:blueCenterY, width, height);
 
-        Mat leftZone = finalMat.submat(leftZoneArea);
+        Mat sideZone = finalMat.submat(sideZoneArea);
         Mat centerZone = finalMat.submat(centerZoneArea);
 
-        left = Core.sumElems(leftZone);
+        side = Core.sumElems(sideZone);
         center = Core.sumElems(centerZone);
 
-        leftColor = left.val[0] / 1000000.0;
+        sideColor = side.val[0] / 1000000.0;
         centerColor = center.val[0] / 1000000.0;
 
-        if(Globals.COLOR == Side.BLUE){
-            if (leftColor < threshold) {
+        if(centerZoneColorList.getArrayList().isEmpty()) {
+            startTime = System.currentTimeMillis();
+        }
+        sideZoneColorList.add(sideColor);
+        centerZoneColorList.add(centerColor);
+
+        arraySize = centerZoneColorList.getArrayList().size();
+        if(arraySize == 90) {
+            elapsedTime = System.currentTimeMillis() - startTime;
+        }
+
+        meanSideColor = sideZoneColorList.getMean();
+        meanCenterColor = centerZoneColorList.getMean();
+
+        if(allianceColor == AlliancePosition.BLUE){
+            if ( meanSideColor < threshold) {
                 // left zone has it
                 location = Side.LEFT;
-                Imgproc.rectangle(frame, leftZoneArea, new Scalar(255, 255, 255));
-            } else if (centerColor < threshold) {
+                Imgproc.rectangle(frame, sideZoneArea, GREEN, 8);
+                Imgproc.rectangle(frame, centerZoneArea, YELLOW, 3);
+            } else if (meanCenterColor < threshold) {
                 // center zone has it
                 location = Side.CENTER;
-                Imgproc.rectangle(frame, centerZoneArea, new Scalar(255, 255, 255));
+                Imgproc.rectangle(frame, centerZoneArea, GREEN, 8);
+                Imgproc.rectangle(frame, sideZoneArea, YELLOW, 3);
             } else {
                 // right zone has it
                 location = Side.RIGHT;
-                //Imgproc.rectangle(frame, leftZoneArea, new Scalar(255, 255, 255));
+                Imgproc.rectangle(frame, sideZoneArea, YELLOW, 3);
+                Imgproc.rectangle(frame, centerZoneArea, YELLOW, 3);
             }
-        }else{
-            if (centerColor > redCenterThreshold && leftColor < redLeftThreshold) {
+        } else {
+            if (meanCenterColor - meanSideColor > 1.0) {
                 // center zone has it
                 location = Side.CENTER;
-                Imgproc.rectangle(frame, centerZoneArea, GREEN, 6);
+                Imgproc.rectangle(frame, centerZoneArea, GREEN, 8);
+                Imgproc.rectangle(frame, sideZoneArea, YELLOW, 3);
             }
-            else if (leftColor > redLeftThreshold && centerColor < redCenterThreshold) {
+            else if ( meanSideColor - meanCenterColor > 0.2) {
                 // left zone has it
-                location = Side.LEFT;
-                Imgproc.rectangle(frame, leftZoneArea, GREEN,6);
+                location = Side.RIGHT;
+                Imgproc.rectangle(frame, sideZoneArea, GREEN,8);
+                Imgproc.rectangle(frame, centerZoneArea, YELLOW, 3);
             } else {
                 // right zone has it
-                location = Side.RIGHT;
+                location = Side.LEFT;
+                Imgproc.rectangle(frame, sideZoneArea, YELLOW, 3);
+                Imgproc.rectangle(frame, centerZoneArea, YELLOW, 3);
             }
         }
 
-        if(location.ordinal() != Side.LEFT.ordinal()) {
-            Imgproc.rectangle(frame, leftZoneArea, YELLOW, 3);
-        }
-
-        if (location.ordinal() != Side.CENTER.ordinal()) {
-            Imgproc.rectangle(frame, centerZoneArea, YELLOW, 3);
-        }
-
-        leftZone.release();
+        sideZone.release();
         centerZone.release();
 
         return frame;

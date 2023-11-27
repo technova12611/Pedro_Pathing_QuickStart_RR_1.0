@@ -8,11 +8,11 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.PropPipeline;
 import org.firstinspires.ftc.teamcode.pipeline.Side;
-import org.firstinspires.ftc.teamcode.robot.Globals;
+import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.vision.VisionPortal;
 
 @Config
@@ -35,13 +35,17 @@ public class VisionPipelineTest extends LinearOpMode {
         portal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, Globals.FRONT_WEBCAM_NAME))
                 .setCameraResolution(new Size(cameraWidth, cameraHeight))
-//                .setCamera(BuiltinCameraDirection.BACK)
                 .addProcessor(propPipeline)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .enableLiveView(true)
                 .setAutoStopLiveView(true)
                 .build();
 
+        FtcDashboard.getInstance().startCameraStream(propPipeline,0);
+
+        Side prevLocation = Side.CENTER;
+        int counter = 0;
+        int error = 0;
         while (opModeInInit()) {
             side = propPipeline.getLocation();
 
@@ -50,16 +54,50 @@ public class VisionPipelineTest extends LinearOpMode {
             telemetry.addData("Spike Position:", side.toString() + " | " + SPIKE);
             if(propPipeline.center != null) {
                 telemetry.addData("Center Area:", propPipeline.centerZoneArea);
-                telemetry.addData("Left Area:", propPipeline.leftZoneArea);
-                telemetry.addData("left color:", "%3.2f",propPipeline.leftColor);
                 telemetry.addData("Center color:", "%3.2f",propPipeline.centerColor);
+                if(Globals.COLOR == AlliancePosition.RED) {
+                    telemetry.addData("Right Area:", propPipeline.sideZoneArea);
+                    telemetry.addData("Right color:", "%3.2f",propPipeline.sideColor);
+                } else {
+                    telemetry.addData("Left Area:", propPipeline.sideZoneArea);
+                    telemetry.addData("left color:", "%3.2f",propPipeline.sideColor);
+                }
+
+                telemetry.addData("Mean side color:", "%3.2f", propPipeline.meanSideColor);
+                telemetry.addData("Mean center color:", "%3.2f",propPipeline.meanCenterColor);
+
+                telemetry.addData("Color delta:", "%3.2f", (propPipeline.meanCenterColor - propPipeline.meanSideColor));
+
+                telemetry.addData("Array size:", propPipeline.arraySize);
             }
+
+            if(propPipeline.centerColor > 2*propPipeline.meanCenterColor) {
+                telemetry.addData("Outliers: ", true);
+                telemetry.addData("Outliers color: ", "%3.2f", propPipeline.centerColor);
+                telemetry.addData("Outliers mean color: ", "%3.2f", propPipeline.meanCenterColor);
+                telemetry.addData("Outliers position: ", side);
+
+                telemetry.addData("Previous location: ", prevLocation);
+
+                telemetry.addData("Outliers count: ", counter++);
+            }
+
+            if(side != prevLocation) {
+                prevLocation = side;
+            }
+
+            if(prevLocation == Side.CENTER && side != Side.CENTER) {
+                telemetry.addData("**** Error count: ", error++);
+            }
+
+            telemetry.addData("Elapsed time for full array: ", propPipeline.elapsedTime);
 
             telemetry.update();
             idle();
         }
 
         portal.close();
+        FtcDashboard.getInstance().onOpModePostStop(this);
 
     }
 }

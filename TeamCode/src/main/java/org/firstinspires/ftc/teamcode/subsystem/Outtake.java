@@ -16,23 +16,24 @@ import org.firstinspires.ftc.teamcode.utils.control.PIDCoefficients;
 @Config
 public class Outtake {
     public static PIDCoefficients outtakePID = new PIDCoefficients(0.01, 0, 0.0004);
-    public static int OUTTAKE_TELEOP = 660;
+    public static int OUTTAKE_TELEOP = 1400;
 
     public static int OUTTAKE_SLIDE_HIGH = 1800;
-    public static int OUTTAKE_SLIDE_MID = 1200;
-    public static int OUTTAKE_SLIDE_LOW = 400;
+    public static int OUTTAKE_SLIDE_MID = 1280;
+    public static int OUTTAKE_SLIDE_LOW = 1000;
     public static int OUTTAKE_SLIDE_INIT = 0;
 
-    public static double LATCH_CLOSED = 0.545;
+    public static double LATCH_CLOSED = 0.55;
     public static double LATCH_SCORE_1 = 0.415;
-    public static double LATCH_SCORE_2 = 0.8;
+    public static double LATCH_SCORE_2 = 0.48;
 
     public static double OUTTAKE_PIVOT_INIT = 0.17;
-    public static double OUTTAKE_PIVOT_SLIDE = 0.23;
-    public static double OUTTAKE_PIVOT_DUMP = 0.29;
+    public static double OUTTAKE_PIVOT_SLIDING = 0.23;
+    public static double OUTTAKE_PIVOT_DUMP = 0.27;
 
     public static double SLIDE_PIVOT_INIT = 0.47;
-    public static double SLIDE_PIVOT_DUMP = 0.3;
+    public static double SLIDE_PIVOT_SLIDING = 0.52;
+    public static double SLIDE_PIVOT_DUMP = 0.38;
     public static double SLIDE_PIVOT_HIGH = 0.05;
 
     public static double OUTTAKE_WIRE_DOWN = 0.81;
@@ -149,7 +150,7 @@ public class Outtake {
     public Action prepareSlide() {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED),
-                new ActionUtil.ServoPositionAction(outtakePivot, OUTTAKE_PIVOT_SLIDE),
+                new ActionUtil.ServoPositionAction(outtakePivot, OUTTAKE_PIVOT_SLIDING),
                 new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_INIT),
                 new SleepAction(0.2)
         );

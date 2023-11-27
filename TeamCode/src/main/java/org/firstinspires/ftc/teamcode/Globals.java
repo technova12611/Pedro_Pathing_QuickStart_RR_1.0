@@ -1,10 +1,11 @@
-package org.firstinspires.ftc.teamcode.robot;
+package org.firstinspires.ftc.teamcode;
 
+import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.Side;
 
 public class Globals {
 
-    public static Side COLOR = Side.RED;
+    public static AlliancePosition COLOR = AlliancePosition.RED;
     /**
      * Match constants.
      */

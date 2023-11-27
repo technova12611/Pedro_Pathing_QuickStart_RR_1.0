@@ -233,4 +233,8 @@ public class MotorWithPID {
     public int getTargetPositionTolerance() {
         return tolerance;
     }
+
+    public DcMotor.RunMode getRunMode() {
+        return this.motor.getMode();
+    }
 }

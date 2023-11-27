@@ -7,12 +7,12 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.PropPipeline;
 import org.firstinspires.ftc.teamcode.pipeline.Side;
-import org.firstinspires.ftc.teamcode.robot.Globals;
-import org.firstinspires.ftc.teamcode.robot.MecanumDrive;
+import org.firstinspires.ftc.teamcode.Globals;
+import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Memory;
 import org.firstinspires.ftc.teamcode.subsystem.Outtake;
@@ -65,9 +65,8 @@ public abstract class AutoBase extends LinearOpMode {
         portal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, Globals.FRONT_WEBCAM_NAME))
                 .setCameraResolution(new Size(1920, 1080))
-                .setCamera(BuiltinCameraDirection.BACK)
                 .addProcessor(propPipeline)
-//                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .enableLiveView(true)
                 .setAutoStopLiveView(true)
                 .build();
@@ -107,5 +106,7 @@ public abstract class AutoBase extends LinearOpMode {
     protected abstract void printDescription();
     protected void onInit() {}
     protected abstract void onRun();
+
+    protected abstract AlliancePosition getAlliance();
 }
 

@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.utils.software.AutoConstants;
 
 @Config
@@ -26,6 +27,9 @@ public class RedLeftAuto extends AutoBase {
    public static Pose2d parking = new Pose2d(56, -12, Math.toRadians(180));
    public static Pose2d intermediate = new Pose2d(-40, -56, Math.toRadians(180));
 
+   protected AlliancePosition getAlliance() {
+      return AlliancePosition.RED;
+   }
    @Override
    protected Pose2d getStartPose() {
       return start;
