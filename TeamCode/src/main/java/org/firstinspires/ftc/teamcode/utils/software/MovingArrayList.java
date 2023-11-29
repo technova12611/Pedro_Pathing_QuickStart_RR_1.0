@@ -31,7 +31,7 @@ public class MovingArrayList {
     }
 
     public double getMean() {
-        if(arrayList.size() > 5) {
+        if(size > 5 && arrayList.size() > (size -5)) {
             removeMinMax();
         }
 

@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -37,8 +38,8 @@ public class Outtake {
     public static double SLIDE_PIVOT_HIGH = 0.05;
 
     public static double OUTTAKE_WIRE_DOWN = 0.81;
-    public static double OUTTAKE_WIRE_MIDDLE = 0.5;
-    public static double OUTTAKE_WIRE_HIGH = 0.4;
+    public static double OUTTAKE_WIRE_MIDDLE = 0.45;
+    public static double OUTTAKE_WIRE_HIGH = 0.27;
 
     final MotorWithPID slide;
     public boolean slidePIDEnabled = true;
@@ -47,6 +48,9 @@ public class Outtake {
     final Servo outtakePivot;
 
     final Servo outtakeWireServo;
+
+    final AnalogInput slidePivotVoltage;
+    final AnalogInput outtakePivotVoltage;
 
     public Outtake(HardwareMap hardwareMap) {
         if (Memory.outtakeSlide != null) { // Preserve motor zero position
@@ -61,6 +65,9 @@ public class Outtake {
         this.slidePivot = HardwareCreator.createServo(hardwareMap, "outtakeSlidePivot");
         this.outtakePivot = HardwareCreator.createServo(hardwareMap, "outtakePivot");
         this.outtakeWireServo = HardwareCreator.createServo(hardwareMap, "outtakeWireServo");
+
+        this.slidePivotVoltage = hardwareMap.get(AnalogInput.class, "slidePivotVoltage");
+        this.outtakePivotVoltage = hardwareMap.get(AnalogInput.class, "outtakePivotVoltage");
     }
 
     public void prepTeleop() {

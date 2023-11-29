@@ -1,19 +1,21 @@
 package org.firstinspires.ftc.teamcode.roadrunner.tuning;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.roadrunner.TwoDeadWheelLocalizer;
 
 @Config
-public final class SplineTest extends LinearOpMode {
-
-    public static double distance = 30.0;
+public final class TurnTest extends LinearOpMode {
+    public static double degree = 90.0;
     @Override
     public void runOpMode() throws InterruptedException {
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
             MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
@@ -21,12 +23,11 @@ public final class SplineTest extends LinearOpMode {
 
             Actions.runBlocking(
                 drive.actionBuilder(drive.pose)
-                        .splineTo(new Vector2d(distance, distance), 0)
-//                        .splineTo(new Vector2d(0, 0), Math.PI)
-//                        .splineTo(new Vector2d(30, 30), Math.PI / 2)
- //                       .splineTo(new Vector2d(60, 0), Math.PI)
+                        .turn(Math.toRadians(degree))
                         .build());
 
+            telemetry.addData("drive pose: ", "%.3f",Math.toDegrees(drive.pose.heading.log()));
+            telemetry.update();
 
         } else {
             throw new AssertionError();

@@ -63,6 +63,10 @@ public class VisionPipelineTest extends LinearOpMode {
                     telemetry.addData("left color:", "%3.2f",propPipeline.sideColor);
                 }
 
+
+                telemetry.addData("Side scalar:", propPipeline.side);
+                telemetry.addData("Center scalar:", propPipeline.center);
+
                 telemetry.addData("Mean side color:", "%3.2f", propPipeline.meanSideColor);
                 telemetry.addData("Mean center color:", "%3.2f",propPipeline.meanCenterColor);
 

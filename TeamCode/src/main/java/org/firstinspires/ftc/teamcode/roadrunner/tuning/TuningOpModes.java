@@ -112,6 +112,10 @@ public final class TuningOpModes {
         manager.register(metaForClass(SplineTest.class), SplineTest.class);
         manager.register(metaForClass(LocalizationTest.class), LocalizationTest.class);
 
+        manager.register(metaForClass(StraightTest.class), StraightTest.class);
+        manager.register(metaForClass(StrafeTest.class), StrafeTest.class);
+        manager.register(metaForClass(TurnTest.class), TurnTest.class);
+
         FtcDashboard.getInstance().withConfigRoot(configRoot -> {
             for (Class<?> c : Arrays.asList(
                     AngularRampLogger.class,

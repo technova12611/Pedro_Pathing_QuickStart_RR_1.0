@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -51,6 +52,9 @@ public class ServoMotorTest extends LinearOpMode {
     MotorWithVelocityPID intakeMotor;
     DcMotorEx parOdometry1;
     DcMotorEx perpOdometry2;
+
+    AnalogInput slidePivotVoltage;
+    AnalogInput outtakePivotVoltage;
 
     public static double STACK_INTAKE_LEFT_VALUE = 0.05;
     public static double STACK_INTAKE_RIGHT_VALUE = 0.05;
@@ -130,6 +134,9 @@ public class ServoMotorTest extends LinearOpMode {
 
         this.parOdometry1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         this.perpOdometry2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        this.slidePivotVoltage = hardwareMap.get(AnalogInput.class, "slidePivotVoltage");
+        this.outtakePivotVoltage = hardwareMap.get(AnalogInput.class, "outtakePivotVoltage");
 
         imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
@@ -400,6 +407,9 @@ public class ServoMotorTest extends LinearOpMode {
             telemetry.addData("totalCount: ", totalPixelCount);
             telemetry.addData("Par encoder: ", parOdometry1.getCurrentPosition());
             telemetry.addData("Perp encoder value: ", perpOdometry2.getCurrentPosition());
+
+            telemetry.addData("slidePivotVoltage: ", "%3.2f", slidePivotVoltage.getVoltage());
+            telemetry.addData("outtakePivotVoltage: ", "%3.2f", outtakePivotVoltage.getVoltage());
 
             telemetry.update();
 

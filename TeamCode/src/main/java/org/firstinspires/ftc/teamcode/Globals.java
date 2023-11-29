@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.config.Config;
+
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.Side;
 
+@Config
 public class Globals {
 
-    public static AlliancePosition COLOR = AlliancePosition.RED;
+    public static AlliancePosition COLOR = AlliancePosition.BLUE;
     /**
      * Match constants.
      */
