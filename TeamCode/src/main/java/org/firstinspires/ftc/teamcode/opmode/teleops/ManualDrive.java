@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.acmerobotics.roadrunner.Twist2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -26,6 +27,8 @@ public class ManualDrive extends LinearOpMode {
     public static double SLOW_TURN_SPEED = 0.3;
     public static double SLOW_DRIVE_SPEED = 0.3;
 
+    public static double STRAFE_DISTANCE = 3.5;
+
     private SmartGameTimer smartGameTimer;
     private GamePadController g1, g2;
     private MecanumDrive drive;
@@ -33,7 +36,7 @@ public class ManualDrive extends LinearOpMode {
     private Intake intake;
     private Outtake outtake;
     private Hang hang;
-    private Drone plane;
+    private Drone drone;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -50,7 +53,7 @@ public class ManualDrive extends LinearOpMode {
         intake = new Intake(hardwareMap);
         outtake = new Outtake(hardwareMap);
         hang = new Hang(hardwareMap);
-        plane = new Drone(hardwareMap);
+        drone = new Drone(hardwareMap);
 
         if (Memory.RAN_AUTO) {
             smartGameTimer = new SmartGameTimer(true);
@@ -77,7 +80,7 @@ public class ManualDrive extends LinearOpMode {
 
             // Init opmodes
             outtake.initialize();
-            plane.initialize();
+            drone.initialize();
         }
 
         // Main loop
@@ -92,7 +95,6 @@ public class ManualDrive extends LinearOpMode {
             sched.update();
             outtake.update();
             intake.update();
-//            hang.update();
 
             telemetry.addData("Time left", smartGameTimer.formattedString() + " (" + smartGameTimer.status() + ")");
             telemetry.update();
@@ -116,7 +118,7 @@ public class ManualDrive extends LinearOpMode {
         drive.setDrivePowers(new PoseVelocity2d(input, input_turn));
     }
 
-    boolean slideHigh = false;
+    boolean isSlideOut = false;
     private void subsystemControls() {
         // Intake controls
         if (g1.aOnce()) {
@@ -127,8 +129,8 @@ public class ManualDrive extends LinearOpMode {
             }
         }
         if (g1.b()) {
-            if (slideHigh) {
-                slideHigh = false;
+            if (isSlideOut) {
+                isSlideOut = false;
                 sched.queueAction(outtake.retractOuttake());
             }
             if (intake.intakeState == Intake.IntakeState.ON) {
@@ -141,33 +143,35 @@ public class ManualDrive extends LinearOpMode {
         }
 
         // Outtake controls
-        if (g1.yOnce()) {
-            if (slideHigh) {
-                sched.queueAction(new SequentialAction(
- //                       outtake.wristHolding(),
-                        new SleepAction(0.5),
-//                        outtake.latchOpen(),
-                        new SleepAction(0.5)
-//                        outtake.latchClosed(),
-//                        new SleepAction(0.3),
-//                        outtake.wristScoring()
-                ));
+        if(g1.yLong()) {
+            sched.queueAction(outtake.latchScore2());
+        }
+        else if (g1.yOnce()) {
+            if (isSlideOut) {
+                if(outtake.latchState == Outtake.OuttakeLatchState.LATCH_1) {
+                    sched.queueAction(new SequentialAction(
+                            outtake.latchScore2(),
+                            new SleepAction(0.5)
+                    ));
+                }
+                else {
+                    sched.queueAction(new SequentialAction(
+                            outtake.latchScore1(),
+                            new SleepAction(0.5)
+                    ));
+                }
             } else {
-                slideHigh = true;
+                isSlideOut = true;
                 sched.queueAction(intake.intakeOff());
-                sched.queueAction(new SequentialAction(outtake.latchClosed(), new SleepAction(0.1)));
-//                sched.queueAction(new ParallelAction(
-//                        new SequentialAction(
-//                                new SleepAction(0.4)//,
-////                                outtake.wristScoring()),
-//                        outtake.extendOuttakeTeleopBlocking()
-//                ));
+                sched.queueAction(new SequentialAction(
+                        outtake.prepareToSlide(),
+                        outtake.extendOuttakeMid(),
+                        new SleepAction(0.5),
+                        outtake.prepareToScore()));
             }
         }
-        if (g1.xOnce()) {
-//            sched.queueAction(outtake.latchScoring());
-        }
-        if (Math.abs(g1.right_stick_y) > 0.01  && slideHigh) {
+
+        if (Math.abs(g1.right_stick_y) > 0.01  && isSlideOut) {
             outtake.slidePIDEnabled = false;
             outtake.setSlidePower(-g1.right_stick_y);
         } else if (!outtake.slidePIDEnabled) {
@@ -177,13 +181,31 @@ public class ManualDrive extends LinearOpMode {
 
         // Other subsystems
         if (g1.dpadUpOnce()) {
-//            sched.queueAction(hang.extendHang());
+            sched.queueAction(hang.armsUp());
         }
         if (g1.dpadDownOnce()) {
-//            sched.queueAction(hang.retractHang());
+            sched.queueAction(hang.armsDown());
         }
-        if (g1.startOnce() & (!g1.aOnce() || !g1.bOnce())) {
-            sched.queueAction(plane.scoreDrone());
+
+        if (g1.dpadLeftOnce()) {
+            sched.queueAction(drive.actionBuilder(drive.pose)
+                    .strafeTo(new Vector2d(drive.pose.position.x, drive.pose.position.y + STRAFE_DISTANCE))
+                    .build());
+        }
+
+        if (g1.dpadRightOnce()) {
+            sched.queueAction(drive.actionBuilder(drive.pose)
+                    .strafeTo(new Vector2d(drive.pose.position.x, drive.pose.position.y - STRAFE_DISTANCE))
+                    .build());
+        }
+
+        if (g1.xOnce()) {
+            sched.queueAction( new SequentialAction(
+                    intake.stackIntakeLinkageDown(),
+                    new SleepAction(0.25),
+                    drone.scoreDrone(),
+                    new SleepAction(0.25),
+                    intake.stackIntakeLinkageUp()));
         }
     }
 }

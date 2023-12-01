@@ -28,14 +28,14 @@ public class ActionScheduler {
       TelemetryPacket packet = new TelemetryPacket();
       packet.fieldOverlay().getOperations().addAll(canvas.getOperations());
 
-      boolean running = actions.peek().run(packet);
+      Action a = actions.peek();
+      a.preview(canvas);
+
+      boolean running = a.run(packet);
       dash.sendTelemetryPacket(packet);
 
       if (!running) {
          actions.remove();
-         if (actions.peek() != null) {
-            actions.peek().preview(canvas);
-         }
       }
    }
 }

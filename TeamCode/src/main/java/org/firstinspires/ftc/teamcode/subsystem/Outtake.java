@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
@@ -17,24 +18,26 @@ import org.firstinspires.ftc.teamcode.utils.control.PIDCoefficients;
 @Config
 public class Outtake {
     public static PIDCoefficients outtakePID = new PIDCoefficients(0.01, 0, 0.0004);
-    public static int OUTTAKE_TELEOP = 1400;
+    public static int OUTTAKE_TELEOP = 1200;
 
     public static int OUTTAKE_SLIDE_HIGH = 1800;
-    public static int OUTTAKE_SLIDE_MID = 1280;
-    public static int OUTTAKE_SLIDE_LOW = 1000;
+    public static int OUTTAKE_SLIDE_MID = 1150;
+    public static int OUTTAKE_SLIDE_LOW = 750;
     public static int OUTTAKE_SLIDE_INIT = 0;
 
     public static double LATCH_CLOSED = 0.55;
     public static double LATCH_SCORE_1 = 0.415;
     public static double LATCH_SCORE_2 = 0.48;
 
-    public static double OUTTAKE_PIVOT_INIT = 0.17;
+    public static double OUTTAKE_PIVOT_INIT = 0.195;
     public static double OUTTAKE_PIVOT_SLIDING = 0.23;
-    public static double OUTTAKE_PIVOT_DUMP = 0.27;
+    public static double OUTTAKE_PIVOT_DUMP = 0.36;
 
-    public static double SLIDE_PIVOT_INIT = 0.47;
+    public static double OUTTAKE_PIVOT_DUMP_HIGH = 0.33;
+
+    public static double SLIDE_PIVOT_INIT = 0.438;
     public static double SLIDE_PIVOT_SLIDING = 0.52;
-    public static double SLIDE_PIVOT_DUMP = 0.38;
+    public static double SLIDE_PIVOT_DUMP = 0.25;
     public static double SLIDE_PIVOT_HIGH = 0.05;
 
     public static double OUTTAKE_WIRE_DOWN = 0.81;
@@ -70,6 +73,29 @@ public class Outtake {
         this.outtakePivotVoltage = hardwareMap.get(AnalogInput.class, "outtakePivotVoltage");
     }
 
+    public enum OuttakeLatchState {
+        CLOSED,
+        LATCH_1,
+        LATCH_2
+    }
+
+    public OuttakeLatchState latchState;
+
+    public class OuttakeLatchStateAction implements Action {
+        OuttakeLatchState newState;
+
+        public OuttakeLatchStateAction(OuttakeLatchState newState) {
+            this.newState = newState;
+        }
+
+        @Override
+        public boolean run(TelemetryPacket packet) {
+            packet.addLine("Outtake latch state changed from " + latchState + " to " + newState);
+            latchState = newState;
+            return false;
+        }
+    }
+
     public void prepTeleop() {
         this.slide.getMotor().setPower(-0.3);
     }
@@ -79,6 +105,7 @@ public class Outtake {
     }
 
     public void initialize() {
+        this.slide.setCurrentPosition(0);
         this.slide.setTargetPosition(0);
         this.slidePivot.setPosition(SLIDE_PIVOT_INIT);
         this.outtakePivot.setPosition(OUTTAKE_PIVOT_INIT);
@@ -116,49 +143,78 @@ public class Outtake {
     }
     public Action retractOuttake() {
         return new SequentialAction(
-                prepareSlide(),
-                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_INIT)
+                prepareToSlide(),
+                this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_INIT),
+                prepareToTransfer()
         );
     }
 
     public Action latchScore1() {
-        return new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_1);
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_1),
+                new Intake.UpdatePixelCountAction(-1),
+                new OuttakeLatchStateAction(OuttakeLatchState.LATCH_1)
+        );
     }
 
-    public Action latchScoring2() {
-        return new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_2);
+    public Action latchScore2() {
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_2),
+                new Intake.UpdatePixelCountAction(-2),
+                new OuttakeLatchStateAction(OuttakeLatchState.LATCH_2)
+        );
     }
 
     public Action latchClosed() {
-        return new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED);
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED),
+                new OuttakeLatchStateAction(OuttakeLatchState.CLOSED)
+        );
     }
 
     public Action extendOuttakeLow() {
         return new SequentialAction(
-                prepareSlide(),
-                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_LOW)
+                prepareToSlide(),
+                this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_LOW)
         );
     }
 
     public Action extendOuttakeMid() {
         return new SequentialAction(
-                prepareSlide(),
-                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_MID)
+                prepareToSlide(),
+                this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_MID)
         );
     }
 
     public Action extendOuttakeHigh() {
         return new SequentialAction(
-                prepareSlide(),
-                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_HIGH)
+                prepareToSlide(),
+                this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_HIGH)
         );
     }
 
-    public Action prepareSlide() {
+    public Action prepareToSlide() {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED),
                 new ActionUtil.ServoPositionAction(outtakePivot, OUTTAKE_PIVOT_SLIDING),
-                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_INIT),
+                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_SLIDING),
+                new SleepAction(0.2)
+        );
+    }
+
+    public Action prepareToTransfer() {
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED),
+                new ActionUtil.ServoPositionAction(outtakePivot, OUTTAKE_PIVOT_INIT),
+                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_INIT)
+        );
+    }
+
+    public Action prepareToScore() {
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED),
+                new ActionUtil.ServoPositionAction(outtakePivot, OUTTAKE_PIVOT_DUMP),
+                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_DUMP),
                 new SleepAction(0.2)
         );
     }

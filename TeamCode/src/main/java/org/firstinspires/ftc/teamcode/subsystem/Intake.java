@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
-
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -14,20 +15,14 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
 import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
-import org.firstinspires.ftc.teamcode.utils.hardware.MotorWithVelocityPID;
-import org.firstinspires.ftc.teamcode.utils.control.PIDCoefficients;
 
 @Config
 public class Intake {
-    public static int INTAKE_SPEED = 800;
-
-    final MotorWithVelocityPID intakeMotor;
-    public static PIDCoefficients intakeMotorPid = new PIDCoefficients(0.0007, 0, 0.1);
-
+    public static int INTAKE_SPEED = 900;
+    final DcMotorEx intakeMotor;
     final Servo stackIntakeLinkage;
     final Servo stackIntakeServoLeft;
     final Servo stackIntakeServoRight;
-
     final CRServo bottomRollerServo;
 
     public static double STACK_INTAKE_LEFT_INIT = 0.01;
@@ -44,13 +39,22 @@ public class Intake {
     public static double STACK_INTAKE_LINKAGE_DOWN = 0.4925;
     public static double STACK_INTAKE_LINKAGE_UP = 0.89;
 
-    final DigitalChannel beamBreaker1;
+    public static double AUTO_INTAKE_REVERSE_TIME = 2500;
+    private boolean isAutoReverseOn = true;
 
-    final DigitalChannel beamBreaker2;
+    private final DigitalChannel beamBreakerActive;
+    private final DigitalChannel beamBreakerPassive;
+
+    private boolean prevBeamBreakerState = true;
+    private boolean curBeamBreakerState = true;
+
+    public static int totalPixelCount = 0;
+    public static int pixelsCount = 0;
+
+    private Long intakeReverseTime = null;
 
     public Intake(HardwareMap hardwareMap) {
-        this.intakeMotor = new MotorWithVelocityPID(HardwareCreator.createMotor(hardwareMap, "intake"), intakeMotorPid);
-        this.intakeMotor.setMaxPower(1.0);
+        this.intakeMotor = HardwareCreator.createMotor(hardwareMap, "intake");
         this.intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         stackIntakeServoLeft = HardwareCreator.createServo(hardwareMap, "stackIntakeServoLeft");
@@ -58,8 +62,8 @@ public class Intake {
         stackIntakeLinkage = HardwareCreator.createServo(hardwareMap, "stackIntakeLinkage");
         bottomRollerServo = HardwareCreator.createCRServo(hardwareMap, "bottomRollerServo", HardwareCreator.ServoType.AXON);
 
-        beamBreaker1 = hardwareMap.get(DigitalChannel.class, "beamBreaker1");
-        beamBreaker2 = hardwareMap.get(DigitalChannel.class, "beamBreaker2");
+        beamBreakerActive = hardwareMap.get(DigitalChannel.class, "beamBreaker1");
+        beamBreakerPassive = hardwareMap.get(DigitalChannel.class, "beamBreaker2");
     }
 
     public void initialize(boolean isAuto) {
@@ -121,19 +125,36 @@ public class Intake {
         }
     }
 
+    public static class UpdatePixelCountAction implements Action {
+        int changeValue;
+
+        public UpdatePixelCountAction(int value) {
+            this.changeValue = value;
+        }
+
+        @Override
+        public boolean run(TelemetryPacket packet) {
+            int prevPixel = pixelsCount;
+            pixelsCount = pixelsCount + changeValue;
+            packet.addLine("New pixel count change from " + prevPixel + " to " + pixelsCount + " | total pixels taken: " + totalPixelCount);
+            return false;
+        }
+    }
+
     public Action intakeOn() {
         return new SequentialAction(
-                //intakeMotor.setTargetVelocityAction(INTAKE_SPEED),
-                new ActionUtil.DcMotorExPowerAction(intakeMotor.getMotor(), INTAKE_SPEED / 1000.0),
-                new IntakeStateAction(IntakeState.ON),
-                new ActionUtil.CRServoAction(bottomRollerServo, 1.0)
+                new ActionUtil.DcMotorExPowerAction(intakeMotor, INTAKE_SPEED / 1000.0),
+                new ActionUtil.CRServoAction(bottomRollerServo, 1.0),
+                new IntakeStateAction(IntakeState.ON)
         );
     }
 
     public Action intakeReverse() {
         return new SequentialAction(
-                //intakeMotor.setTargetVelocityAction(-INTAKE_SPEED),
-                new ActionUtil.DcMotorExPowerAction(intakeMotor.getMotor(), -INTAKE_SPEED / 1000.0),
+                new ActionUtil.ServoPositionAction(stackIntakeLinkage, STACK_INTAKE_LINKAGE_UP),
+                new SleepAction(0.1),
+                new ActionUtil.DcMotorExPowerAction(intakeMotor, -INTAKE_SPEED / 1000.0),
+                new ActionUtil.CRServoAction(bottomRollerServo, -1.0),
                 new IntakeStateAction(IntakeState.REVERSING)
         );
     }
@@ -148,16 +169,14 @@ public class Intake {
 
     public Action intakeOff() {
         return new SequentialAction(
-                intakeMotor.setTargetVelocityAction(0),
-                new ActionUtil.DcMotorExPowerAction(intakeMotor.getMotor(), 0),
                 new IntakeStateAction(IntakeState.OFF),
+                new ActionUtil.DcMotorExPowerAction(intakeMotor, 0.0),
                 new ActionUtil.CRServoAction(bottomRollerServo, 0.0)
         );
     }
 
     public Action prepareStackIntake() {
         return new SequentialAction(
-                //intakeMotor.setTargetVelocityAction(0),
                 new ActionUtil.ServoPositionAction(stackIntakeLinkage, STACK_INTAKE_LINKAGE_DOWN),
                 new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_INIT),
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_INIT),
@@ -190,15 +209,53 @@ public class Intake {
 
     public Action scorePurplePreload() {
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(stackIntakeLinkage, STACK_INTAKE_LINKAGE_DOWN),
-                new SleepAction(0.25),
                 new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_INIT),
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_INIT),
                 new SleepAction(0.25)
         );
     }
 
+    public Action stackIntakeLinkageDown() {
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(stackIntakeLinkage, STACK_INTAKE_LINKAGE_DOWN),
+                new StackIntakeStateAction(StackIntakeState.DOWN)
+        );
+    }
+    public Action stackIntakeLinkageUp() {
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(stackIntakeLinkage, STACK_INTAKE_LINKAGE_UP),
+                new StackIntakeStateAction(StackIntakeState.UP)
+        );
+    }
+
+    public void turnOffAutoReverse() {
+        this.isAutoReverseOn = false;
+    }
+
     public void update() {
-        //intakeMotor.update();
+
+        curBeamBreakerState = beamBreakerActive.getState();
+
+        // update pixel detection state if beam
+        if(curBeamBreakerState && !prevBeamBreakerState) {
+            pixelsCount++;
+            totalPixelCount++;
+
+            // when the 2nd pixel
+            if(pixelsCount >=2 && this.isAutoReverseOn) {
+                Actions.runBlocking(intakeReverse());
+                intakeReverseTime =  new Long(System.currentTimeMillis());
+            }
+        }
+
+        if(curBeamBreakerState != prevBeamBreakerState) {
+            prevBeamBreakerState = curBeamBreakerState;
+        }
+
+        // if reversed for more than 2.5 seconds, then stop reverse
+        if(intakeReverseTime != null && (System.currentTimeMillis() - intakeReverseTime.longValue()) > AUTO_INTAKE_REVERSE_TIME) {
+            intakeReverseTime = null;
+            Actions.runBlocking(intakeOff());
+        }
     }
 }

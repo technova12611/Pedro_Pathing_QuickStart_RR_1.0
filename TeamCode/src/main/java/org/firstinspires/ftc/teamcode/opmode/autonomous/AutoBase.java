@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.pipeline.PropPipeline;
 import org.firstinspires.ftc.teamcode.pipeline.Side;
 import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystem.Hang;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Memory;
 import org.firstinspires.ftc.teamcode.subsystem.Outtake;
@@ -26,7 +27,8 @@ public abstract class AutoBase extends LinearOpMode {
     protected Outtake outtake;
     protected Intake intake;
 //    protected Vision vision;
-    protected Drone plane;
+    protected Drone drone;
+    protected Hang hang;
     protected AutoActionScheduler sched;
 
     private PropPipeline propPipeline;
@@ -53,13 +55,13 @@ public abstract class AutoBase extends LinearOpMode {
         this.intake = new Intake(hardwareMap);
         this.outtake = new Outtake(hardwareMap);
 //        this.vision = new Vision(hardwareMap);
-        this.plane = new Drone(hardwareMap);
+        this.drone = new Drone(hardwareMap);
         this.sched = new AutoActionScheduler(this::update);
 
         outtake.resetMotors();
 
         outtake.initialize();
-        plane.initialize();
+        drone.initialize();
 
         propPipeline = new PropPipeline();
         portal = new VisionPortal.Builder()

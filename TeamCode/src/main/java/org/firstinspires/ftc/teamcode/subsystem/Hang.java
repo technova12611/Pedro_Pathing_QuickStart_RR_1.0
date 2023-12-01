@@ -30,10 +30,18 @@ public class Hang {
         hangServoRight.setPosition(HANG_DOWN_RIGHT);
         hangServoLeft.setPosition(HANG_DOWN_LEFT);
     }
-    public Action hang() {
+
+    public Action armsUp() {
         return new ParallelAction(
                 new ActionUtil.ServoPositionAction(hangServoRight, HANG_UP_RIGHT),
                 new ActionUtil.ServoPositionAction(hangServoLeft, HANG_UP_LEFT)
+        );
+    }
+
+    public Action armsDown() {
+        return new ParallelAction(
+                new ActionUtil.ServoPositionAction(hangServoRight, HANG_DOWN_RIGHT),
+                new ActionUtil.ServoPositionAction(hangServoLeft, HANG_DOWN_RIGHT)
         );
     }
 }

@@ -37,8 +37,10 @@ public class Drone {
     public Action scoreDrone() {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(tilt, TILT_LAUNCH),
-                new SleepAction(1.0),
-                new ActionUtil.ServoPositionAction(latch, LATCH_SCORED)
+                new SleepAction(0.25),
+                new ActionUtil.ServoPositionAction(latch, LATCH_SCORED),
+                new SleepAction(0.5),
+                new ActionUtil.ServoPositionAction(tilt, TILT_INIT)
         );
     }
 }

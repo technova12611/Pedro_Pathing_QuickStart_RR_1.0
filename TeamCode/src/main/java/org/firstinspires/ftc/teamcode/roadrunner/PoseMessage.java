@@ -14,5 +14,9 @@ public final class PoseMessage {
         this.y = pose.position.y;
         this.heading = pose.heading.log();
     }
+
+    public String toString() {
+        return String.format("(%.3f, %.3f, %.3f)", this.x, this.y, Math.toDegrees(this.heading));
+    }
 }
 
