@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode.utils.software;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.RobotLog;
 
 public class ActionUtil {
    public static class DcMotorExPowerAction implements Action {
@@ -36,6 +39,9 @@ public class ActionUtil {
       @Override
       public boolean run(TelemetryPacket packet) {
          servo.setPosition(position);
+         String message = "Servo name: " + servo.getDeviceName() + " set to position: " + position;
+         packet.addLine(message);
+         Log.d("ActionUtil:", message);
          return false;
       }
    }

@@ -25,18 +25,18 @@ public class Intake {
     final Servo stackIntakeServoRight;
     final CRServo bottomRollerServo;
 
-    public static double STACK_INTAKE_LEFT_INIT = 0.01;
-    public static double STACK_INTAKE_LEFT_PRELOAD = 0.19;
-    public static double STACK_INTAKE_LEFT_1ST_PIXEL = 0.64;
-    public static double STACK_INTAKE_LEFT_2nd_PIXEL = 1.0;
+    public static double STACK_INTAKE_LEFT_INIT = 0.011;
+    public static double STACK_INTAKE_LEFT_PRELOAD = 0.191;
+    public static double STACK_INTAKE_LEFT_1ST_PIXEL = 0.641;
+    public static double STACK_INTAKE_LEFT_2nd_PIXEL = 0.99;
 
-    public static double STACK_INTAKE_RIGHT_INIT = 0.01;
-    public static double STACK_INTAKE_RIGHT_PRELOAD = 0.19;
-    public static double STACK_INTAKE_RIGHT_1ST_PIXEL = 0.64;
+    public static double STACK_INTAKE_RIGHT_INIT = 0.012;
+    public static double STACK_INTAKE_RIGHT_PRELOAD = 0.192;
+    public static double STACK_INTAKE_RIGHT_1ST_PIXEL = 0.642;
     public static double STACK_INTAKE_RIGHT_2nd_PIXEL = 1.0;
 
     public static double STACK_INTAKE_LINKAGE_INIT = 0.95;
-    public static double STACK_INTAKE_LINKAGE_DOWN = 0.4925;
+    public static double STACK_INTAKE_LINKAGE_DOWN = 0.498;
     public static double STACK_INTAKE_LINKAGE_UP = 0.89;
 
     public static double AUTO_INTAKE_REVERSE_TIME = 2500;
@@ -79,7 +79,7 @@ public class Intake {
         }
 
         intakeState = IntakeState.OFF;
-        stackIntakeState = StackIntakeState.INIT;
+        stackIntakeState = StackIntakeState.UP;
     }
 
     public enum IntakeState {
@@ -195,7 +195,6 @@ public class Intake {
 
     public Action intakeStackedPixels() {
         return new SequentialAction(
-                intakeOn(),
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_1ST_PIXEL),
                 new SleepAction(0.25),
                 new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_1ST_PIXEL),
@@ -257,5 +256,9 @@ public class Intake {
             intakeReverseTime = null;
             Actions.runBlocking(intakeOff());
         }
+    }
+    public String getStackServoPositions() {
+        return String.format("left stack servo: %.3f | right stack servo: %.3f ",
+                this.stackIntakeServoLeft.getPosition(), this.stackIntakeServoRight.getPosition());
     }
 }

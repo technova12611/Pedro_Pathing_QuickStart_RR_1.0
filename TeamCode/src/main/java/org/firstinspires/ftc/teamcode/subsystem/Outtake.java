@@ -25,15 +25,18 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_LOW = 750;
     public static int OUTTAKE_SLIDE_INIT = 0;
 
+    public static int OUTTAKE_SLIDE_INCREMENT= 200;
+
     public static double LATCH_CLOSED = 0.55;
     public static double LATCH_SCORE_1 = 0.415;
     public static double LATCH_SCORE_2 = 0.48;
 
     public static double OUTTAKE_PIVOT_INIT = 0.195;
     public static double OUTTAKE_PIVOT_SLIDING = 0.23;
-    public static double OUTTAKE_PIVOT_DUMP = 0.36;
+    public static double OUTTAKE_PIVOT_DUMP_LOW = 0.36;
+    public static double OUTTAKE_PIVOT_DUMP_MID = 0.38;
 
-    public static double OUTTAKE_PIVOT_DUMP_HIGH = 0.33;
+    public static double OUTTAKE_PIVOT_DUMP_HIGH = 0.41;
 
     public static double SLIDE_PIVOT_INIT = 0.438;
     public static double SLIDE_PIVOT_SLIDING = 0.52;
@@ -41,7 +44,7 @@ public class Outtake {
     public static double SLIDE_PIVOT_HIGH = 0.05;
 
     public static double OUTTAKE_WIRE_DOWN = 0.81;
-    public static double OUTTAKE_WIRE_MIDDLE = 0.45;
+    public static double OUTTAKE_WIRE_MIDDLE = 0.35;
     public static double OUTTAKE_WIRE_HIGH = 0.27;
 
     final MotorWithPID slide;
@@ -55,9 +58,12 @@ public class Outtake {
     final AnalogInput slidePivotVoltage;
     final AnalogInput outtakePivotVoltage;
 
+    public boolean isAuto = true;
+
     public Outtake(HardwareMap hardwareMap) {
         if (Memory.outtakeSlide != null) { // Preserve motor zero position
             this.slide = Memory.outtakeSlide;
+            isAuto = false;
         } else {
             this.slide = new MotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtake"), outtakePID);
             Memory.outtakeSlide = this.slide;
@@ -134,6 +140,11 @@ public class Outtake {
     public Action extendOuttakeMidBlocking() {
         return this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_MID);
     }
+    public Action moveSliderBlocking(double increment) {
+        int multiplier = increment>0?1:-1;
+        OUTTAKE_TELEOP = this.slide.getCurrentPosition() + OUTTAKE_SLIDE_INCREMENT * multiplier;
+        return this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_MID);
+    }
 
     public Action extendOuttakeTeleopBlocking() {
         return this.slide.setTargetPositionActionBlocking(OUTTAKE_TELEOP);
@@ -145,7 +156,9 @@ public class Outtake {
         return new SequentialAction(
                 prepareToSlide(),
                 this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_INIT),
-                prepareToTransfer()
+                new SleepAction(1.0),
+                prepareToTransfer(),
+                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_DOWN)
         );
     }
 
@@ -175,21 +188,24 @@ public class Outtake {
     public Action extendOuttakeLow() {
         return new SequentialAction(
                 prepareToSlide(),
-                this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_LOW)
+                this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_LOW),
+                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_MIDDLE)
         );
     }
 
     public Action extendOuttakeMid() {
         return new SequentialAction(
                 prepareToSlide(),
-                this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_MID)
+                this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_MID),
+                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_MIDDLE)
         );
     }
 
     public Action extendOuttakeHigh() {
         return new SequentialAction(
                 prepareToSlide(),
-                this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_HIGH)
+                this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_HIGH),
+                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_HIGH)
         );
     }
 
@@ -198,7 +214,7 @@ public class Outtake {
                 new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED),
                 new ActionUtil.ServoPositionAction(outtakePivot, OUTTAKE_PIVOT_SLIDING),
                 new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_SLIDING),
-                new SleepAction(0.2)
+                new SleepAction(0.3)
         );
     }
 
@@ -211,9 +227,15 @@ public class Outtake {
     }
 
     public Action prepareToScore() {
+        double outtakeDumpPosition = OUTTAKE_PIVOT_DUMP_LOW;
+        if(this.slide.getTargetPosition() > OUTTAKE_SLIDE_LOW + 100 && this.slide.getTargetPosition() < OUTTAKE_SLIDE_HIGH - 100) {
+            outtakeDumpPosition = OUTTAKE_PIVOT_DUMP_MID;
+        } else if (this.slide.getTargetPosition() > OUTTAKE_SLIDE_MID + 100) {
+            outtakeDumpPosition = OUTTAKE_PIVOT_DUMP_HIGH;
+        }
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED),
-                new ActionUtil.ServoPositionAction(outtakePivot, OUTTAKE_PIVOT_DUMP),
+                new ActionUtil.ServoPositionAction(outtakePivot, outtakeDumpPosition),
                 new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_DUMP),
                 new SleepAction(0.2)
         );

@@ -265,7 +265,7 @@ public class ServoMotorTest extends LinearOpMode {
             // scoring 1
             else if(outtakeMode == 4) {
                 slidePivot.setPosition(Outtake.SLIDE_PIVOT_DUMP);
-                outtakePivot.setPosition(Outtake.OUTTAKE_PIVOT_DUMP);
+                outtakePivot.setPosition(Outtake.OUTTAKE_PIVOT_DUMP_MID);
                 Thread.sleep(250);
                 outtakeLatch.setPosition(Outtake.LATCH_SCORE_1);
 
@@ -281,7 +281,7 @@ public class ServoMotorTest extends LinearOpMode {
             // scoring 2
             else if(outtakeMode == 5 ) {
                 slidePivot.setPosition(Outtake.SLIDE_PIVOT_DUMP);
-                outtakePivot.setPosition(Outtake.OUTTAKE_PIVOT_DUMP);
+                outtakePivot.setPosition(Outtake.OUTTAKE_PIVOT_DUMP_MID);
                 Thread.sleep(250);
                 outtakeLatch.setPosition(Outtake.LATCH_SCORE_2);
 

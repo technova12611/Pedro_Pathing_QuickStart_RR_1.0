@@ -102,6 +102,9 @@ public class MotorWithPID {
                     return true;
                 }
             }
+            packet.put(motor.getDeviceName() + " target:", getTargetPosition());
+            packet.put(motor.getDeviceName() + " current:", getCurrentPosition());
+
             if (blocking) {
                 Log.d("BLOCKING", isBusy() ? "true" : "false");
                 return isBusy();

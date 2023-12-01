@@ -5,11 +5,9 @@ import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
-import org.firstinspires.ftc.teamcode.utils.software.AutoConstants;
 
 @Config
 @Autonomous(name = "Blue Left Auto", group = "Auto", preselectTeleOp = "Manual Drive")

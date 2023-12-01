@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmode.test;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -19,7 +20,7 @@ import java.util.List;
  * This is a test program for tuning any servo's positions.
  */
 @Config
-//@Disabled
+@Disabled
 @TeleOp(group = "Test")
 public class ServoTest extends LinearOpMode {
     public static String NAME = "servo";

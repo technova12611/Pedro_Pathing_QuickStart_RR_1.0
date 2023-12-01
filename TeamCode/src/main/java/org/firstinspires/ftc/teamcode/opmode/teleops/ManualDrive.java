@@ -4,8 +4,8 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
-import com.acmerobotics.roadrunner.Twist2d;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -59,8 +59,11 @@ public class ManualDrive extends LinearOpMode {
             smartGameTimer = new SmartGameTimer(true);
         } else { // No auto memory, pull in slides
             smartGameTimer = new SmartGameTimer(false);
+            outtake.isAuto = false;
             outtake.prepTeleop();
         }
+
+        intake.initialize(false);
 
         // Ready!
         telemetry.addLine("Ready!");
@@ -119,51 +122,49 @@ public class ManualDrive extends LinearOpMode {
     }
 
     boolean isSlideOut = false;
+    boolean isStackIntakeOn = false;
     private void subsystemControls() {
         // Intake controls
         if (g1.aOnce()) {
             if (intake.intakeState == Intake.IntakeState.ON) {
-                sched.queueAction(intake.intakeOff());
+                Actions.runBlocking(intake.intakeOff());
             } else {
-                sched.queueAction(intake.intakeOn());
+                Actions.runBlocking(intake.intakeOn());
             }
         }
         if (g1.b()) {
             if (isSlideOut) {
                 isSlideOut = false;
-                sched.queueAction(outtake.retractOuttake());
+                Actions.runBlocking(outtake.retractOuttake());
             }
-            if (intake.intakeState == Intake.IntakeState.ON) {
-                sched.queueAction(outtake.latchClosed());
-            }
-            sched.queueAction(intake.intakeReverse());
+            Actions.runBlocking(intake.intakeReverse());
         }
         if (!g1.b() && intake.intakeState == Intake.IntakeState.REVERSING) {
-            sched.queueAction(intake.intakeOff());
+            Actions.runBlocking(intake.intakeOff());
         }
 
         // Outtake controls
         if(g1.yLong()) {
-            sched.queueAction(outtake.latchScore2());
+            Actions.runBlocking(outtake.latchScore2());
         }
         else if (g1.yOnce()) {
             if (isSlideOut) {
                 if(outtake.latchState == Outtake.OuttakeLatchState.LATCH_1) {
-                    sched.queueAction(new SequentialAction(
+                    Actions.runBlocking(new SequentialAction(
                             outtake.latchScore2(),
                             new SleepAction(0.5)
                     ));
                 }
                 else {
-                    sched.queueAction(new SequentialAction(
+                    Actions.runBlocking(new SequentialAction(
                             outtake.latchScore1(),
                             new SleepAction(0.5)
                     ));
                 }
             } else {
                 isSlideOut = true;
-                sched.queueAction(intake.intakeOff());
-                sched.queueAction(new SequentialAction(
+                Actions.runBlocking(new SequentialAction(
+                        intake.intakeOff(),
                         outtake.prepareToSlide(),
                         outtake.extendOuttakeMid(),
                         new SleepAction(0.5),
@@ -171,41 +172,59 @@ public class ManualDrive extends LinearOpMode {
             }
         }
 
-        if (Math.abs(g1.right_stick_y) > 0.01  && isSlideOut) {
-            outtake.slidePIDEnabled = false;
-            outtake.setSlidePower(-g1.right_stick_y);
-        } else if (!outtake.slidePIDEnabled) {
-            outtake.slidePIDEnabled = true;
-            outtake.lockPosition();
+        if (Math.abs(g1.right_stick_y) > 0.25  && isSlideOut) {
+            Actions.runBlocking(outtake.moveSliderBlocking(-g1.right_stick_y));
         }
 
-        // Other subsystems
+        // Hang arms up/down
         if (g1.dpadUpOnce()) {
-            sched.queueAction(hang.armsUp());
+            Actions.runBlocking(hang.armsUp());
         }
         if (g1.dpadDownOnce()) {
-            sched.queueAction(hang.armsDown());
+            Actions.runBlocking(hang.armsDown());
         }
 
+        // move left and right by one slot
         if (g1.dpadLeftOnce()) {
-            sched.queueAction(drive.actionBuilder(drive.pose)
+            Actions.runBlocking(drive.actionBuilder(drive.pose)
                     .strafeTo(new Vector2d(drive.pose.position.x, drive.pose.position.y + STRAFE_DISTANCE))
                     .build());
         }
 
         if (g1.dpadRightOnce()) {
-            sched.queueAction(drive.actionBuilder(drive.pose)
+            Actions.runBlocking(drive.actionBuilder(drive.pose)
                     .strafeTo(new Vector2d(drive.pose.position.x, drive.pose.position.y - STRAFE_DISTANCE))
                     .build());
         }
 
-        if (g1.xOnce()) {
-            sched.queueAction( new SequentialAction(
+        // drone launch
+        if (g1.backOnce()) {
+            Actions.runBlocking( new SequentialAction(
                     intake.stackIntakeLinkageDown(),
                     new SleepAction(0.25),
                     drone.scoreDrone(),
                     new SleepAction(0.25),
                     intake.stackIntakeLinkageUp()));
+        }
+
+        // stack intake
+        if(g1.start() && g1.xOnce()) {
+            if(!isStackIntakeOn) {
+                isStackIntakeOn = true;
+                Actions.runBlocking(intake.intakeStackedPixels());
+            }
+        }
+        else if(g1.xOnce()) {
+            isStackIntakeOn = false;
+            if(intake.stackIntakeState == Intake.StackIntakeState.DOWN) {
+                Actions.runBlocking(new SequentialAction(
+                        intake.prepareTeleOpsIntake(),
+                        intake.intakeOff()));
+            } else {
+                Actions.runBlocking(
+                        new SequentialAction(intake.prepareStackIntake(),
+                        intake.intakeOn()));
+            }
         }
     }
 }
