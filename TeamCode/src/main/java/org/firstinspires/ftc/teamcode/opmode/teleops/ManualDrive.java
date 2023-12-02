@@ -69,6 +69,7 @@ public class ManualDrive extends LinearOpMode {
         // Init opmodes
         outtake.initialize();
         drone.initialize();
+        hang.initialize();
 
         // Ready!
         telemetry.addLine("Manual Drive is Ready!");

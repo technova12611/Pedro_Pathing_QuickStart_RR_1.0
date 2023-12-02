@@ -56,12 +56,15 @@ public abstract class AutoBase extends LinearOpMode {
         this.outtake = new Outtake(hardwareMap);
 //        this.vision = new Vision(hardwareMap);
         this.drone = new Drone(hardwareMap);
+        this.hang = new Hang(hardwareMap);
+
         this.sched = new AutoActionScheduler(this::update);
 
 
         outtake.initialize();
         intake.initialize(true);
         drone.initialize();
+        hang.initialize();
 
         Globals.COLOR = getAlliance();
 
