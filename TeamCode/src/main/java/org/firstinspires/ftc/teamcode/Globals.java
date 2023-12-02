@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.pipeline.Side;
 @Config
 public class Globals {
 
-    public static AlliancePosition COLOR = AlliancePosition.BLUE;
+    public static AlliancePosition COLOR = AlliancePosition.RED;
     /**
      * Match constants.
      */

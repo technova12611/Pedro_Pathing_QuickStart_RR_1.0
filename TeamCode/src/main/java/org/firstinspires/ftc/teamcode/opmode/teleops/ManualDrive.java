@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.opmode.teleops;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
@@ -64,10 +66,14 @@ public class ManualDrive extends LinearOpMode {
         }
 
         intake.initialize(false);
+        // Init opmodes
+        outtake.initialize();
+        drone.initialize();
 
         // Ready!
-        telemetry.addLine("Ready!");
+        telemetry.addLine("Manual Drive is Ready!");
         telemetry.update();
+
         waitForStart();
 
         // Opmode start
@@ -80,10 +86,6 @@ public class ManualDrive extends LinearOpMode {
             if (!smartGameTimer.isNominal()) {
                 outtake.finishPrepTeleop();
             }
-
-            // Init opmodes
-            outtake.initialize();
-            drone.initialize();
         }
 
         // Main loop
@@ -95,11 +97,15 @@ public class ManualDrive extends LinearOpMode {
             subsystemControls();
 
             drive.updatePoseEstimate();
+
             sched.update();
             outtake.update();
             intake.update();
 
-            telemetry.addData("Time left", smartGameTimer.formattedString() + " (" + smartGameTimer.status() + ")");
+            telemetry.addData("Time left: ", smartGameTimer.formattedString() + " (" + smartGameTimer.status() + ")");
+            telemetry.addLine(intake.getStackServoPositions());
+            telemetry.addLine(outtake.getServoPositions());
+
             telemetry.update();
         }
 
@@ -111,13 +117,12 @@ public class ManualDrive extends LinearOpMode {
         double speed = (1-Math.abs(g1.right_stick_x)) * (DRIVE_SPEED - SLOW_DRIVE_SPEED) + SLOW_DRIVE_SPEED;
         double input_x = Math.pow(-g1.left_stick_y, 3) * speed;
         double input_y = Math.pow(-g1.left_stick_x, 3) * speed;
-        Vector2d input = new Vector2d(input_x, input_y);
-        input = drive.pose.heading.times(input);
 
         double input_turn = Math.pow(g1.left_trigger - g1.right_trigger, 3) * TURN_SPEED;
         if (g1.leftBumper()) input_turn += SLOW_TURN_SPEED;
         if (g1.rightBumper()) input_turn -= SLOW_TURN_SPEED;
 
+        Vector2d input = new Vector2d(input_x, input_y);
         drive.setDrivePowers(new PoseVelocity2d(input, input_turn));
     }
 
@@ -127,9 +132,12 @@ public class ManualDrive extends LinearOpMode {
         // Intake controls
         if (g1.aOnce()) {
             if (intake.intakeState == Intake.IntakeState.ON) {
-                Actions.runBlocking(intake.intakeOff());
+                sched.queueAction(intake.intakeOff());
             } else {
-                Actions.runBlocking(intake.intakeOn());
+                sched.queueAction(new SequentialAction(
+                        outtake.prepareToTransfer(),
+              //          new SleepAction(0.2),
+                        intake.intakeOn()));
             }
         }
         if (g1.b()) {
@@ -140,60 +148,55 @@ public class ManualDrive extends LinearOpMode {
             Actions.runBlocking(intake.intakeReverse());
         }
         if (!g1.b() && intake.intakeState == Intake.IntakeState.REVERSING) {
-            Actions.runBlocking(intake.intakeOff());
+            sched.queueAction(intake.intakeOff());
         }
 
         // Outtake controls
         if(g1.yLong()) {
-            Actions.runBlocking(outtake.latchScore2());
+            sched.queueAction(outtake.latchScore2());
         }
         else if (g1.yOnce()) {
             if (isSlideOut) {
                 if(outtake.latchState == Outtake.OuttakeLatchState.LATCH_1) {
-                    Actions.runBlocking(new SequentialAction(
-                            outtake.latchScore2(),
-                            new SleepAction(0.5)
-                    ));
+                    sched.queueAction(outtake.latchScore2());
                 }
                 else {
-                    Actions.runBlocking(new SequentialAction(
-                            outtake.latchScore1(),
-                            new SleepAction(0.5)
-                    ));
+                    sched.queueAction(outtake.latchScore1());
                 }
             } else {
                 isSlideOut = true;
                 Actions.runBlocking(new SequentialAction(
                         intake.intakeOff(),
-                        outtake.prepareToSlide(),
-                        outtake.extendOuttakeMid(),
-                        new SleepAction(0.5),
-                        outtake.prepareToScore()));
+                        outtake.prepareToSlide()));
+
+                sched.queueAction(outtake.extendOuttakeMid());
+                sched.queueAction(new SleepAction(0.5));
+                sched.queueAction(outtake.prepareToScore());
             }
         }
 
         if (Math.abs(g1.right_stick_y) > 0.25  && isSlideOut) {
-            Actions.runBlocking(outtake.moveSliderBlocking(-g1.right_stick_y));
+            sched.queueAction(outtake.moveSliderBlocking(-g1.right_stick_y));
         }
 
         // Hang arms up/down
         if (g1.dpadUpOnce()) {
-            Actions.runBlocking(hang.armsUp());
+            sched.queueAction(hang.armsUp());
         }
         if (g1.dpadDownOnce()) {
-            Actions.runBlocking(hang.armsDown());
+            sched.queueAction(hang.armsDown());
         }
 
         // move left and right by one slot
         if (g1.dpadLeftOnce()) {
             Actions.runBlocking(drive.actionBuilder(drive.pose)
-                    .strafeTo(new Vector2d(drive.pose.position.x, drive.pose.position.y + STRAFE_DISTANCE))
+                    .strafeTo(new Vector2d(drive.pose.position.x, drive.pose.position.y - STRAFE_DISTANCE))
                     .build());
         }
 
         if (g1.dpadRightOnce()) {
             Actions.runBlocking(drive.actionBuilder(drive.pose)
-                    .strafeTo(new Vector2d(drive.pose.position.x, drive.pose.position.y - STRAFE_DISTANCE))
+                    .strafeTo(new Vector2d(drive.pose.position.x, drive.pose.position.y + STRAFE_DISTANCE))
                     .build());
         }
 
@@ -211,21 +214,36 @@ public class ManualDrive extends LinearOpMode {
         if(g1.start() && g1.xOnce()) {
             if(!isStackIntakeOn) {
                 isStackIntakeOn = true;
-                Actions.runBlocking(intake.intakeStackedPixels());
+                sched.queueAction(intake.intakeStackedPixels());
             }
         }
         else if(g1.xOnce()) {
             isStackIntakeOn = false;
             if(intake.stackIntakeState == Intake.StackIntakeState.DOWN) {
-                Actions.runBlocking(new SequentialAction(
+                sched.queueAction(new SequentialAction(
                         intake.prepareTeleOpsIntake(),
                         intake.intakeOff()));
             } else {
-                Actions.runBlocking(
-                        new SequentialAction(intake.prepareStackIntake(),
-                        intake.intakeOn()));
+                sched.queueAction(
+                        new SequentialAction(
+                                outtake.prepareToTransfer(),
+                                intake.prepareStackIntake(),
+                                intake.intakeOn()));
             }
         }
+    }
+    private void field_centric_move() {
+        double speed = (1-Math.abs(g1.right_stick_x)) * (DRIVE_SPEED - SLOW_DRIVE_SPEED) + SLOW_DRIVE_SPEED;
+        double input_x = Math.pow(-g1.left_stick_y, 3) * speed;
+        double input_y = Math.pow(-g1.left_stick_x, 3) * speed;
+        Vector2d input = new Vector2d(input_x, input_y);
+        input = drive.pose.heading.times(input);
+
+        double input_turn = Math.pow(g1.left_trigger - g1.right_trigger, 3) * TURN_SPEED;
+        if (g1.leftBumper()) input_turn += SLOW_TURN_SPEED;
+        if (g1.rightBumper()) input_turn -= SLOW_TURN_SPEED;
+
+        drive.setDrivePowers(new PoseVelocity2d(input, input_turn));
     }
 }
 

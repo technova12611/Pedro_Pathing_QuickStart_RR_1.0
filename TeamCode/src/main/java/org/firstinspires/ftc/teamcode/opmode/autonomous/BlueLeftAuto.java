@@ -13,14 +13,15 @@ import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 @Autonomous(name = "Blue Left Auto", group = "Auto", preselectTeleOp = "Manual Drive")
 public class BlueLeftAuto extends AutoBase {
    public static Pose2d[] spike = {
+           new Pose2d(34.5, 26.5, Math.toRadians(-180)),
            new Pose2d(28.5, 24.5, Math.toRadians(-180)),
-           new Pose2d(12.5, 26.5, Math.toRadians(-180)),
-           new Pose2d(34.5, 26.5, Math.toRadians(-180))
+           new Pose2d(12.5, 26.5, Math.toRadians(-180))
    };
+
    public static Pose2d[] backdrop =  {
-           new Pose2d(48, 28, Math.toRadians(-180)),
-           new Pose2d(48, 36, Math.toRadians(-180)),
-           new Pose2d(48, 45, Math.toRadians(-180))
+           new Pose2d(48.5, 30, Math.toRadians(-180)),
+           new Pose2d(48.5, 36, Math.toRadians(-180)),
+           new Pose2d(48.5, 42.5, Math.toRadians(-180))
    };
    // 0 = left, 1 = middle, 2 = right
    public static Pose2d start = new Pose2d(16.0, 62.0, Math.toRadians(-90));
@@ -46,12 +47,21 @@ public class BlueLeftAuto extends AutoBase {
       sched.addAction(
               new SequentialAction(
                       // to score yellow pixel on the backdrop
-                      drive.actionBuilder(drive.pose)
-                              .setTangent(0)
-                              .splineTo(backdrop[SPIKE].position, -Math.PI/2)
-                              .build(),
-                      outtake.extendOuttakeLow(),
+                      new ParallelAction(
+                              drive.actionBuilder(drive.pose)
+                                      .setTangent(0)
+                                      .splineTo(backdrop[SPIKE].position, -Math.PI/2)
+                                      .build(),
+
+                              outtake.prepareToSlide(),
+                              new SequentialAction(
+                                      new SleepAction(1.5),
+                                      outtake.extendOuttakeLow()
+                              )
+                      ),
+
                       outtake.prepareToScore(),
+                      new SleepAction(0.25),
                       outtake.latchScore1(),
                       new SleepAction(0.75),
                       new ParallelAction(
@@ -68,13 +78,15 @@ public class BlueLeftAuto extends AutoBase {
                       new SleepAction(0.5),
 
                       // to park and prepare for teleops
-                      intake.prepareTeleOpsIntake(),
-                      outtake.prepareToTransfer(),
+                      new ParallelAction(
+                         intake.prepareTeleOpsIntake(),
+                         outtake.prepareToTransfer(),
 
-                      drive.actionBuilder(spike[SPIKE])
-                              .setReversed(true)
-                              .strafeTo(parking.position)
-                              .build()
+                         drive.actionBuilder(spike[SPIKE])
+                                 .setReversed(true)
+                                 .strafeTo(parking.position)
+                                 .build()
+                      )
               )
       );
    }

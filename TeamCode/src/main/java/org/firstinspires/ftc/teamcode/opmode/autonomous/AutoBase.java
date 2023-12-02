@@ -58,10 +58,12 @@ public abstract class AutoBase extends LinearOpMode {
         this.drone = new Drone(hardwareMap);
         this.sched = new AutoActionScheduler(this::update);
 
-        outtake.resetMotors();
 
         outtake.initialize();
+        intake.initialize(true);
         drone.initialize();
+
+        Globals.COLOR = getAlliance();
 
         propPipeline = new PropPipeline();
         portal = new VisionPortal.Builder()
@@ -81,6 +83,13 @@ public abstract class AutoBase extends LinearOpMode {
             SPIKE = side.ordinal();
             printDescription();
 
+            if(getAlliance() == AlliancePosition.RED) {
+                telemetry.addData("Mean Right color:", "%3.2f", propPipeline.meanSideColor);
+                telemetry.addData("Mean Left color:", "%3.2f", propPipeline.meanCenterColor);
+            } else {
+                telemetry.addData("Mean Left color:", "%3.2f", propPipeline.meanSideColor);
+                telemetry.addData("Mean Center color:", "%3.2f",propPipeline.meanCenterColor);
+            }
             telemetry.addData("Spike Position", side.toString());
             telemetry.update();
             idle();

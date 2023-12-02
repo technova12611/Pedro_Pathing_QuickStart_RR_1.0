@@ -1,10 +1,11 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.SequentialAction;
-import com.acmerobotics.roadrunner.SleepAction;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -20,25 +21,27 @@ public class Outtake {
     public static PIDCoefficients outtakePID = new PIDCoefficients(0.01, 0, 0.0004);
     public static int OUTTAKE_TELEOP = 1200;
 
-    public static int OUTTAKE_SLIDE_HIGH = 1800;
+    public static int OUTTAKE_SLIDE_VERY_HIGH = 1800;
+
+    public static int OUTTAKE_SLIDE_HIGH = 1650;
     public static int OUTTAKE_SLIDE_MID = 1150;
     public static int OUTTAKE_SLIDE_LOW = 750;
     public static int OUTTAKE_SLIDE_INIT = 0;
 
-    public static int OUTTAKE_SLIDE_INCREMENT= 200;
+    public static int OUTTAKE_SLIDE_INCREMENT= 360;
 
     public static double LATCH_CLOSED = 0.55;
     public static double LATCH_SCORE_1 = 0.415;
     public static double LATCH_SCORE_2 = 0.48;
 
-    public static double OUTTAKE_PIVOT_INIT = 0.195;
+    public static double OUTTAKE_PIVOT_INIT = 0.18;
     public static double OUTTAKE_PIVOT_SLIDING = 0.23;
-    public static double OUTTAKE_PIVOT_DUMP_LOW = 0.36;
-    public static double OUTTAKE_PIVOT_DUMP_MID = 0.38;
+    public static double OUTTAKE_PIVOT_DUMP_LOW = 0.37;
+    public static double OUTTAKE_PIVOT_DUMP_MID = 0.42;
 
-    public static double OUTTAKE_PIVOT_DUMP_HIGH = 0.41;
+    public static double OUTTAKE_PIVOT_DUMP_HIGH = 0.48;
 
-    public static double SLIDE_PIVOT_INIT = 0.438;
+    public static double SLIDE_PIVOT_INIT = 0.45;
     public static double SLIDE_PIVOT_SLIDING = 0.52;
     public static double SLIDE_PIVOT_DUMP = 0.25;
     public static double SLIDE_PIVOT_HIGH = 0.05;
@@ -119,52 +122,34 @@ public class Outtake {
         this.outtakeWireServo.setPosition(OUTTAKE_WIRE_DOWN);
     }
 
-    public void resetMotors() {
-        this.slide.setCurrentPosition(0);
-    }
-
     public void update() {
         if (slidePIDEnabled) {
             slide.update();
         }
     }
 
-    public void setSlidePower(double power) {
-        slide.getMotor().setPower(power);
-    }
-    public void lockPosition() {
-        OUTTAKE_TELEOP = this.slide.getCurrentPosition();
-        this.slide.setTargetPosition(OUTTAKE_TELEOP);
-    }
-
-    public Action extendOuttakeMidBlocking() {
-        return this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_MID);
-    }
     public Action moveSliderBlocking(double increment) {
-        int multiplier = increment>0?1:-1;
-        OUTTAKE_TELEOP = this.slide.getCurrentPosition() + OUTTAKE_SLIDE_INCREMENT * multiplier;
-        return this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_MID);
+        OUTTAKE_TELEOP = this.slide.getCurrentPosition();
+        if(!this.slide.isBusy()) {
+            int multiplier = increment > 0 ? 1 : -1;
+            OUTTAKE_TELEOP = this.slide.getCurrentPosition() + OUTTAKE_SLIDE_INCREMENT * multiplier;
+            Log.d("Outtake Slide", "New position:" + OUTTAKE_TELEOP + " | Current position: " + this.slide.getCurrentPosition());
+            return this.slide.setTargetPositionAction(OUTTAKE_TELEOP);
+        }
+        return new OuttakeLatchStateAction(OuttakeLatchState.CLOSED);
     }
 
-    public Action extendOuttakeTeleopBlocking() {
-        return this.slide.setTargetPositionActionBlocking(OUTTAKE_TELEOP);
-    }
-    public Action extendOuttakeLowBlocking() {
-        return this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_LOW);
-    }
     public Action retractOuttake() {
         return new SequentialAction(
                 prepareToSlide(),
-                this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_INIT),
-                new SleepAction(1.0),
-                prepareToTransfer(),
-                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_DOWN)
+                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_DOWN, "outtakeWireServo"),
+                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_INIT)
         );
     }
 
     public Action latchScore1() {
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_1),
+                new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_1, "latch"),
                 new Intake.UpdatePixelCountAction(-1),
                 new OuttakeLatchStateAction(OuttakeLatchState.LATCH_1)
         );
@@ -172,7 +157,7 @@ public class Outtake {
 
     public Action latchScore2() {
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_2),
+                new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_2, "latch"),
                 new Intake.UpdatePixelCountAction(-2),
                 new OuttakeLatchStateAction(OuttakeLatchState.LATCH_2)
         );
@@ -180,65 +165,64 @@ public class Outtake {
 
     public Action latchClosed() {
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED),
+                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
                 new OuttakeLatchStateAction(OuttakeLatchState.CLOSED)
         );
     }
 
     public Action extendOuttakeLow() {
         return new SequentialAction(
-                prepareToSlide(),
-                this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_LOW),
-                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_MIDDLE)
+                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_MIDDLE, "outtakeWireServo"),
+                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_LOW)
         );
     }
 
     public Action extendOuttakeMid() {
         return new SequentialAction(
-                prepareToSlide(),
-                this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_MID),
-                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_MIDDLE)
-        );
-    }
-
-    public Action extendOuttakeHigh() {
-        return new SequentialAction(
-                prepareToSlide(),
-                this.slide.setTargetPositionActionBlocking(OUTTAKE_SLIDE_HIGH),
-                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_HIGH)
+                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_MIDDLE, "outtakeWireServo"),
+                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_MID)
         );
     }
 
     public Action prepareToSlide() {
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED),
-                new ActionUtil.ServoPositionAction(outtakePivot, OUTTAKE_PIVOT_SLIDING),
-                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_SLIDING),
-                new SleepAction(0.3)
+                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
+                new ActionUtil.ServoPositionAction(outtakePivot, OUTTAKE_PIVOT_SLIDING, "outtakePivot"),
+                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_SLIDING, "slidePivot")
         );
     }
 
     public Action prepareToTransfer() {
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED),
-                new ActionUtil.ServoPositionAction(outtakePivot, OUTTAKE_PIVOT_INIT),
-                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_INIT)
+                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
+                new ActionUtil.ServoPositionAction(outtakePivot, OUTTAKE_PIVOT_INIT, "outtakePivot"),
+                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_INIT, "slidePivot")
         );
     }
 
     public Action prepareToScore() {
         double outtakeDumpPosition = OUTTAKE_PIVOT_DUMP_LOW;
-        if(this.slide.getTargetPosition() > OUTTAKE_SLIDE_LOW + 100 && this.slide.getTargetPosition() < OUTTAKE_SLIDE_HIGH - 100) {
+        if(this.slide.getCurrentPosition() > OUTTAKE_SLIDE_LOW + 100 && this.slide.getCurrentPosition() < OUTTAKE_SLIDE_HIGH - 100) {
             outtakeDumpPosition = OUTTAKE_PIVOT_DUMP_MID;
-        } else if (this.slide.getTargetPosition() > OUTTAKE_SLIDE_MID + 100) {
+        } else if (this.slide.getCurrentPosition() > OUTTAKE_SLIDE_MID + 100) {
             outtakeDumpPosition = OUTTAKE_PIVOT_DUMP_HIGH;
         }
+
+        Log.d("Outtake_Servo", "Outtake Dump Servo Position: " + String.format("%.2f", outtakeDumpPosition));
+        Log.d("Outtake_Slide", "Slide Target Position: " + this.slide.getTargetPosition());
+        Log.d("Outtake_Slide", "Slide Current position: " + this.slide.getCurrentPosition());
+
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED),
-                new ActionUtil.ServoPositionAction(outtakePivot, outtakeDumpPosition),
-                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_DUMP),
-                new SleepAction(0.2)
+                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
+                new ActionUtil.ServoPositionAction(outtakePivot, outtakeDumpPosition, "outtakePivot"),
+                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_DUMP, "slidePivot")
         );
+    }
+
+    public String getServoPositions() {
+        return "SlidePivot: " + String.format("%.2f", this.slidePivot.getPosition()) +
+                "OuttakePivot: " + String.format("%.2f", this.outtakePivot.getPosition()) +
+                "Latch: " + String.format("%.2f", this.latch.getPosition());
     }
 
 }

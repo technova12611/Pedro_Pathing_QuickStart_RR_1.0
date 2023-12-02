@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.utils.software;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -33,7 +35,7 @@ public class AutoActionScheduler {
 
       long startTime = System.currentTimeMillis();
 
-      RobotLog.d("Action scheduler started ... | " + startTime);
+      Log.d("AutoActionScheduler:","Action scheduler started ... | " + startTime);
       while (actions.peek() != null && !Thread.currentThread().isInterrupted()) {
          TelemetryPacket packet = new TelemetryPacket();
          packet.fieldOverlay().getOperations().addAll(canvas.getOperations());
@@ -48,13 +50,13 @@ public class AutoActionScheduler {
 
          if (!running) {
             actions.remove();
-            RobotLog.d("Action " + (++actionOrder) + " finished at " + (System.currentTimeMillis()-startTime + "(ms)"));
+            Log.d("AutoActionScheduler:", "Action " + (++actionOrder) + " finished at " + (System.currentTimeMillis()-startTime + "(ms)"));
          }
       }
 
       autoRunElapsedTime = System.currentTimeMillis() - startTime;
 
-      RobotLog.d("Action scheduler completed at " + (System.currentTimeMillis()-startTime) + " (ms)");
+      Log.d("AutoActionScheduler:","Action scheduler completed at " + (System.currentTimeMillis()-startTime) + " (ms)");
    }
 
    public boolean isEmpty() {

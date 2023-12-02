@@ -140,9 +140,10 @@ public class ServoMotorTest extends LinearOpMode {
 
         imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-                RevHubOrientationOnRobot.UsbFacingDirection.UP));
+                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+                RevHubOrientationOnRobot.UsbFacingDirection.DOWN));
         imu.initialize(parameters);
+        imu.resetYaw();
 
         beamBreaker1 = hardwareMap.get(DigitalChannel.class, "beamBreaker1");
         beamBreaker2 = hardwareMap.get(DigitalChannel.class, "beamBreaker2");

@@ -37,8 +37,8 @@ public class PropPipeline implements VisionProcessor, CameraStreamSource {
     public static int blueCenterX = 1255;
     public static int blueCenterY = 0;
 
-    public static int redCenterX = 945;
-    public static int redCenterY = 0;
+    public static int redLeftX = 280;
+    public static int redLeftY = 100;
 
     public static int redRightX = 1600;
     public static int redRightY = 100;
@@ -47,7 +47,8 @@ public class PropPipeline implements VisionProcessor, CameraStreamSource {
     public static int height = 180;
 
     public static double blueThreshold = 1.75;
-    public static double redThreshold = 3.00;
+    public static double redThreshold = 1.5;
+
     public static double threshold = 0.0;
 
     public double sideColor = 0.0;
@@ -79,8 +80,8 @@ public class PropPipeline implements VisionProcessor, CameraStreamSource {
     @Override
     public void init(int width, int height, CameraCalibration calibration) {
         allianceColor = Globals.COLOR;
-        sideZoneColorList = new MovingArrayList(25);
-        centerZoneColorList = new MovingArrayList(25);
+        sideZoneColorList = new MovingArrayList(15);
+        centerZoneColorList = new MovingArrayList(15);
 
         startTime = System.currentTimeMillis();
     }
@@ -99,8 +100,8 @@ public class PropPipeline implements VisionProcessor, CameraStreamSource {
 
         sideZoneArea = new Rect(allianceColor == AlliancePosition.RED? redRightX : blueLeftX,
                 allianceColor == AlliancePosition.RED? redRightY : blueLeftY, width, height);
-        centerZoneArea = new Rect(Globals.COLOR == AlliancePosition.RED?redCenterX:blueCenterX,
-                allianceColor == AlliancePosition.RED?redCenterY:blueCenterY, width, height);
+        centerZoneArea = new Rect(Globals.COLOR == AlliancePosition.RED?redLeftX:blueCenterX,
+                allianceColor == AlliancePosition.RED?redLeftY:blueCenterY, width, height);
 
         Mat sideZone = finalMat.submat(sideZoneArea);
         Mat centerZone = finalMat.submat(centerZoneArea);
@@ -109,8 +110,9 @@ public class PropPipeline implements VisionProcessor, CameraStreamSource {
         center = Core.sumElems(centerZone);
 
         if(allianceColor == AlliancePosition.RED) {
-            sideColor = side.val[1] / 1000000.0;
-            centerColor = center.val[1] / 1000000.0;
+            sideColor = side.val[2] / 1000000.0;
+            centerColor = center.val[2] / 1000000.0;
+
         } else {
             sideColor = side.val[0] / 1000000.0;
             centerColor = center.val[0] / 1000000.0;
@@ -123,7 +125,7 @@ public class PropPipeline implements VisionProcessor, CameraStreamSource {
         centerZoneColorList.add(centerColor);
 
         arraySize = centerZoneColorList.getArrayList().size();
-        if(arraySize == 18) {
+        if(arraySize == 12) {
             elapsedTime = System.currentTimeMillis() - startTime;
         }
 
@@ -148,20 +150,20 @@ public class PropPipeline implements VisionProcessor, CameraStreamSource {
                 Imgproc.rectangle(frame, centerZoneArea, YELLOW, 3);
             }
         } else {
-            if (meanCenterColor < threshold) {
+            if (meanCenterColor < threshold ) {
                 // center zone has it
-                location = Side.CENTER;
+                location = Side.LEFT;
                 Imgproc.rectangle(frame, centerZoneArea, GREEN, 8);
                 Imgproc.rectangle(frame, sideZoneArea, YELLOW, 3);
             }
-            else if ( meanSideColor < threshold) {
+            else if ( meanSideColor < threshold ) {
                 // left zone has it
                 location = Side.RIGHT;
                 Imgproc.rectangle(frame, sideZoneArea, GREEN,8);
                 Imgproc.rectangle(frame, centerZoneArea, YELLOW, 3);
             } else {
                 // right zone has it
-                location = Side.LEFT;
+                location = Side.CENTER;
                 Imgproc.rectangle(frame, sideZoneArea, YELLOW, 3);
                 Imgproc.rectangle(frame, centerZoneArea, YELLOW, 3);
             }

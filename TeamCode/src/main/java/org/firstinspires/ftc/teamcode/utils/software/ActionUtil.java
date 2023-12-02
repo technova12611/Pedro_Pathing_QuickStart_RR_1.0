@@ -30,6 +30,13 @@ public class ActionUtil {
    public static class ServoPositionAction implements Action {
       double position;
       Servo servo;
+      String servoName = "unknown";
+
+      public ServoPositionAction(Servo servo, double position, String servoName) {
+         this.servo = servo;
+         this.position = position;
+         this.servoName = servoName;
+      }
 
       public ServoPositionAction(Servo servo, double position) {
          this.servo = servo;
@@ -39,9 +46,9 @@ public class ActionUtil {
       @Override
       public boolean run(TelemetryPacket packet) {
          servo.setPosition(position);
-         String message = "Servo name: " + servo.getDeviceName() + " set to position: " + position;
-         packet.addLine(message);
-         Log.d("ActionUtil:", message);
+         String message = "Servo " + this.servoName + " set to position: " + position;
+//         packet.addLine(message);
+         Log.d("ActionUtil.ServoAction", message);
          return false;
       }
    }

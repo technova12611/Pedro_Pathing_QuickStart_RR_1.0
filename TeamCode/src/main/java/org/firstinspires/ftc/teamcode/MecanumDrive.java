@@ -131,10 +131,15 @@ public final class MecanumDrive {
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         imu = hardwareMap.get(IMU.class, "imu");
+//        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
+//                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+//                RevHubOrientationOnRobot.UsbFacingDirection.UP));
+
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-                RevHubOrientationOnRobot.UsbFacingDirection.UP));
+        RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+        RevHubOrientationOnRobot.UsbFacingDirection.DOWN));
         imu.initialize(parameters);
+        imu.resetYaw();
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
