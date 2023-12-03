@@ -124,7 +124,7 @@ public class ManualDrive extends LinearOpMode {
 
     private void pixelDetection() {
         if(isPixelDetectionEnabled) {
-            if (prevPixelCount != Intake.pixelsCount && Intake.pixelsCount >= 2) {
+            if (prevPixelCount != Intake.pixelsCount && Intake.pixelsCount >= 2 && intakeReverseStartTime == null) {
                 intakeReverseStartTime = new Double(System.currentTimeMillis());
 
                 sched.queueAction(new SleepAction(0.5));
@@ -135,7 +135,7 @@ public class ManualDrive extends LinearOpMode {
 
             // intake reverse is on
             if (intakeReverseStartTime != null) {
-                if ((System.currentTimeMillis() - intakeReverseStartTime.doubleValue()) > 1500) {
+                if ((System.currentTimeMillis() - intakeReverseStartTime.doubleValue()) > 1800) {
                     sched.queueAction(intake.intakeOff());
                     intakeReverseStartTime = null;
 
@@ -143,14 +143,14 @@ public class ManualDrive extends LinearOpMode {
                 }
             }
 
-            if(Intake.pixelsCount == 1 && prevPixelCount == 0 && intake.stackIntakeState == Intake.StackIntakeState.UP) {
+            if(Intake.pixelsCount == 1 && prevPixelCount == 0 && intake.stackIntakeState == Intake.StackIntakeState.UP && intakeSlowdownStartTime == null) {
                 intakeSlowdownStartTime = new Double(System.currentTimeMillis());
                 //sched.queueAction(intake.intakeSlowdown());
                 Log.d("TeleOps_Pixel_detection", "Pixel changed from 0 to 1, short slowdown enabled.");
             }
 
             if(intakeSlowdownStartTime != null) {
-                if ((System.currentTimeMillis() - intakeSlowdownStartTime.doubleValue()) > 500) {
+                if ((System.currentTimeMillis() - intakeSlowdownStartTime.doubleValue()) > 300) {
                     //sched.queueAction(intake.intakeOn());
                     intakeSlowdownStartTime = null;
 
@@ -278,6 +278,10 @@ public class ManualDrive extends LinearOpMode {
                                 intake.prepareStackIntake(),
                                 intake.intakeOn()));
             }
+        }
+
+        if(g1.guideOnce()) {
+            sched.queueAction(outtake.reverseDump());
         }
     }
     private void field_centric_move() {

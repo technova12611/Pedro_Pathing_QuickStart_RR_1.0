@@ -38,7 +38,8 @@ public class Outtake {
     public static double LATCH_SCORE_1 = 0.415;
     public static double LATCH_SCORE_2 = 0.48;
 
-    public static double OUTTAKE_PIVOT_INIT = 0.17;
+    public static double OUTTAKE_PIVOT_REVERSE_DUMP = 0.08;
+    public static double OUTTAKE_PIVOT_INIT = 0.175;
     public static double OUTTAKE_PIVOT_SLIDING = 0.23;
     public static double OUTTAKE_PIVOT_DUMP_LOW = 0.37;
     public static double OUTTAKE_PIVOT_DUMP_MID = 0.40;
@@ -47,7 +48,7 @@ public class Outtake {
 
     public static double OUTTAKE_PIVOT_DUMP_VERY_HIGH = 0.62;
 
-    public static double SLIDE_PIVOT_INIT = 0.45;
+    public static double SLIDE_PIVOT_INIT = 0.438;
     public static double SLIDE_PIVOT_SLIDING = 0.52;
     public static double SLIDE_PIVOT_DUMP = 0.25;
     public static double SLIDE_PIVOT_DUMP_HIGH = 0.10;
@@ -190,6 +191,12 @@ public class Outtake {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
                 new OuttakeLatchStateAction(OuttakeLatchState.CLOSED)
+        );
+    }
+    public Action reverseDump() {
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(slidePivot, OUTTAKE_PIVOT_DUMP_VERY_HIGH, "outtakePivot"),
+            new ActionUtil.ServoPositionAction(outtakePivot, OUTTAKE_PIVOT_REVERSE_DUMP, "outtakePivot")
         );
     }
 
