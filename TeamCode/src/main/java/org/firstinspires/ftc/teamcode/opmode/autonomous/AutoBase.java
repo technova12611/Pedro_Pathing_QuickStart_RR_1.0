@@ -112,6 +112,7 @@ public abstract class AutoBase extends LinearOpMode {
 
         sched.run();
         Memory.LAST_POSE = drive.pose;
+        Globals.drivePose = drive.pose;
 
         Log.d("Auto", "Auto ended at " + getRuntime());
     }

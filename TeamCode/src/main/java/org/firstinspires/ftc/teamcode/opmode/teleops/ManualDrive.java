@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode.opmode.teleops;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.roadrunner.ParallelAction;
-import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
@@ -29,7 +29,7 @@ public class ManualDrive extends LinearOpMode {
     public static double SLOW_TURN_SPEED = 0.3;
     public static double SLOW_DRIVE_SPEED = 0.3;
 
-    public static double STRAFE_DISTANCE = 3.5;
+    public static double STRAFE_DISTANCE = 2.5;
 
     private SmartGameTimer smartGameTimer;
     private GamePadController g1, g2;
@@ -39,6 +39,13 @@ public class ManualDrive extends LinearOpMode {
     private Outtake outtake;
     private Hang hang;
     private Drone drone;
+
+    Double intakeReverseStartTime = null;
+
+    Double intakeSlowdownStartTime = null;
+    boolean isPixelDetectionEnabled = true;
+
+    int prevPixelCount = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -96,9 +103,9 @@ public class ManualDrive extends LinearOpMode {
 
             move();
             subsystemControls();
+            pixelDetection();
 
             drive.updatePoseEstimate();
-
             sched.update();
             outtake.update();
             intake.update();
@@ -106,12 +113,53 @@ public class ManualDrive extends LinearOpMode {
             telemetry.addData("Time left: ", smartGameTimer.formattedString() + " (" + smartGameTimer.status() + ")");
             telemetry.addLine(intake.getStackServoPositions());
             telemetry.addLine(outtake.getServoPositions());
-
+            telemetry.addLine("Current Pixel count: " + Intake.pixelsCount + " | Total count: " + Intake.totalPixelCount + " | Prev count: " + prevPixelCount);
+            telemetry.addLine("Intake state: " + intake.intakeState);
             telemetry.update();
         }
 
         // On termination
         Memory.LAST_POSE = drive.pose;
+    }
+
+    private void pixelDetection() {
+        if(isPixelDetectionEnabled) {
+            if (prevPixelCount != Intake.pixelsCount && Intake.pixelsCount >= 2) {
+                intakeReverseStartTime = new Double(System.currentTimeMillis());
+
+                sched.queueAction(new SleepAction(0.5));
+                sched.queueAction(intake.intakeReverse());
+
+                Log.d("TeleOps_Pixel_detection", "Pixel changed from 1 to 2, reverse enabled.");
+            }
+
+            // intake reverse is on
+            if (intakeReverseStartTime != null) {
+                if ((System.currentTimeMillis() - intakeReverseStartTime.doubleValue()) > 1500) {
+                    sched.queueAction(intake.intakeOff());
+                    intakeReverseStartTime = null;
+
+                    Log.d("TeleOps_Pixel_detection", "Intake reverse is completed.");
+                }
+            }
+
+            if(Intake.pixelsCount == 1 && prevPixelCount == 0 && intake.stackIntakeState == Intake.StackIntakeState.UP) {
+                intakeSlowdownStartTime = new Double(System.currentTimeMillis());
+                //sched.queueAction(intake.intakeSlowdown());
+                Log.d("TeleOps_Pixel_detection", "Pixel changed from 0 to 1, short slowdown enabled.");
+            }
+
+            if(intakeSlowdownStartTime != null) {
+                if ((System.currentTimeMillis() - intakeSlowdownStartTime.doubleValue()) > 500) {
+                    //sched.queueAction(intake.intakeOn());
+                    intakeSlowdownStartTime = null;
+
+                    Log.d("TeleOps_Pixel_detection", "intake slowing down is completed.");
+                }
+            }
+
+            prevPixelCount = Intake.pixelsCount;
+        }
     }
 
     private void move() {
@@ -131,14 +179,14 @@ public class ManualDrive extends LinearOpMode {
     boolean isStackIntakeOn = false;
     private void subsystemControls() {
         // Intake controls
-        if (g1.aOnce()) {
+        if (g1.xOnce()) {
             if (intake.intakeState == Intake.IntakeState.ON) {
                 sched.queueAction(intake.intakeOff());
             } else {
                 sched.queueAction(new SequentialAction(
+                        intake.intakeOn(),
                         outtake.prepareToTransfer(),
-              //          new SleepAction(0.2),
-                        intake.intakeOn()));
+                        new Intake.UpdatePixelCountAction(-2)));
             }
         }
         if (g1.b()) {
@@ -146,9 +194,9 @@ public class ManualDrive extends LinearOpMode {
                 isSlideOut = false;
                 Actions.runBlocking(outtake.retractOuttake());
             }
-            Actions.runBlocking(intake.intakeReverse());
+            sched.queueAction(intake.intakeReverse());
         }
-        if (!g1.b() && intake.intakeState == Intake.IntakeState.REVERSING) {
+        if (!g1.b() && intake.intakeState == Intake.IntakeState.REVERSING && intakeReverseStartTime == null) {
             sched.queueAction(intake.intakeOff());
         }
 
@@ -170,7 +218,7 @@ public class ManualDrive extends LinearOpMode {
                         intake.intakeOff(),
                         outtake.prepareToSlide()));
 
-                sched.queueAction(outtake.extendOuttakeMid());
+                sched.queueAction(outtake.extendOuttakeTeleOps());
                 sched.queueAction(new SleepAction(0.5));
                 sched.queueAction(outtake.prepareToScore());
             }
@@ -203,22 +251,21 @@ public class ManualDrive extends LinearOpMode {
 
         // drone launch
         if (g1.backOnce()) {
-            Actions.runBlocking( new SequentialAction(
-                    intake.stackIntakeLinkageDown(),
-                    new SleepAction(0.25),
-                    drone.scoreDrone(),
-                    new SleepAction(0.25),
-                    intake.stackIntakeLinkageUp()));
+            sched.queueAction( intake.stackIntakeLinkageDown());
+            sched.queueAction( new SleepAction(0.25));
+            sched.queueAction( drone.scoreDrone());
+            sched.queueAction( new SleepAction(0.25));
+            sched.queueAction( intake.stackIntakeLinkageUp());
         }
 
         // stack intake
-        if(g1.start() && g1.xOnce()) {
+        if(g1.start() && g1.x()) {
             if(!isStackIntakeOn) {
                 isStackIntakeOn = true;
                 sched.queueAction(intake.intakeStackedPixels());
             }
         }
-        else if(g1.xOnce()) {
+        else if(g1.aOnce()) {
             isStackIntakeOn = false;
             if(intake.stackIntakeState == Intake.StackIntakeState.DOWN) {
                 sched.queueAction(new SequentialAction(

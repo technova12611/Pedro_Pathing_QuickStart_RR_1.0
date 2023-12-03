@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.Pose2d;
 
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.Side;
@@ -24,4 +25,5 @@ public class Globals {
      * Robot state constants.
      */
 
+    public static Pose2d drivePose = new Pose2d(0,0,0);
 }

@@ -88,6 +88,13 @@ public class MotorWithPID {
     private class TargetPositionAction implements Action {
         int position;
         boolean blocking;
+        String motorName = "unknown";
+
+        public TargetPositionAction(int position, boolean blocking, String motorName) {
+            this.position = position;
+            this.blocking = blocking;
+            this.motorName = motorName;
+        }
 
         public TargetPositionAction(int position, boolean blocking) {
             this.position = position;
@@ -101,12 +108,11 @@ public class MotorWithPID {
                 if (blocking) {
                     return true;
                 }
+
+                Log.d("MotorWithPID." + motorName , "target: " + getTargetPosition() + " | " + "current:" + getCurrentPosition());
             }
 
             if (blocking) {
-                Log.d("MotorWithPID." + motor.getDeviceName() , "isBlocking:" + (isBusy() ? "true" : "false"));
-                Log.d("MotorWithPID." + motor.getDeviceName() , "target: " + getTargetPosition());
-                Log.d("MotorWithPID." + motor.getDeviceName() , "current:" + getCurrentPosition());
                 return isBusy();
             }
             return false;
@@ -120,6 +126,14 @@ public class MotorWithPID {
      */
     public Action setTargetPositionAction(int position) {
         return new TargetPositionAction(position, false);
+    }
+
+    public Action setTargetPositionAction(int position, String motorName) {
+        return new TargetPositionAction(position, false, motorName);
+    }
+
+    public Action setTargetPositionAction(int position, boolean blocking, String motorName) {
+        return new TargetPositionAction(position, blocking, motorName);
     }
 
     /**

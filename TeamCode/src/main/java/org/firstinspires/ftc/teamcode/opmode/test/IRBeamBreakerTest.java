@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 @Config
-@Disabled
 @TeleOp(group = "Test")
 public class IRBeamBreakerTest extends LinearOpMode {
 

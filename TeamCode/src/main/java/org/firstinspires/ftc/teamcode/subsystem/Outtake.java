@@ -19,34 +19,42 @@ import org.firstinspires.ftc.teamcode.utils.control.PIDCoefficients;
 @Config
 public class Outtake {
     public static PIDCoefficients outtakePID = new PIDCoefficients(0.01, 0, 0.0004);
-    public static int OUTTAKE_TELEOP = 1200;
 
-    public static int OUTTAKE_SLIDE_VERY_HIGH = 1800;
+    public static int OUTTAKE_SLIDE_MAX = 2200;
+    public static int OUTTAKE_SLIDE_ABOVE_LEVEL_2 = 2150;
+    public static int OUTTAKE_SLIDE_BELOW_LEVEL_2 = 1850;
+    public static int OUTTAKE_SLIDE_ABOVE_LEVEL_1 = 1550;
+    public static int OUTTAKE_SLIDE_BELOW_LEVEL_1 = 1250;
 
-    public static int OUTTAKE_SLIDE_HIGH = 1650;
-    public static int OUTTAKE_SLIDE_MID = 1150;
-    public static int OUTTAKE_SLIDE_LOW = 750;
+    public static int OUTTAKE_SLIDE_HIGH = OUTTAKE_SLIDE_ABOVE_LEVEL_2;
+    public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
+    public static int OUTTAKE_SLIDE_MID = 1250;
+    public static int OUTTAKE_SLIDE_LOW = 850;
     public static int OUTTAKE_SLIDE_INIT = 0;
 
-    public static int OUTTAKE_SLIDE_INCREMENT= 360;
+    public static int OUTTAKE_SLIDE_INCREMENT= 300;
 
     public static double LATCH_CLOSED = 0.55;
     public static double LATCH_SCORE_1 = 0.415;
     public static double LATCH_SCORE_2 = 0.48;
 
-    public static double OUTTAKE_PIVOT_INIT = 0.18;
+    public static double OUTTAKE_PIVOT_INIT = 0.17;
     public static double OUTTAKE_PIVOT_SLIDING = 0.23;
     public static double OUTTAKE_PIVOT_DUMP_LOW = 0.37;
-    public static double OUTTAKE_PIVOT_DUMP_MID = 0.42;
+    public static double OUTTAKE_PIVOT_DUMP_MID = 0.40;
 
-    public static double OUTTAKE_PIVOT_DUMP_HIGH = 0.48;
+    public static double OUTTAKE_PIVOT_DUMP_HIGH = 0.59;
+
+    public static double OUTTAKE_PIVOT_DUMP_VERY_HIGH = 0.62;
 
     public static double SLIDE_PIVOT_INIT = 0.45;
     public static double SLIDE_PIVOT_SLIDING = 0.52;
     public static double SLIDE_PIVOT_DUMP = 0.25;
-    public static double SLIDE_PIVOT_HIGH = 0.05;
+    public static double SLIDE_PIVOT_DUMP_HIGH = 0.10;
 
-    public static double OUTTAKE_WIRE_DOWN = 0.81;
+    public static double SLIDE_PIVOT_DUMP_VERY_HIGH = 0.0;
+
+    public static double OUTTAKE_WIRE_DOWN = 0.75;
     public static double OUTTAKE_WIRE_MIDDLE = 0.35;
     public static double OUTTAKE_WIRE_HIGH = 0.27;
 
@@ -62,6 +70,8 @@ public class Outtake {
     final AnalogInput outtakePivotVoltage;
 
     public boolean isAuto = true;
+
+    private boolean scoreLevel3 = false;
 
     public Outtake(HardwareMap hardwareMap) {
         if (Memory.outtakeSlide != null) { // Preserve motor zero position
@@ -129,12 +139,25 @@ public class Outtake {
     }
 
     public Action moveSliderBlocking(double increment) {
-        OUTTAKE_TELEOP = this.slide.getCurrentPosition();
+        OUTTAKE_TELEOPS = this.slide.getCurrentPosition();
         if(!this.slide.isBusy()) {
             int multiplier = increment > 0 ? 1 : -1;
-            OUTTAKE_TELEOP = this.slide.getCurrentPosition() + OUTTAKE_SLIDE_INCREMENT * multiplier;
-            Log.d("Outtake Slide", "New position:" + OUTTAKE_TELEOP + " | Current position: " + this.slide.getCurrentPosition());
-            return this.slide.setTargetPositionAction(OUTTAKE_TELEOP);
+
+            if(!scoreLevel3 && OUTTAKE_TELEOPS > OUTTAKE_SLIDE_MAX - 150 && increment > 0.30) {
+                Log.d("Outtake_Slide", "Target position:" + OUTTAKE_TELEOPS + " | level 3 is enabled");
+                scoreLevel3 = true;
+                return this.prepareToScoreLevel3();
+            } else if(OUTTAKE_TELEOPS < OUTTAKE_SLIDE_MAX -150){
+                scoreLevel3 = false;
+            }
+
+            OUTTAKE_TELEOPS = this.slide.getCurrentPosition() + OUTTAKE_SLIDE_INCREMENT * multiplier;
+
+            if(OUTTAKE_TELEOPS >= OUTTAKE_SLIDE_MAX) {
+                OUTTAKE_TELEOPS = OUTTAKE_SLIDE_MAX;
+            }
+            Log.d("Outtake_Slide", "New position:" + OUTTAKE_TELEOPS + " | Current position: " + this.slide.getCurrentPosition() + " | increment: " + increment);
+            return this.slide.setTargetPositionAction(OUTTAKE_TELEOPS, "outtakeSlide");
         }
         return new OuttakeLatchStateAction(OuttakeLatchState.CLOSED);
     }
@@ -143,7 +166,7 @@ public class Outtake {
         return new SequentialAction(
                 prepareToSlide(),
                 new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_DOWN, "outtakeWireServo"),
-                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_INIT)
+                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_INIT, "outtakeSlide")
         );
     }
 
@@ -173,14 +196,15 @@ public class Outtake {
     public Action extendOuttakeLow() {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_MIDDLE, "outtakeWireServo"),
-                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_LOW)
+                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_LOW, "outtakeSlide")
         );
     }
 
-    public Action extendOuttakeMid() {
+    public Action extendOuttakeTeleOps() {
+
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_MIDDLE, "outtakeWireServo"),
-                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_MID)
+                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_HIGH, "outtakeWireServo"),
+                this.slide.setTargetPositionAction(OUTTAKE_TELEOPS, "outtakeSlide")
         );
     }
 
@@ -201,28 +225,41 @@ public class Outtake {
     }
 
     public Action prepareToScore() {
-        double outtakeDumpPosition = OUTTAKE_PIVOT_DUMP_LOW;
-        if(this.slide.getCurrentPosition() > OUTTAKE_SLIDE_LOW + 100 && this.slide.getCurrentPosition() < OUTTAKE_SLIDE_HIGH - 100) {
-            outtakeDumpPosition = OUTTAKE_PIVOT_DUMP_MID;
-        } else if (this.slide.getCurrentPosition() > OUTTAKE_SLIDE_MID + 100) {
-            outtakeDumpPosition = OUTTAKE_PIVOT_DUMP_HIGH;
+
+        if(scoreLevel3) {
+            return prepareToScoreLevel3();
         }
 
-        Log.d("Outtake_Servo", "Outtake Dump Servo Position: " + String.format("%.2f", outtakeDumpPosition));
-        Log.d("Outtake_Slide", "Slide Target Position: " + this.slide.getTargetPosition());
-        Log.d("Outtake_Slide", "Slide Current position: " + this.slide.getCurrentPosition());
+        double outtakeDumpPosition = isAuto?OUTTAKE_PIVOT_DUMP_LOW:OUTTAKE_PIVOT_DUMP_MID;
+        double slideDumpPosition = SLIDE_PIVOT_DUMP;
+
+        Log.d("Outtake_Pivot_Servo", "Outtake Dump Servo Position: " + String.format("%.2f", outtakeDumpPosition));
+        Log.d("Slide_Pivot_Servo", "Slide Dump Servo Position: " + String.format("%.2f", slideDumpPosition));
 
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
                 new ActionUtil.ServoPositionAction(outtakePivot, outtakeDumpPosition, "outtakePivot"),
-                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_DUMP, "slidePivot")
+                new ActionUtil.ServoPositionAction(slidePivot, slideDumpPosition, "slidePivot")
+        );
+    }
+
+    public Action prepareToScoreLevel3() {
+        double outtakeDumpPosition = OUTTAKE_PIVOT_DUMP_HIGH;
+        double slideDumpPosition = SLIDE_PIVOT_DUMP_HIGH;
+
+        Log.d("prepareToScoreLevel3", "Level 3 is enabled " + String.format("(%.2f, %.2f)", outtakeDumpPosition, slideDumpPosition));
+
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
+                new ActionUtil.ServoPositionAction(outtakePivot, outtakeDumpPosition, "outtakePivot"),
+                new ActionUtil.ServoPositionAction(slidePivot, slideDumpPosition, "slidePivot")
         );
     }
 
     public String getServoPositions() {
         return "SlidePivot: " + String.format("%.2f", this.slidePivot.getPosition()) +
-                "OuttakePivot: " + String.format("%.2f", this.outtakePivot.getPosition()) +
-                "Latch: " + String.format("%.2f", this.latch.getPosition());
+                " | OuttakePivot: " + String.format("%.2f", this.outtakePivot.getPosition()) +
+                " | Latch: " + String.format("%.2f", this.latch.getPosition());
     }
 
 }

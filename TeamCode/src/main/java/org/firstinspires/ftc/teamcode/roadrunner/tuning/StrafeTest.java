@@ -12,7 +12,6 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.PoseMessage;
 import org.firstinspires.ftc.teamcode.roadrunner.TwoDeadWheelLocalizer;
 
-@Config
 public final class StrafeTest extends LinearOpMode {
 
     public static double distance = 24.0;

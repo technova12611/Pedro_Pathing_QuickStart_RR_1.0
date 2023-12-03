@@ -7,7 +7,6 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
-import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -20,7 +19,7 @@ import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 
 @Config
 public class Intake {
-    public static int INTAKE_SPEED = 750;
+    public static int INTAKE_SPEED = 950;
     final DcMotorEx intakeMotor;
     final Servo stackIntakeLinkage;
     final Servo stackIntakeServoLeft;
@@ -28,12 +27,12 @@ public class Intake {
     final CRServo bottomRollerServo;
 
     public static double STACK_INTAKE_LEFT_INIT = 0.01;
-    public static double STACK_INTAKE_LEFT_PRELOAD = 0.16;
+    public static double STACK_INTAKE_LEFT_PRELOAD = 0.15;
     public static double STACK_INTAKE_LEFT_1ST_PIXEL = 0.58;
     public static double STACK_INTAKE_LEFT_2nd_PIXEL = 1.0;
 
     public static double STACK_INTAKE_RIGHT_INIT = 0.02;
-    public static double STACK_INTAKE_RIGHT_PRELOAD = 0.15;
+    public static double STACK_INTAKE_RIGHT_PRELOAD = 0.11;
     public static double STACK_INTAKE_RIGHT_1ST_PIXEL = 0.58;
     public static double STACK_INTAKE_RIGHT_2nd_PIXEL = 1.0;
 
@@ -54,6 +53,8 @@ public class Intake {
     public static int pixelsCount = 0;
 
     private Long intakeReverseTime = null;
+
+    private long lastPixelDetectedTime = 0;
 
     public Intake(HardwareMap hardwareMap) {
         this.intakeMotor = HardwareCreator.createMotor(hardwareMap, "intake");
@@ -82,6 +83,8 @@ public class Intake {
 
         intakeState = IntakeState.OFF;
         stackIntakeState = StackIntakeState.UP;
+        totalPixelCount = 0;
+        pixelsCount = 0;
     }
 
     public enum IntakeState {
@@ -138,26 +141,28 @@ public class Intake {
         public boolean run(TelemetryPacket packet) {
             int prevPixel = pixelsCount;
             pixelsCount = pixelsCount + changeValue;
-            packet.addLine("New pixel count change from " + prevPixel + " to " + pixelsCount + " | total pixels taken: " + totalPixelCount);
+            if(pixelsCount < 0) pixelsCount =0;
+            Log.d("Intake_Pixel_Detection","New pixel count change from " + prevPixel + " to " + pixelsCount + " | total pixels taken: " + totalPixelCount);
             return false;
         }
     }
 
     public Action intakeOn() {
+        Log.d("Intake_Motor","Intake is on");
         return new SequentialAction(
-                new ActionUtil.DcMotorExPowerAction(intakeMotor, INTAKE_SPEED / 1000.0),
+                new IntakeStateAction(IntakeState.ON),
                 new ActionUtil.CRServoAction(bottomRollerServo, 1.0),
-                new IntakeStateAction(IntakeState.ON)
+                new ActionUtil.DcMotorExPowerAction(intakeMotor, INTAKE_SPEED / 1000.0)
         );
     }
 
     public Action intakeReverse() {
+        Log.d("Intake_Motor","Intake is reversing");
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(stackIntakeLinkage, STACK_INTAKE_LINKAGE_UP, "stackIntakeLinkage"),
-                new SleepAction(0.1),
-                new ActionUtil.DcMotorExPowerAction(intakeMotor, -INTAKE_SPEED / 1000.0),
+                new IntakeStateAction(IntakeState.REVERSING),
                 new ActionUtil.CRServoAction(bottomRollerServo, -1.0),
-                new IntakeStateAction(IntakeState.REVERSING)
+                new ActionUtil.ServoPositionAction(stackIntakeLinkage, STACK_INTAKE_LINKAGE_UP, "stackIntakeLinkage"),
+                new ActionUtil.DcMotorExPowerAction(intakeMotor, -INTAKE_SPEED / 1000.0)
         );
     }
 
@@ -170,10 +175,20 @@ public class Intake {
     }
 
     public Action intakeOff() {
+        Log.d("Intake_Motor","Intake is off");
         return new SequentialAction(
                 new IntakeStateAction(IntakeState.OFF),
                 new ActionUtil.DcMotorExPowerAction(intakeMotor, 0.0),
                 new ActionUtil.CRServoAction(bottomRollerServo, 0.0)
+        );
+    }
+
+    public Action intakeSlowdown() {
+        Log.d("Intake_Motor","Intake is slowing down");
+        return new SequentialAction(
+                new IntakeStateAction(IntakeState.ON),
+                new ActionUtil.CRServoAction(bottomRollerServo, -1.0),
+                new ActionUtil.DcMotorExPowerAction(intakeMotor, -(INTAKE_SPEED / 1000.0)*0.25)
         );
     }
 
@@ -239,33 +254,16 @@ public class Intake {
         curBeamBreakerState = beamBreakerActive.getState();
 
         // update pixel detection state if beam
-        if(curBeamBreakerState && !prevBeamBreakerState) {
-            pixelsCount++;
-            totalPixelCount++;
-
-            // when the 2nd pixel
-            if(pixelsCount >=2 && this.isAutoReverseOn) {
-                Actions.runBlocking(
-                        new SequentialAction(
-                            intakeReverse(),
-                            new SleepAction(2.0),
-                            intakeOff()
-                        ));
-                intakeReverseTime =  new Long(System.currentTimeMillis());
+        if(curBeamBreakerState && !prevBeamBreakerState && intakeState == IntakeState.ON) {
+            if(System.currentTimeMillis() - lastPixelDetectedTime > 250) {
+                pixelsCount++;
+                totalPixelCount++;
             }
+            lastPixelDetectedTime = System.currentTimeMillis();
 
             Log.d("Intake_Beam_Breaker", "totalPixels: " + totalPixelCount + " | currentPixels: " + pixelsCount);
         }
-
-        if(curBeamBreakerState != prevBeamBreakerState) {
-            prevBeamBreakerState = curBeamBreakerState;
-        }
-
-        // if reversed for more than 2.5 seconds, then stop reverse
-        if(intakeReverseTime != null && (System.currentTimeMillis() - intakeReverseTime.longValue()) > AUTO_INTAKE_REVERSE_TIME) {
-            intakeReverseTime = null;
-            Actions.runBlocking(intakeOff());
-        }
+        prevBeamBreakerState = curBeamBreakerState;
     }
     public String getStackServoPositions() {
         return String.format("Left stack servo: %.3f | Right stack servo: %.3f ",

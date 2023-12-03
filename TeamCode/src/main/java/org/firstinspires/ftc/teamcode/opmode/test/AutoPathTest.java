@@ -21,21 +21,15 @@ import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 @Config
 @Autonomous(group = "Test")
 public final class AutoPathTest extends LinearOpMode {
-
     public static Pose2d starting = new Pose2d(16.0, -62.5, Math.PI/2);
     public static Pose2d backdrop = new Pose2d(48.5, -36.0, Math.PI);
-
     public static Pose2d spike = new Pose2d(28.5, -24.5, Math.PI);
-
     public static Pose2d parking = new Pose2d(52.0, -60.0, Math.PI);
 
     protected AutoActionScheduler sched;
-
     protected Intake intake;
     protected Outtake outtake;
-
     protected MecanumDrive drive;
-
     protected Drone drone;
 
     @Override

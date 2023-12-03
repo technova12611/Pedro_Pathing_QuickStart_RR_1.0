@@ -32,8 +32,8 @@ import java.util.List;
 public final class TuningOpModes {
     public static final Class<?> DRIVE_CLASS = MecanumDrive.class;
 
-    public static final String GROUP = "quickstart";
-    public static final boolean DISABLED = false;
+    public static final String GROUP = "Tuning";
+    public static final boolean DISABLED = true;
 
     private TuningOpModes() {}
 
@@ -123,7 +123,12 @@ public final class TuningOpModes {
                     LateralRampLogger.class,
                     ManualFeedforwardTuner.class,
                     MecanumMotorDirectionDebugger.class,
-                    ManualFeedbackTuner.class
+                    ManualFeedbackTuner.class,
+                    SplineTest.class,
+                    LocalizationTest.class,
+                    StraightTest.class,
+                    StrafeTest.class,
+                    TurnTest.class
             )) {
                 configRoot.putVariable(c.getSimpleName(), ReflectionConfig.createVariableFromClass(c));
             }
