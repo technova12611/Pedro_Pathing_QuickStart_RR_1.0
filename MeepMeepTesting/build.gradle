@@ -1,0 +1,19 @@
+plugins {
+    id 'java-library'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+repositories {
+    maven { url = 'https://jitpack.io' }
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    implementation 'com.github.NoahBres:MeepMeep:2.0.3'
+    implementation 'com.acmerobotics.roadrunner:core:0.5.5'
+}

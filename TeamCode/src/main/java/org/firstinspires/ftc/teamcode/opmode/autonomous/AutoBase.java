@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.pipeline.PropPipeline;
 import org.firstinspires.ftc.teamcode.pipeline.Side;
 import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.roadrunner.PoseMessage;
 import org.firstinspires.ftc.teamcode.subsystem.Hang;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Memory;
@@ -49,6 +50,7 @@ public abstract class AutoBase extends LinearOpMode {
 
         Memory.LAST_POSE = getStartPose();
         Memory.RAN_AUTO = true;
+        Globals.RUN_AUTO = true;
 
         // Init subsystems
         this.drive = new MecanumDrive(hardwareMap, Memory.LAST_POSE);
@@ -114,7 +116,16 @@ public abstract class AutoBase extends LinearOpMode {
         Memory.LAST_POSE = drive.pose;
         Globals.drivePose = drive.pose;
 
-        Log.d("Auto", "Auto ended at " + getRuntime());
+        Log.d("Auto", "Auto path ended at " + getRuntime());
+        Log.d("Auto", "End path drive EstimatedPose " + new PoseMessage(drive.pose));
+
+        while(opModeIsActive()) {
+            Globals.drivePose = drive.pose;
+            idle();
+        }
+
+        Log.d("Auto", "Auto program ended at " + getRuntime());
+        Log.d("Auto", "End program drive EstimatedPose " + new PoseMessage(drive.pose));
     }
 
     protected abstract Pose2d getStartPose();

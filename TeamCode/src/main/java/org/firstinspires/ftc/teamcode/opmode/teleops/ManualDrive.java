@@ -2,16 +2,28 @@ package org.firstinspires.ftc.teamcode.opmode.teleops;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.AccelConstraint;
+import com.acmerobotics.roadrunner.AngularVelConstraint;
+import com.acmerobotics.roadrunner.Arclength;
+import com.acmerobotics.roadrunner.MinVelConstraint;
+import com.acmerobotics.roadrunner.Pose2dDual;
+import com.acmerobotics.roadrunner.PosePath;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.roadrunner.PoseMessage;
 import org.firstinspires.ftc.teamcode.subsystem.Hang;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Memory;
@@ -21,6 +33,8 @@ import org.firstinspires.ftc.teamcode.utils.software.ActionScheduler;
 import org.firstinspires.ftc.teamcode.utils.hardware.GamePadController;
 import org.firstinspires.ftc.teamcode.utils.software.SmartGameTimer;
 
+import java.util.Arrays;
+
 @Config
 @TeleOp(group = "Drive", name="Manual Drive")
 public class ManualDrive extends LinearOpMode {
@@ -29,7 +43,7 @@ public class ManualDrive extends LinearOpMode {
     public static double SLOW_TURN_SPEED = 0.3;
     public static double SLOW_DRIVE_SPEED = 0.3;
 
-    public static double STRAFE_DISTANCE = 2.5;
+    public static double STRAFE_DISTANCE = 3.5;
 
     private SmartGameTimer smartGameTimer;
     private GamePadController g1, g2;
@@ -40,12 +54,17 @@ public class ManualDrive extends LinearOpMode {
     private Hang hang;
     private Drone drone;
 
-    Double intakeReverseStartTime = null;
+    Long intakeReverseStartTime = null;
 
-    Double intakeSlowdownStartTime = null;
+    Long intakeSlowdownStartTime = null;
+
+    Long lastTimePixelDetected = null;
     boolean isPixelDetectionEnabled = true;
 
     int prevPixelCount = 0;
+
+    VelConstraint velConstraintOverride;
+    AccelConstraint accelConstraintOverride = new ProfileAccelConstraint(-30.0, 30.0);
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -64,13 +83,14 @@ public class ManualDrive extends LinearOpMode {
         hang = new Hang(hardwareMap);
         drone = new Drone(hardwareMap);
 
-        if (Memory.RAN_AUTO) {
-            smartGameTimer = new SmartGameTimer(true);
-        } else { // No auto memory, pull in slides
-            smartGameTimer = new SmartGameTimer(false);
-            outtake.isAuto = false;
-            outtake.prepTeleop();
+        smartGameTimer = new SmartGameTimer(false);
+
+        if(Globals.RUN_AUTO) {
+            drive.pose = Globals.drivePose;
         }
+        outtake.isAuto = false;
+        Globals.RUN_AUTO = false;
+        outtake.prepTeleop();
 
         intake.initialize(false);
         // Init opmodes
@@ -80,7 +100,12 @@ public class ManualDrive extends LinearOpMode {
 
         // Ready!
         telemetry.addLine("Manual Drive is Ready!");
+        telemetry.addLine("Drive Pose: " + new PoseMessage(drive.pose));
         telemetry.update();
+
+        velConstraintOverride = new MinVelConstraint(Arrays.asList(
+                this.drive.kinematics.new WheelVelConstraint(30.0),
+                new AngularVelConstraint(Math.PI)));
 
         waitForStart();
 
@@ -123,19 +148,46 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void pixelDetection() {
-        if(isPixelDetectionEnabled) {
-            if (prevPixelCount != Intake.pixelsCount && Intake.pixelsCount >= 2 && intakeReverseStartTime == null) {
-                intakeReverseStartTime = new Double(System.currentTimeMillis());
+        if (isPixelDetectionEnabled) {
 
-                sched.queueAction(new SleepAction(0.5));
+            if (prevPixelCount != Intake.pixelsCount && lastTimePixelDetected != null &&
+                    (System.currentTimeMillis() - lastTimePixelDetected.longValue()) < 600) {
+
+                if (Intake.pixelsCount == 2) {
+                    Intake.totalPixelCount--;
+                    Intake.pixelsCount = 1;
+
+                    Log.d("TeleOps_Pixel_detection", "deduct 1 from the counts. Total: " + Intake.totalPixelCount + " current: " + Intake.pixelsCount);
+                }
                 sched.queueAction(intake.intakeReverse());
 
-                Log.d("TeleOps_Pixel_detection", "Pixel changed from 1 to 2, reverse enabled.");
+                Log.d("TeleOps_Pixel_detection", "slow down 2nd pixel at " + System.currentTimeMillis());
+
+                lastTimePixelDetected = null;
+                intakeSlowdownStartTime = new Long(System.currentTimeMillis());
+            } else if (prevPixelCount != Intake.pixelsCount && Intake.pixelsCount >= 2 && intakeReverseStartTime == null) {
+                intakeReverseStartTime = new Long(System.currentTimeMillis());
+
+                Log.d("TeleOps_Pixel_detection", "Pixel changed from 1 to 2, detected at :" + intakeReverseStartTime);
+            }
+
+            if (intakeSlowdownStartTime != null) {
+                if ((System.currentTimeMillis() - intakeSlowdownStartTime.longValue()) > 300) {
+                    sched.queueAction(intake.intakeOn());
+                    intakeSlowdownStartTime = null;
+                }
             }
 
             // intake reverse is on
-            if (intakeReverseStartTime != null) {
-                if ((System.currentTimeMillis() - intakeReverseStartTime.doubleValue()) > 1800) {
+            if (intakeReverseStartTime != null && intakeSlowdownStartTime == null) {
+
+                if ((System.currentTimeMillis() - intakeReverseStartTime.longValue()) > 500
+                        && (System.currentTimeMillis() - intakeReverseStartTime.longValue() < 600)) {
+                    sched.queueAction(intake.intakeReverse());
+                    Log.d("TeleOps_Pixel_detection", "Pixel changed from 1 to 2, reverse started at" + System.currentTimeMillis());
+                }
+
+                if ((System.currentTimeMillis() - intakeReverseStartTime.longValue()) > 1800) {
                     sched.queueAction(intake.intakeOff());
                     intakeReverseStartTime = null;
 
@@ -143,22 +195,13 @@ public class ManualDrive extends LinearOpMode {
                 }
             }
 
-            if(Intake.pixelsCount == 1 && prevPixelCount == 0 && intake.stackIntakeState == Intake.StackIntakeState.UP && intakeSlowdownStartTime == null) {
-                intakeSlowdownStartTime = new Double(System.currentTimeMillis());
-                //sched.queueAction(intake.intakeSlowdown());
-                Log.d("TeleOps_Pixel_detection", "Pixel changed from 0 to 1, short slowdown enabled.");
-            }
-
-            if(intakeSlowdownStartTime != null) {
-                if ((System.currentTimeMillis() - intakeSlowdownStartTime.doubleValue()) > 300) {
-                    //sched.queueAction(intake.intakeOn());
-                    intakeSlowdownStartTime = null;
-
-                    Log.d("TeleOps_Pixel_detection", "intake slowing down is completed.");
-                }
+            if (Intake.pixelsCount == 1 && prevPixelCount == 0 && intake.stackIntakeState == Intake.StackIntakeState.UP && lastTimePixelDetected == null) {
+                lastTimePixelDetected = new Long(System.currentTimeMillis());
+                Log.d("TeleOps_Pixel_detection", "Pixel changed from 0 to 1. Detected at " + lastTimePixelDetected);
             }
 
             prevPixelCount = Intake.pixelsCount;
+
         }
     }
 
@@ -179,7 +222,10 @@ public class ManualDrive extends LinearOpMode {
     boolean isStackIntakeOn = false;
     private void subsystemControls() {
         // Intake controls
-        if (g1.xOnce()) {
+        if(g1.aLong()) {
+            isPixelDetectionEnabled = false;
+        }
+        else if (g1.xOnce()) {
             if (intake.intakeState == Intake.IntakeState.ON) {
                 sched.queueAction(intake.intakeOff());
             } else {
@@ -189,6 +235,7 @@ public class ManualDrive extends LinearOpMode {
                         new Intake.UpdatePixelCountAction(-2)));
             }
         }
+
         if (g1.b()) {
             if (isSlideOut) {
                 isSlideOut = false;
@@ -237,16 +284,19 @@ public class ManualDrive extends LinearOpMode {
         }
 
         // move left and right by one slot
-        if (g1.dpadLeftOnce()) {
-            Actions.runBlocking(drive.actionBuilder(drive.pose)
-                    .strafeTo(new Vector2d(drive.pose.position.x, drive.pose.position.y - STRAFE_DISTANCE))
-                    .build());
-        }
+        if (g1.dpadLeftOnce() || g1.dpadRightOnce()) {
 
-        if (g1.dpadRightOnce()) {
+            double strafeDistance = (g1.dpadLeftOnce()? -STRAFE_DISTANCE:STRAFE_DISTANCE);
+
+            Log.d("ManualDrive", "Pose before strafe: " + new PoseMessage(this.drive.pose) + " | target=" + strafeDistance);
+            double start_y = drive.pose.position.y;
             Actions.runBlocking(drive.actionBuilder(drive.pose)
-                    .strafeTo(new Vector2d(drive.pose.position.x, drive.pose.position.y + STRAFE_DISTANCE))
+                    .strafeTo(new Vector2d(drive.pose.position.x, drive.pose.position.y + strafeDistance),
+                            velConstraintOverride,
+                            accelConstraintOverride)
                     .build());
+
+            Log.d("ManualDrive", "Pose after strafe: " + new PoseMessage(this.drive.pose) + " | actual=" + (drive.pose.position.y-start_y));
         }
 
         // drone launch

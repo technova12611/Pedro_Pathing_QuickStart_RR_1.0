@@ -13,15 +13,15 @@ import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 @Autonomous(name = "Blue Left Auto", group = "Auto", preselectTeleOp = "Manual Drive")
 public class BlueLeftAuto extends AutoBase {
    public static Pose2d[] spike = {
-           new Pose2d(34.5, 26.5, Math.toRadians(-180)),
-           new Pose2d(28.5, 24.5, Math.toRadians(-180)),
-           new Pose2d(12.5, 26.5, Math.toRadians(-180))
+           new Pose2d(35.5, 25.5, Math.toRadians(-180)),
+           new Pose2d(28.5, 23.5, Math.toRadians(-180)),
+           new Pose2d(14.1, 33.5, Math.toRadians(-180))
    };
 
    public static Pose2d[] backdrop =  {
-           new Pose2d(48.5, 30, Math.toRadians(-180)),
-           new Pose2d(48.5, 36, Math.toRadians(-180)),
-           new Pose2d(48.5, 42.5, Math.toRadians(-180))
+           new Pose2d(49.2, 41.5, Math.toRadians(-180)),
+           new Pose2d(49.2, 36, Math.toRadians(-180)),
+           new Pose2d(49.2, 30.5, Math.toRadians(-180))
    };
    // 0 = left, 1 = middle, 2 = right
    public static Pose2d start = new Pose2d(16.0, 62.0, Math.toRadians(-90));
@@ -38,7 +38,7 @@ public class BlueLeftAuto extends AutoBase {
 
    @Override
    protected void printDescription() {
-      telemetry.addData("Description", "Red Right Auto");
+      telemetry.addData("Description", "Blue Left Auto");
    }
 
    @Override

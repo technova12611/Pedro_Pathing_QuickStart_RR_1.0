@@ -10,24 +10,25 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 
 @Config
-@Autonomous(name = "Red Right Auto", group = "Auto", preselectTeleOp = "Manual Drive")
-public class RedRightAuto extends AutoBase {
+@Autonomous(name = "Blue Left Cycle Auto", group = "Auto Cycle", preselectTeleOp = "Manual Drive")
+public class BlueLeftCycleAuto extends AutoBase {
    public static Pose2d[] spike = {
-           new Pose2d(14.5, -34.5, Math.toRadians(180)),
-           new Pose2d(28.5, -24.5, Math.toRadians(180)),
-           new Pose2d(36.0, -27.5, Math.toRadians(180))
+           new Pose2d(34.5, 25.5, Math.toRadians(-180)),
+           new Pose2d(28.5, 24.0, Math.toRadians(-180)),
+           new Pose2d(10.5, 33.5, Math.toRadians(-180))
    };
+
    public static Pose2d[] backdrop =  {
-           new Pose2d(49.2, -29, Math.toRadians(180)),
-           new Pose2d(49.2, -36, Math.toRadians(180)),
-           new Pose2d(49.2, -42, Math.toRadians(180))
+           new Pose2d(48.5, 41.5, Math.toRadians(-180)),
+           new Pose2d(48.5, 36, Math.toRadians(-180)),
+           new Pose2d(48.5, 29, Math.toRadians(-180))
    };
    // 0 = left, 1 = middle, 2 = right
-   public static Pose2d start = new Pose2d(16.0, -62.0, Math.toRadians(90));
-   public static Pose2d parking = new Pose2d(53.0, -60.0, Math.toRadians(180));
+   public static Pose2d start = new Pose2d(16.0, 62.0, Math.toRadians(-90));
+   public static Pose2d parking = new Pose2d(53.0, 60.0, Math.toRadians(-180));
 
    protected AlliancePosition getAlliance() {
-      return AlliancePosition.RED;
+      return AlliancePosition.BLUE;
    }
 
    @Override
@@ -37,7 +38,7 @@ public class RedRightAuto extends AutoBase {
 
    @Override
    protected void printDescription() {
-      telemetry.addData("Description", "Red Right Auto");
+      telemetry.addData("Description", "Blue Left Cycle Auto");
    }
 
    @Override
@@ -47,17 +48,18 @@ public class RedRightAuto extends AutoBase {
               new SequentialAction(
                       // to score yellow pixel on the backdrop
                       new ParallelAction(
-                      drive.actionBuilder(drive.pose)
-                              .setTangent(0)
-                              .splineTo(backdrop[SPIKE].position, Math.PI/2)
-                              .build(),
+                              drive.actionBuilder(drive.pose)
+                                      .setTangent(0)
+                                      .splineTo(backdrop[SPIKE].position, -Math.PI/2)
+                                      .build(),
 
-                          outtake.prepareToSlide(),
-                          new SequentialAction(
-                                  new SleepAction(1.5),
-                              outtake.extendOuttakeLow()
-                          )
+                              outtake.prepareToSlide(),
+                              new SequentialAction(
+                                      new SleepAction(1.5),
+                                      outtake.extendOuttakeLow()
+                              )
                       ),
+
                       outtake.prepareToScore(),
                       new SleepAction(0.25),
                       outtake.latchScore1(),
@@ -77,15 +79,15 @@ public class RedRightAuto extends AutoBase {
 
                       // to park and prepare for teleops
                       new ParallelAction(
-                              intake.prepareTeleOpsIntake(),
-                              outtake.prepareToTransfer(),
-                              drive.actionBuilder(spike[SPIKE])
-                                      .setReversed(true)
-                                      .strafeTo(parking.position)
-                                      .build()
+                         intake.prepareTeleOpsIntake(),
+                         outtake.prepareToTransfer(),
+
+                         drive.actionBuilder(spike[SPIKE])
+                                 .setReversed(true)
+                                 .strafeTo(parking.position)
+                                 .build()
                       )
               )
       );
    }
-
 }

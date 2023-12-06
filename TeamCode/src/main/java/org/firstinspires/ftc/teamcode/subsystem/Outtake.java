@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -29,6 +30,8 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_HIGH = OUTTAKE_SLIDE_ABOVE_LEVEL_2;
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
     public static int OUTTAKE_SLIDE_MID = 1250;
+
+    public static int OUTTAKE_SLIDE_CYCLES = 1000;
     public static int OUTTAKE_SLIDE_LOW = 850;
     public static int OUTTAKE_SLIDE_INIT = 0;
 
@@ -166,6 +169,7 @@ public class Outtake {
     public Action retractOuttake() {
         return new SequentialAction(
                 prepareToSlide(),
+                new SleepAction(0.5),
                 new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_DOWN, "outtakeWireServo"),
                 this.slide.setTargetPositionAction(OUTTAKE_SLIDE_INIT, "outtakeSlide")
         );
@@ -207,6 +211,13 @@ public class Outtake {
         );
     }
 
+    public Action extendOuttakeCycle() {
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_MIDDLE, "outtakeWireServo"),
+                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_CYCLES, "outtakeSlide")
+        );
+    }
+
     public Action extendOuttakeTeleOps() {
 
         return new SequentialAction(
@@ -238,6 +249,21 @@ public class Outtake {
         }
 
         double outtakeDumpPosition = isAuto?OUTTAKE_PIVOT_DUMP_LOW:OUTTAKE_PIVOT_DUMP_MID;
+        double slideDumpPosition = SLIDE_PIVOT_DUMP;
+
+        Log.d("Outtake_Pivot_Servo", "Outtake Dump Servo Position: " + String.format("%.2f", outtakeDumpPosition));
+        Log.d("Slide_Pivot_Servo", "Slide Dump Servo Position: " + String.format("%.2f", slideDumpPosition));
+
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
+                new ActionUtil.ServoPositionAction(outtakePivot, outtakeDumpPosition, "outtakePivot"),
+                new ActionUtil.ServoPositionAction(slidePivot, slideDumpPosition, "slidePivot")
+        );
+    }
+
+    public Action prepareToScoreCycle() {
+
+        double outtakeDumpPosition = OUTTAKE_PIVOT_DUMP_MID;
         double slideDumpPosition = SLIDE_PIVOT_DUMP;
 
         Log.d("Outtake_Pivot_Servo", "Outtake Dump Servo Position: " + String.format("%.2f", outtakeDumpPosition));

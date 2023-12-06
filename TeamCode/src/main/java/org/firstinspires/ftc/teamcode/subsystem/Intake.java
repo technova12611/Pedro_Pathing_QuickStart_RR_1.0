@@ -191,8 +191,8 @@ public class Intake {
                 new StackIntakeStateAction(StackIntakeState.DOWN),
                 new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_INIT, "stackIntakeServoLeft"),
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_INIT, "stackIntakeServoRight"),
-                new SleepAction(0.1),
-                new ActionUtil.ServoPositionAction(stackIntakeLinkage, STACK_INTAKE_LINKAGE_DOWN, "stackIntakeLinkage")
+                new ActionUtil.ServoPositionAction(stackIntakeLinkage, STACK_INTAKE_LINKAGE_DOWN, "stackIntakeLinkage"),
+                intakeOn()
         );
     }
 
@@ -202,7 +202,8 @@ public class Intake {
                 new ActionUtil.ServoPositionAction(stackIntakeLinkage, STACK_INTAKE_LINKAGE_UP, "stackIntakeLinkage"),
                 new SleepAction(0.2),
                 new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_INIT, "stackIntakeServoLeft"),
-                new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_INIT, "stackIntakeServoRight")
+                new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_INIT, "stackIntakeServoRight"),
+                intakeOff()
         );
     }
 
@@ -215,7 +216,7 @@ public class Intake {
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_2nd_PIXEL, "stackIntakeServoRight"),
                 new SleepAction(0.20),
                 new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_2nd_PIXEL, "stackIntakeServoLeft"),
-                new SleepAction(0.25)
+                new SleepAction(0.5)
         );
     }
 
@@ -253,13 +254,10 @@ public class Intake {
 
         // update pixel detection state if beam
         if(!curBeamBreakerState && prevBeamBreakerState && intakeState == IntakeState.ON) {
-            if(System.currentTimeMillis() - lastPixelDetectedTime > 300) {
-                pixelsCount++;
-                totalPixelCount++;
-                Log.d("Beam_Breaker_Pixel_Detected", "Detected!!!! | totalPixels: " + totalPixelCount + " | currentPixels: " + pixelsCount);
-            }
-            lastPixelDetectedTime = System.currentTimeMillis();
-            Log.d("Beam_Breaker_Pixel_Timer", "Detected at: " + lastPixelDetectedTime);
+            pixelsCount++;
+            totalPixelCount++;
+            Log.d("Beam_Breaker_Pixel_Detected", "Detected!!!! | totalPixels: " + totalPixelCount + " | currentPixels: " + pixelsCount);
+            Log.d("Beam_Breaker_Pixel_Timer", "Detected at: " + System.currentTimeMillis());
         }
 
         prevBeamBreakerState = curBeamBreakerState;
