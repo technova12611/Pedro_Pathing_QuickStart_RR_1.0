@@ -127,14 +127,14 @@ public class ServoMotorTest extends LinearOpMode {
         this.slide.setMaxPower(0.95);
         this.slide.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        this.intakeMotor = new MotorWithVelocityPID(HardwareCreator.createMotor(hardwareMap, "intake"), intakeMotorPid);
+        this.intakeMotor = new MotorWithVelocityPID(HardwareCreator.createMotor(hardwareMap, "intake_for_perp"), intakeMotorPid);
         this.intakeMotor.setMaxPower(0.95);
         this.intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.parOdometry1 = HardwareCreator.createMotor(hardwareMap, "par");
         this.parOdometry1.setDirection(DcMotorSimple.Direction.REVERSE);
         this.perpOdometry2 =HardwareCreator.createMotor(hardwareMap, "intake_for_perp");
-        this.perpOdometry2.setDirection(DcMotorSimple.Direction.REVERSE);
+        //this.perpOdometry2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.parOdometry1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         this.perpOdometry2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -387,7 +387,7 @@ public class ServoMotorTest extends LinearOpMode {
 
             telemetry.addData("Yaw (Z)", "%.2f Deg. (Heading)", orientation.getYaw(AngleUnit.DEGREES));
             telemetry.addData("Yaw (Z) velocity", "%.2f Deg/Sec", angularVelocity.zRotationRate);
-            
+
             bottomRollerServo.setPower(BOTTOM_ROLLER_CRSERVO_VALUE);
 
             telemetry.addData("outtake mode: ", outtakeMode);

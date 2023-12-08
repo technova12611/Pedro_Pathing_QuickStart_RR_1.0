@@ -31,6 +31,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Outtake;
 import org.firstinspires.ftc.teamcode.subsystem.Drone;
 import org.firstinspires.ftc.teamcode.utils.software.ActionScheduler;
 import org.firstinspires.ftc.teamcode.utils.hardware.GamePadController;
+import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 import org.firstinspires.ftc.teamcode.utils.software.SmartGameTimer;
 
 import java.util.Arrays;
@@ -43,12 +44,14 @@ public class ManualDrive extends LinearOpMode {
     public static double SLOW_TURN_SPEED = 0.3;
     public static double SLOW_DRIVE_SPEED = 0.3;
 
-    public static double STRAFE_DISTANCE = 3.5;
+    public static double STRAFE_DISTANCE = 3.0;
 
     private SmartGameTimer smartGameTimer;
     private GamePadController g1, g2;
     private MecanumDrive drive;
     private ActionScheduler sched;
+
+    private AutoActionScheduler autoRunSched;
     private Intake intake;
     private Outtake outtake;
     private Hang hang;
@@ -104,8 +107,8 @@ public class ManualDrive extends LinearOpMode {
         telemetry.update();
 
         velConstraintOverride = new MinVelConstraint(Arrays.asList(
-                this.drive.kinematics.new WheelVelConstraint(30.0),
-                new AngularVelConstraint(Math.PI)));
+                this.drive.kinematics.new WheelVelConstraint(15.0),
+                new AngularVelConstraint(Math.PI/2)));
 
         waitForStart();
 
@@ -292,13 +295,16 @@ public class ManualDrive extends LinearOpMode {
 
             double strafeDistance = (g1.dpadLeftOnce()? -STRAFE_DISTANCE:STRAFE_DISTANCE);
 
+            autoRunSched = new AutoActionScheduler(this::update);
             Log.d("ManualDrive", "Pose before strafe: " + new PoseMessage(this.drive.pose) + " | target=" + strafeDistance);
             double start_y = drive.pose.position.y;
-            Actions.runBlocking(drive.actionBuilder(drive.pose)
+            autoRunSched.addAction(drive.actionBuilder(drive.pose)
                     .strafeTo(new Vector2d(drive.pose.position.x, drive.pose.position.y + strafeDistance),
                             velConstraintOverride,
                             accelConstraintOverride)
                     .build());
+
+            autoRunSched.run();
 
             Log.d("ManualDrive", "Pose after strafe: " + new PoseMessage(this.drive.pose) + " | actual=" + (drive.pose.position.y-start_y));
         }
@@ -350,6 +356,11 @@ public class ManualDrive extends LinearOpMode {
         if (g1.rightBumper()) input_turn -= SLOW_TURN_SPEED;
 
         drive.setDrivePowers(new PoseVelocity2d(input, input_turn));
+    }
+
+    final public void update() {
+        this.drive.updatePoseEstimate();
+        telemetry.update();
     }
 }
 

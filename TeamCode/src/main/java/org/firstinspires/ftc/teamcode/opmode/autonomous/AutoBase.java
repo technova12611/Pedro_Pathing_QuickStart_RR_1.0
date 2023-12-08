@@ -62,7 +62,6 @@ public abstract class AutoBase extends LinearOpMode {
 
         this.sched = new AutoActionScheduler(this::update);
 
-
         outtake.initialize();
         intake.initialize(true);
         drone.initialize();

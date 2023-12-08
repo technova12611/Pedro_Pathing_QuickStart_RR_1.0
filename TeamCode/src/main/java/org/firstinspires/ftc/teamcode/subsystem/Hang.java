@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 
 public class Hang {
 
-    public static int HANG_HOOK_UP_POSITION = -300;
+    public static int HANG_HOOK_UP_POSITION = -800;
 
     public static int HANG_HOOK_DOWN_POSITION = 0;
 
