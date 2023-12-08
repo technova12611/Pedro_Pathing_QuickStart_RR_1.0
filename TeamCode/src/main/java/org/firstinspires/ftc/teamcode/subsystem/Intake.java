@@ -57,7 +57,7 @@ public class Intake {
     private long lastPixelDetectedTime = 0;
 
     public Intake(HardwareMap hardwareMap) {
-        this.intakeMotor = HardwareCreator.createMotor(hardwareMap, "intake");
+        this.intakeMotor = HardwareCreator.createMotor(hardwareMap, "intake_for_perp");
         this.intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         stackIntakeServoLeft = HardwareCreator.createServo(hardwareMap, "stackIntakeServoLeft");

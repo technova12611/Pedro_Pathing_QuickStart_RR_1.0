@@ -242,6 +242,18 @@ public class Outtake {
         );
     }
 
+    public Action outtakeWireUp() {
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_HIGH, "outtakeWire")
+        );
+    }
+
+    public Action outtakeWireDown() {
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_DOWN, "outtakeWire")
+        );
+    }
+
     public Action prepareToScore() {
 
         if(scoreLevel3) {

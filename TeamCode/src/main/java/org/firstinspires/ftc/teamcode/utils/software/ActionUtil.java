@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -23,6 +24,26 @@ public class ActionUtil {
       @Override
       public boolean run(TelemetryPacket packet) {
          motor.setPower(power);
+         return false;
+      }
+   }
+
+   public static class DcMotorExRTPAction implements Action {
+      int position;
+      double power;
+      DcMotorEx motor;
+
+      public DcMotorExRTPAction(DcMotorEx motor, int position, double power) {
+         this.position = position;
+         this.motor = motor;
+         this.power = power;
+      }
+
+      @Override
+      public boolean run(TelemetryPacket packet) {
+         motor.setTargetPosition(position);
+         motor.setPower(power);
+         motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
          return false;
       }
    }

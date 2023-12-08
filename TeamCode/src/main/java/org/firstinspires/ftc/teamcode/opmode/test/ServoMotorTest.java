@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
@@ -53,6 +54,8 @@ public class ServoMotorTest extends LinearOpMode {
     DcMotorEx parOdometry1;
     DcMotorEx perpOdometry2;
 
+    DcMotorEx hangMotor;
+
     AnalogInput slidePivotVoltage;
     AnalogInput outtakePivotVoltage;
 
@@ -63,8 +66,6 @@ public class ServoMotorTest extends LinearOpMode {
     public static double OUTTAKE_LATCH_VALUE = Outtake.LATCH_CLOSED;
     public static double OUTTAKE_PIVOT_VALUE = Outtake.OUTTAKE_PIVOT_INIT;
     public static double SLIDE_PIVOT_VALUE = Outtake.SLIDE_PIVOT_INIT;
-    public static double HANG_SERVO_RIGHT_VALUE = Hang.HANG_DOWN_RIGHT;
-    public static double HANG_SERVO_LEFT_VALUE = Hang.HANG_DOWN_LEFT;
     public static double DRONE_LATCH_VALUE = 0.4;
     public static double DRONE_TILT_VALUE = 0.3;
     public static double OUTTAKE_WIRE_SERVO_VALUE = Outtake.OUTTAKE_WIRE_MIDDLE;
@@ -98,6 +99,9 @@ public class ServoMotorTest extends LinearOpMode {
     public static int totalPixelCount = 0;
     int pixelsCount = 0;
 
+    public static int HANG_MOTOR_POSITION = 0;
+    public static double HANG_MOTOR_POWER = 0.0;
+
     @Override
     public void runOpMode() throws InterruptedException {
 
@@ -129,11 +133,16 @@ public class ServoMotorTest extends LinearOpMode {
 
         this.parOdometry1 = HardwareCreator.createMotor(hardwareMap, "par");
         this.parOdometry1.setDirection(DcMotorSimple.Direction.REVERSE);
-        this.perpOdometry2 =HardwareCreator.createMotor(hardwareMap, "perp");
+        this.perpOdometry2 =HardwareCreator.createMotor(hardwareMap, "intake_for_perp");
         this.perpOdometry2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.parOdometry1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         this.perpOdometry2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        this.hangMotor = HardwareCreator.createMotor(hardwareMap, "hangMotor");
+        this.hangMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        this.hangMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        this.hangMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         this.slidePivotVoltage = hardwareMap.get(AnalogInput.class, "slidePivotVoltage");
         this.outtakePivotVoltage = hardwareMap.get(AnalogInput.class, "outtakePivotVoltage");
@@ -334,14 +343,6 @@ public class ServoMotorTest extends LinearOpMode {
                 }
             }
 
-            // hang Servo Right servo test
-            //
-            hangServoRight.setPosition(HANG_SERVO_RIGHT_VALUE);
-
-            // stack intake left servo test
-            //
-            hangServoLeft.setPosition(HANG_SERVO_LEFT_VALUE);
-
             // drone latch servo test
             //
             droneLatch.setPosition(DRONE_LATCH_VALUE);
@@ -375,13 +376,18 @@ public class ServoMotorTest extends LinearOpMode {
                 prevBeamBreakerState = curBeamBreakerState;
             }
 
+            if(HANG_MOTOR_POSITION != 0) {
+                this.hangMotor.setTargetPosition(HANG_MOTOR_POSITION);
+                this.hangMotor.setPower(Range.clip(HANG_MOTOR_POWER,-1.0, 1.0));
+                this.hangMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            }
+
             YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
             AngularVelocity angularVelocity = imu.getRobotAngularVelocity(AngleUnit.DEGREES);
 
             telemetry.addData("Yaw (Z)", "%.2f Deg. (Heading)", orientation.getYaw(AngleUnit.DEGREES));
             telemetry.addData("Yaw (Z) velocity", "%.2f Deg/Sec", angularVelocity.zRotationRate);
-
-
+            
             bottomRollerServo.setPower(BOTTOM_ROLLER_CRSERVO_VALUE);
 
             telemetry.addData("outtake mode: ", outtakeMode);
@@ -411,6 +417,9 @@ public class ServoMotorTest extends LinearOpMode {
 
             telemetry.addData("slidePivotVoltage: ", "%3.2f", slidePivotVoltage.getVoltage());
             telemetry.addData("outtakePivotVoltage: ", "%3.2f", outtakePivotVoltage.getVoltage());
+
+            telemetry.addData("hangMotor current Position: ", hangMotor.getCurrentPosition());
+            telemetry.addData("hangMotor target Position: ", hangMotor.getTargetPosition());
 
             telemetry.update();
 

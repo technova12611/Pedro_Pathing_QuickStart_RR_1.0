@@ -140,6 +140,7 @@ public class ManualDrive extends LinearOpMode {
             telemetry.addLine(outtake.getServoPositions());
             telemetry.addLine("Current Pixel count: " + Intake.pixelsCount + " | Total count: " + Intake.totalPixelCount + " | Prev count: " + prevPixelCount);
             telemetry.addLine("Intake state: " + intake.intakeState);
+            telemetry.addLine(hang.getCurrentPosition());
             telemetry.update();
         }
 
@@ -225,7 +226,7 @@ public class ManualDrive extends LinearOpMode {
         if(g1.aLong()) {
             isPixelDetectionEnabled = false;
         }
-        else if (g1.xOnce()) {
+        else if (!g1.start() && g1.xOnce()) {
             if (intake.intakeState == Intake.IntakeState.ON) {
                 sched.queueAction(intake.intakeOff());
             } else {
@@ -277,10 +278,13 @@ public class ManualDrive extends LinearOpMode {
 
         // Hang arms up/down
         if (g1.dpadUpOnce()) {
-            sched.queueAction(hang.armsUp());
+            sched.queueAction(outtake.outtakeWireUp());
+            sched.queueAction(hang.hookUp());
         }
+
         if (g1.dpadDownOnce()) {
-            sched.queueAction(hang.armsDown());
+            sched.queueAction(outtake.outtakeWireDown());
+            sched.queueAction(hang.hookDown());
         }
 
         // move left and right by one slot
