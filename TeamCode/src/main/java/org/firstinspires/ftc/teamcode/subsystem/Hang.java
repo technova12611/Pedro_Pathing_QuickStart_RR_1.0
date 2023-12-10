@@ -17,12 +17,9 @@ import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 
 public class Hang {
 
-    public static int HANG_HOOK_UP_POSITION = -800;
-
-    public static int HANG_HOOK_DOWN_POSITION = 0;
-
     public static int HANG_POSITION = 700;
 
+    public static int HANG_INREMENTAL_CHANGE_POSITION = 150;
 
     final DcMotorEx hangMotor;
 
@@ -37,16 +34,13 @@ public class Hang {
         this.hangMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
-    public Action hookUp() {
-        return new ActionUtil.DcMotorExRTPAction(hangMotor, HANG_HOOK_UP_POSITION, 0.3);
-    }
-
-    public Action hookDown() {
-        return new ActionUtil.DcMotorExRTPAction(hangMotor, HANG_HOOK_DOWN_POSITION, 0.3);
-    }
-
     public Action hang() {
-        return new ActionUtil.DcMotorExRTPAction(hangMotor, HANG_POSITION, 0.8);
+        return new ActionUtil.DcMotorExRTPAction(hangMotor, HANG_POSITION, 0.95);
+    }
+
+    public Action hangSlowly() {
+        int position = this.hangMotor.getCurrentPosition() + HANG_INREMENTAL_CHANGE_POSITION;
+        return new ActionUtil.DcMotorExRTPAction(hangMotor, position, 0.8);
     }
 
     public String getCurrentPosition () {

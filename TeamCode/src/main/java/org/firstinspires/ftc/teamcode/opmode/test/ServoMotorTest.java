@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.opmode.test;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.roadrunner.ftc.OverflowEncoder;
+import com.acmerobotics.roadrunner.ftc.RawEncoder;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -52,6 +54,9 @@ public class ServoMotorTest extends LinearOpMode {
     MotorWithPID slide;
     MotorWithVelocityPID intakeMotor;
     DcMotorEx parOdometry1;
+
+    DcMotorEx parOdometry2;
+
     DcMotorEx perpOdometry2;
 
     DcMotorEx hangMotor;
@@ -102,6 +107,9 @@ public class ServoMotorTest extends LinearOpMode {
     public static int HANG_MOTOR_POSITION = 0;
     public static double HANG_MOTOR_POWER = 0.0;
 
+    OverflowEncoder par, par1;
+    OverflowEncoder perp;
+
     @Override
     public void runOpMode() throws InterruptedException {
 
@@ -136,8 +144,18 @@ public class ServoMotorTest extends LinearOpMode {
         this.perpOdometry2 =HardwareCreator.createMotor(hardwareMap, "intake_for_perp");
         //this.perpOdometry2.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        this.parOdometry2 = HardwareCreator.createMotor(hardwareMap, "rightBack");
+
         this.parOdometry1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        this.parOdometry2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         this.perpOdometry2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        this.par = new OverflowEncoder(new RawEncoder(HardwareCreator.createMotor(hardwareMap, "par")));
+        this.par.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        this.par1 = new OverflowEncoder(new RawEncoder(HardwareCreator.createMotor(hardwareMap, "rightBack")));
+
+        this.perp = new OverflowEncoder(new RawEncoder(HardwareCreator.createMotor(hardwareMap, "intake_for_perp")));
 
         this.hangMotor = HardwareCreator.createMotor(hardwareMap, "hangMotor");
         this.hangMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -412,7 +430,8 @@ public class ServoMotorTest extends LinearOpMode {
             telemetry.addData("Beam breaker state: ", curBeamBreakerState);
             telemetry.addData("pixelCount: ", pixelsCount);
             telemetry.addData("totalCount: ", totalPixelCount);
-            telemetry.addData("Par encoder: ", parOdometry1.getCurrentPosition());
+            telemetry.addData("Par0 encoder: ", parOdometry1.getCurrentPosition());
+            telemetry.addData("Par1 encoder: ", parOdometry2.getCurrentPosition());
             telemetry.addData("Perp encoder value: ", perpOdometry2.getCurrentPosition());
 
             telemetry.addData("slidePivotVoltage: ", "%3.2f", slidePivotVoltage.getVoltage());
@@ -420,6 +439,10 @@ public class ServoMotorTest extends LinearOpMode {
 
             telemetry.addData("hangMotor current Position: ", hangMotor.getCurrentPosition());
             telemetry.addData("hangMotor target Position: ", hangMotor.getTargetPosition());
+
+            telemetry.addData("par0 overflow encoder value: ", par.encoder.getPositionAndVelocity().position);
+            telemetry.addData("perp overflow encoder value: ", perp.encoder.getPositionAndVelocity().position);
+            telemetry.addData("par1 overflow encoder value: ", par1.encoder.getPositionAndVelocity().position);
 
             telemetry.update();
 

@@ -5,6 +5,7 @@ import android.util.Log;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -58,9 +59,14 @@ public class Outtake {
 
     public static double SLIDE_PIVOT_DUMP_VERY_HIGH = 0.0;
 
-    public static double OUTTAKE_WIRE_DOWN = 0.75;
-    public static double OUTTAKE_WIRE_MIDDLE = 0.35;
-    public static double OUTTAKE_WIRE_HIGH = 0.27;
+    public static double OUTTAKE_WIRE_DOWN = 0.70;
+
+    public static double OUTTAKE_WIRE_SAFE_DOWN = 0.68;
+    public static double OUTTAKE_WIRE_MIDDLE = 0.53;
+    public static double OUTTAKE_WIRE_HIGH = 0.48;
+    public static double OUTTAKE_WIRE_VERY_HIGH = 0.34;
+
+    public static double OUTTAKE_WIRE_FOR_HANGING = 0.40;
 
     final MotorWithPID slide;
     public boolean slidePIDEnabled = true;
@@ -76,6 +82,8 @@ public class Outtake {
     public boolean isAuto = true;
 
     private boolean scoreLevel3 = false;
+
+    private boolean isHangingHookUp = false;
 
     public Outtake(HardwareMap hardwareMap) {
         if (Memory.outtakeSlide != null) { // Preserve motor zero position
@@ -170,8 +178,10 @@ public class Outtake {
         return new SequentialAction(
                 prepareToSlide(),
                 new SleepAction(0.5),
-                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_DOWN, "outtakeWireServo"),
-                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_INIT, "outtakeSlide")
+                new ParallelAction(
+                    outtakeWireDown(),
+                    this.slide.setTargetPositionAction(OUTTAKE_SLIDE_INIT, "outtakeSlide")
+                )
         );
     }
 
@@ -219,7 +229,6 @@ public class Outtake {
     }
 
     public Action extendOuttakeTeleOps() {
-
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_HIGH, "outtakeWireServo"),
                 this.slide.setTargetPositionAction(OUTTAKE_TELEOPS, "outtakeSlide")
@@ -248,7 +257,33 @@ public class Outtake {
         );
     }
 
+    public Action outtakeWireForHanging() {
+
+        if(!isHangingHookUp) {
+            isHangingHookUp = true;
+            return new SequentialAction(
+                    new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_FOR_HANGING, "outtakeWire")
+            );
+        } else {
+            isHangingHookUp = false;
+            return new SequentialAction(
+                    new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_SAFE_DOWN, "outtakeWire")
+            );
+        }
+    }
+
     public Action outtakeWireDown() {
+
+        double currentPosition = outtakeWireServo.getPosition();
+
+        if(currentPosition < OUTTAKE_WIRE_MIDDLE - 0.05) {
+            return new SequentialAction(
+                    new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_SAFE_DOWN, "outtakeWire"),
+                    new SleepAction(0.35),
+                    new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_DOWN, "outtakeWire")
+            );
+        }
+
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_DOWN, "outtakeWire")
         );
@@ -295,6 +330,7 @@ public class Outtake {
         Log.d("prepareToScoreLevel3", "Level 3 is enabled " + String.format("(%.2f, %.2f)", outtakeDumpPosition, slideDumpPosition));
 
         return new SequentialAction(
+                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_VERY_HIGH, "outtakeWireServo"),
                 new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
                 new ActionUtil.ServoPositionAction(outtakePivot, outtakeDumpPosition, "outtakePivot"),
                 new ActionUtil.ServoPositionAction(slidePivot, slideDumpPosition, "slidePivot")

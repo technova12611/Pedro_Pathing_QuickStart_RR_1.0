@@ -107,7 +107,7 @@ public class ManualDrive extends LinearOpMode {
         telemetry.update();
 
         velConstraintOverride = new MinVelConstraint(Arrays.asList(
-                this.drive.kinematics.new WheelVelConstraint(15.0),
+                this.drive.kinematics.new WheelVelConstraint(45.0),
                 new AngularVelConstraint(Math.PI/2)));
 
         waitForStart();
@@ -281,19 +281,23 @@ public class ManualDrive extends LinearOpMode {
 
         // Hang arms up/down
         if (g1.dpadUpOnce()) {
-            sched.queueAction(outtake.outtakeWireUp());
-            sched.queueAction(hang.hookUp());
+            sched.queueAction(outtake.outtakeWireForHanging());
+ //           sched.queueAction(hang.hookUp());
         }
 
-        if (g1.dpadDownOnce()) {
-            sched.queueAction(outtake.outtakeWireDown());
-            sched.queueAction(hang.hookDown());
+        if(g1.dpadDown()) {
+            hang.hang();
+        }
+        else if (g1.dpadDownOnce()) {
+            sched.queueAction(hang.hangSlowly());
         }
 
         // move left and right by one slot
         if (g1.dpadLeftOnce() || g1.dpadRightOnce()) {
 
-            double strafeDistance = (g1.dpadLeftOnce()? -STRAFE_DISTANCE:STRAFE_DISTANCE);
+            int multiplier = (Globals.RUN_AUTO)?1:-1;
+
+            double strafeDistance = (g1.dpadLeftOnce()? STRAFE_DISTANCE:-STRAFE_DISTANCE)*multiplier;
 
             autoRunSched = new AutoActionScheduler(this::update);
             Log.d("ManualDrive", "Pose before strafe: " + new PoseMessage(this.drive.pose) + " | target=" + strafeDistance);
