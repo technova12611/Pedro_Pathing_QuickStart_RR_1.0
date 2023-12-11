@@ -45,10 +45,10 @@ public class Outtake {
     public static double OUTTAKE_PIVOT_REVERSE_DUMP = 0.01;
     public static double OUTTAKE_PIVOT_INIT = 0.175;
     public static double OUTTAKE_PIVOT_SLIDING = 0.23;
-    public static double OUTTAKE_PIVOT_DUMP_LOW = 0.37;
-    public static double OUTTAKE_PIVOT_DUMP_MID = 0.40;
+    public static double OUTTAKE_PIVOT_DUMP_LOW = 0.36;
+    public static double OUTTAKE_PIVOT_DUMP_MID = 0.39;
 
-    public static double OUTTAKE_PIVOT_DUMP_HIGH = 0.59;
+    public static double OUTTAKE_PIVOT_DUMP_HIGH = 0.56;
 
     public static double OUTTAKE_PIVOT_DUMP_VERY_HIGH = 0.62;
 
@@ -326,8 +326,8 @@ public class Outtake {
     }
 
     public Action prepareToScoreLevel3() {
-        double outtakeDumpPosition = OUTTAKE_PIVOT_DUMP_HIGH;
-        double slideDumpPosition = SLIDE_PIVOT_DUMP_HIGH;
+        double outtakeDumpPosition = OUTTAKE_PIVOT_DUMP_VERY_HIGH;
+        double slideDumpPosition = SLIDE_PIVOT_DUMP_VERY_HIGH;
 
         Log.d("prepareToScoreLevel3", "Level 3 is enabled " + String.format("(%.2f, %.2f)", outtakeDumpPosition, slideDumpPosition));
 
