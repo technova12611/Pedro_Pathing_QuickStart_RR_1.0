@@ -9,7 +9,10 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
-import org.firstinspires.ftc.teamcode.pipeline.PropPipeline;
+import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
+import org.firstinspires.ftc.teamcode.pipeline.PropBasePipeline;
+import org.firstinspires.ftc.teamcode.pipeline.PropFarPipeline;
+import org.firstinspires.ftc.teamcode.pipeline.PropNearPipeline;
 import org.firstinspires.ftc.teamcode.pipeline.Side;
 import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
@@ -32,7 +35,7 @@ public abstract class AutoBase extends LinearOpMode {
     protected Hang hang;
     protected AutoActionScheduler sched;
 
-    private PropPipeline propPipeline;
+    private PropBasePipeline propPipeline;
     private VisionPortal portal;
 
     public static Side side = Side.RIGHT;
@@ -69,7 +72,12 @@ public abstract class AutoBase extends LinearOpMode {
 
         Globals.COLOR = getAlliance();
 
-        propPipeline = new PropPipeline();
+        if(getFieldPosition() == FieldPosition.NEAR) {
+            propPipeline = new PropNearPipeline();
+        } else {
+            propPipeline = new PropFarPipeline();
+        }
+
         portal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, Globals.FRONT_WEBCAM_NAME))
                 .setCameraResolution(new Size(1920, 1080))
@@ -133,5 +141,6 @@ public abstract class AutoBase extends LinearOpMode {
     protected abstract void onRun();
 
     protected abstract AlliancePosition getAlliance();
+    protected abstract FieldPosition getFieldPosition();
 }
 

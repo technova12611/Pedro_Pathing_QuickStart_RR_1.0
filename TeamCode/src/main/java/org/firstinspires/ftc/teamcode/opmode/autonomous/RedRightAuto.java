@@ -8,9 +8,10 @@ import com.acmerobotics.roadrunner.SleepAction;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
+import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 
 @Config
-@Autonomous(name = "Red Right Auto", group = "Auto", preselectTeleOp = "Manual Drive")
+@Autonomous(name = "RED Right Auto", group = "Auto RED", preselectTeleOp = "Manual Drive")
 public class RedRightAuto extends AutoBase {
    public static Pose2d[] spike = {
            new Pose2d(14.5, -34.5, Math.toRadians(180)),
@@ -37,7 +38,7 @@ public class RedRightAuto extends AutoBase {
 
    @Override
    protected void printDescription() {
-      telemetry.addData("Description", "Red Right Auto");
+      telemetry.addData("Description", "RED Right Auto");
    }
 
    @Override
@@ -86,6 +87,11 @@ public class RedRightAuto extends AutoBase {
                       )
               )
       );
+   }
+
+   @Override
+   public FieldPosition getFieldPosition() {
+       return FieldPosition.NEAR;
    }
 
 }

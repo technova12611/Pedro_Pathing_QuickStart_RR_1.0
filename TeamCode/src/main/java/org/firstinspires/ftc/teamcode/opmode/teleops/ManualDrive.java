@@ -2,15 +2,10 @@ package org.firstinspires.ftc.teamcode.opmode.teleops;
 
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.AccelConstraint;
 import com.acmerobotics.roadrunner.AngularVelConstraint;
-import com.acmerobotics.roadrunner.Arclength;
 import com.acmerobotics.roadrunner.MinVelConstraint;
-import com.acmerobotics.roadrunner.Pose2dDual;
-import com.acmerobotics.roadrunner.PosePath;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.SequentialAction;
@@ -40,7 +35,7 @@ import java.util.Arrays;
 @TeleOp(group = "Drive", name="Manual Drive")
 public class ManualDrive extends LinearOpMode {
     public static double TURN_SPEED = 0.75;
-    public static double DRIVE_SPEED = 1;
+    public static double DRIVE_SPEED = 1.0;
     public static double SLOW_TURN_SPEED = 0.3;
     public static double SLOW_DRIVE_SPEED = 0.3;
 
@@ -68,6 +63,9 @@ public class ManualDrive extends LinearOpMode {
 
     VelConstraint velConstraintOverride;
     AccelConstraint accelConstraintOverride = new ProfileAccelConstraint(-30.0, 30.0);
+
+    double slowModeForHanging = 0.5;
+    boolean isHangingActivated = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -273,10 +271,8 @@ public class ManualDrive extends LinearOpMode {
                 }
             } else {
                 isSlideOut = true;
-                Actions.runBlocking(new SequentialAction(
-                        intake.intakeOff(),
-                        outtake.prepareToSlide()));
-
+                sched.queueAction(intake.intakeOff());
+                sched.queueAction(outtake.prepareToSlide());
                 sched.queueAction(outtake.extendOuttakeTeleOps());
                 sched.queueAction(new SleepAction(0.5));
                 sched.queueAction(outtake.prepareToScore());
@@ -290,6 +286,12 @@ public class ManualDrive extends LinearOpMode {
         // Hang arms up/down
         if (g1.dpadUpOnce()) {
             sched.queueAction(outtake.outtakeWireForHanging());
+
+            if(outtake.isHangingHookUp) {
+                isHangingActivated = true;
+            } else {
+                isHangingActivated = false;
+            }
  //           sched.queueAction(hang.hookUp());
         }
 
@@ -334,7 +336,7 @@ public class ManualDrive extends LinearOpMode {
         if(g1.start() && g1.x()) {
             if(!isStackIntakeOn) {
                 isStackIntakeOn = true;
-                sched.queueAction(intake.intakeStackedPixels());
+                sched.queueAction(intake.intakeTwoStackedPixels());
             }
         }
         else if(g1.aOnce()) {
@@ -358,8 +360,8 @@ public class ManualDrive extends LinearOpMode {
     }
     private void field_centric_move() {
         double speed = (1-Math.abs(g1.right_stick_x)) * (DRIVE_SPEED - SLOW_DRIVE_SPEED) + SLOW_DRIVE_SPEED;
-        double input_x = Math.pow(-g1.left_stick_y, 3) * speed;
-        double input_y = Math.pow(-g1.left_stick_x, 3) * speed;
+        double input_x = Math.pow(-g1.left_stick_y, 3) * speed * (isHangingActivated?slowModeForHanging:1.0);
+        double input_y = Math.pow(-g1.left_stick_x, 3) * speed *  (isHangingActivated?slowModeForHanging:1.0);
         Vector2d input = new Vector2d(input_x, input_y);
         input = drive.pose.heading.times(input);
 

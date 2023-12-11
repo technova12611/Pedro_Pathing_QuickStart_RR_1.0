@@ -83,7 +83,7 @@ public class Outtake {
 
     private boolean scoreLevel3 = false;
 
-    private boolean isHangingHookUp = false;
+    public boolean isHangingHookUp = false;
 
     public Outtake(HardwareMap hardwareMap) {
         if (Memory.outtakeSlide != null) { // Preserve motor zero position

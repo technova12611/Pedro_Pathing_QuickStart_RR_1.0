@@ -18,9 +18,9 @@ import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 
 public class Hang {
 
-    public static int HANG_POSITION_MAX = 2000;
-    public static int HANG_POSITION = 1500;
-    public static int HANG_INREMENTAL_CHANGE_POSITION = 150;
+    public static int HANG_POSITION_MAX = 3000;
+    public static int HANG_POSITION = 2500;
+    public static int HANG_INREMENTAL_CHANGE_POSITION = 200;
 
     final DcMotorEx hangMotor;
 
@@ -41,7 +41,7 @@ public class Hang {
 
     public Action hangSlowly() {
         int position = this.hangMotor.getCurrentPosition() + HANG_INREMENTAL_CHANGE_POSITION;
-        return new ActionUtil.DcMotorExRTPAction(hangMotor, Range.clip(position, 0, HANG_POSITION_MAX), 0.8);
+        return new ActionUtil.DcMotorExRTPAction(hangMotor, Range.clip(position, 0, HANG_POSITION_MAX), 0.9);
     }
 
     public String getCurrentPosition () {

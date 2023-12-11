@@ -31,7 +31,7 @@ public class StackIntakeTest extends LinearOpMode {
                 new SequentialAction(
                         intake.stackIntakeLinkageDown(),
                         new SleepAction(0.5),
-                        intake.intakeStackedPixels()
+                        intake.intakeTwoStackedPixels()
                 ));
 
         waitForStart();

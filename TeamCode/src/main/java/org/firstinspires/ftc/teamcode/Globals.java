@@ -4,12 +4,14 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
 
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
+import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 import org.firstinspires.ftc.teamcode.pipeline.Side;
 
 @Config
 public class Globals {
 
     public static AlliancePosition COLOR = AlliancePosition.RED;
+    public static FieldPosition FIELD = FieldPosition.FAR;
     /**
      * Match constants.
      */

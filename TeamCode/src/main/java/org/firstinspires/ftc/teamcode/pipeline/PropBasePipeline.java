@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 import com.acmerobotics.dashboard.config.Config;
+
 import org.firstinspires.ftc.robotcore.external.function.Consumer;
 import org.firstinspires.ftc.robotcore.external.function.Continuation;
 import org.firstinspires.ftc.robotcore.external.stream.CameraStreamSource;
@@ -21,7 +22,7 @@ import org.opencv.imgproc.Imgproc;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Config
-public class PropPipeline implements VisionProcessor, CameraStreamSource {
+public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
     private final AtomicReference<Bitmap> lastFrame = new AtomicReference<>(Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565));
 
     private Side location = Side.RIGHT;
@@ -51,6 +52,10 @@ public class PropPipeline implements VisionProcessor, CameraStreamSource {
 
     public static double threshold = 0.0;
 
+    public static double redDeltaThreshold = 1.25;
+
+    public static double blueDeltaThreshold = 1.25;
+
     public double sideColor = 0.0;
     public double centerColor = 0.0;
 
@@ -60,8 +65,8 @@ public class PropPipeline implements VisionProcessor, CameraStreamSource {
     public Scalar side = new Scalar(0,0,0);
     public Scalar center = new Scalar(0,0,0);
 
-    private MovingArrayList sideZoneColorList;
-    private MovingArrayList centerZoneColorList;
+    protected MovingArrayList sideZoneColorList;
+    protected MovingArrayList centerZoneColorList;
 
     private long startTime;
     public long elapsedTime;
@@ -150,13 +155,13 @@ public class PropPipeline implements VisionProcessor, CameraStreamSource {
                 Imgproc.rectangle(frame, centerZoneArea, YELLOW, 3);
             }
         } else {
-            if (meanCenterColor < threshold  || meanSideColor - meanCenterColor > 1.5 ) {
+            if (meanCenterColor < threshold  || meanSideColor - meanCenterColor > redDeltaThreshold ) {
                 // center zone has it
                 location = Side.LEFT;
                 Imgproc.rectangle(frame, centerZoneArea, GREEN, 8);
                 Imgproc.rectangle(frame, sideZoneArea, YELLOW, 3);
             }
-            else if ( meanSideColor < threshold || meanCenterColor - meanSideColor > 1.5) {
+            else if ( meanSideColor < threshold || meanCenterColor - meanSideColor > redDeltaThreshold) {
                 // left zone has it
                 location = Side.RIGHT;
                 Imgproc.rectangle(frame, sideZoneArea, GREEN,8);

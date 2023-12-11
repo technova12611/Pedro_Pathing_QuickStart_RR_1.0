@@ -207,7 +207,7 @@ public class Intake {
         );
     }
 
-    public Action intakeStackedPixels() {
+    public Action intakeTwoStackedPixels() {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_1ST_PIXEL, "stackIntakeServoRight"),
                 new SleepAction(0.20),
@@ -216,6 +216,15 @@ public class Intake {
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_2nd_PIXEL, "stackIntakeServoRight"),
                 new SleepAction(0.20),
                 new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_2nd_PIXEL, "stackIntakeServoLeft"),
+                new SleepAction(0.5)
+        );
+    }
+
+    public Action intakeOneStackedPixels() {
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_1ST_PIXEL, "stackIntakeServoRight"),
+                new SleepAction(0.20),
+                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_1ST_PIXEL, "ServoPositionAction"),
                 new SleepAction(0.5)
         );
     }

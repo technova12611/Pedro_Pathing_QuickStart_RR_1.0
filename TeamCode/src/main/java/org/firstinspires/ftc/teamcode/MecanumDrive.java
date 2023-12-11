@@ -368,7 +368,7 @@ public final class MecanumDrive {
     }
 
     public TrajectoryActionBuilder actionBuilder(Pose2d beginPose) {
-        Log.d("TrajectoryActionBuilder", "Drive path builder begin position: " + new PoseMessage(beginPose).toString());
+        Log.d("TrajectoryActionBuilder", "Drive path builder begin position: " + new PoseMessage(beginPose));
         return new TrajectoryActionBuilder(
                 TurnAction::new,
                 FollowTrajectoryAction::new,
@@ -389,7 +389,7 @@ public final class MecanumDrive {
 
         @Override
         public boolean run(TelemetryPacket packet) {
-            Log.d("MecanumDrive", "Drive Estimated Pose: " + "[" + this.label + "]" + new PoseMessage(drive.pose).toString());
+            Log.d("Drive_Logger", "Drive Estimated Pose: " + "[" + this.label + "]" + new PoseMessage(drive.pose));
             return false;
         }
     }
