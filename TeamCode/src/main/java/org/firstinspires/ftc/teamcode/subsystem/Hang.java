@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
 import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
@@ -17,8 +18,8 @@ import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 
 public class Hang {
 
-    public static int HANG_POSITION = 700;
-
+    public static int HANG_POSITION_MAX = 2000;
+    public static int HANG_POSITION = 1500;
     public static int HANG_INREMENTAL_CHANGE_POSITION = 150;
 
     final DcMotorEx hangMotor;
@@ -40,7 +41,7 @@ public class Hang {
 
     public Action hangSlowly() {
         int position = this.hangMotor.getCurrentPosition() + HANG_INREMENTAL_CHANGE_POSITION;
-        return new ActionUtil.DcMotorExRTPAction(hangMotor, position, 0.8);
+        return new ActionUtil.DcMotorExRTPAction(hangMotor, Range.clip(position, 0, HANG_POSITION_MAX), 0.8);
     }
 
     public String getCurrentPosition () {

@@ -293,7 +293,7 @@ public class ManualDrive extends LinearOpMode {
  //           sched.queueAction(hang.hookUp());
         }
 
-        if(g1.dpadDown()) {
+        if(g1.dpadDownLong()) {
             sched.queueAction(hang.hang());
         }
         else if (g1.dpadDownOnce()) {

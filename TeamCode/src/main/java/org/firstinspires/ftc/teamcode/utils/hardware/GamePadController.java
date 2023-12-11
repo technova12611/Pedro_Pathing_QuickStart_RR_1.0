@@ -118,6 +118,18 @@ public class GamePadController {
     public boolean rightBumperLong() { return 10 < right_bumper; }
     public boolean leftBumperLong() { return 10 < left_bumper; }
 
+    public boolean dpadDownLong() { return 10 < dpad_down; }
+    public boolean dpadDownLongOnce() { return 10 == dpad_down; }
+
+    public boolean dpadUpLong() { return 10 < dpad_up; }
+    public boolean dpadUpLongOnce() { return 10 == dpad_up; }
+
+    public boolean dpadLeftLong() { return 10 < dpad_left; }
+    public boolean dpadLeftLongOnce() { return 10 == dpad_left; }
+
+    public boolean dpadRightLong() { return 10 < dpad_right; }
+    public boolean dpadRightLongOnce() { return 10 == dpad_right; }
+
     public boolean xLongOnce() { return 10 == x; }
     public boolean yLongOnce() { return 10 == y; }
     public boolean aLongOnce() { return 10 == a; }
