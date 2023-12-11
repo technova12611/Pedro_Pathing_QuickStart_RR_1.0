@@ -154,6 +154,7 @@ public class ManualDrive extends LinearOpMode {
     private void pixelDetection() {
         if (isPixelDetectionEnabled) {
 
+            // if the 2nd pixel is too close to the 1st, reverse intake for a moment
             if (prevPixelCount != Intake.pixelsCount && lastTimePixelDetected != null &&
                     (System.currentTimeMillis() - lastTimePixelDetected.longValue()) < 600) {
 
@@ -169,10 +170,12 @@ public class ManualDrive extends LinearOpMode {
 
                 lastTimePixelDetected = null;
                 intakeSlowdownStartTime = new Long(System.currentTimeMillis());
-            } else if (prevPixelCount != Intake.pixelsCount && Intake.pixelsCount >= 2 && intakeReverseStartTime == null) {
+            }
+            // log the count
+            else if (prevPixelCount != Intake.pixelsCount && Intake.pixelsCount >= 2 && intakeReverseStartTime == null) {
                 intakeReverseStartTime = new Long(System.currentTimeMillis());
 
-                Log.d("TeleOps_Pixel_detection", "Pixel changed from 1 to 2, detected at :" + intakeReverseStartTime);
+                Log.d("TeleOps_Pixel_detection", "Pixel counted changed 1 -> 2, detected at :" + intakeReverseStartTime);
             }
 
             if (intakeSlowdownStartTime != null) {
@@ -188,7 +191,7 @@ public class ManualDrive extends LinearOpMode {
                 if ((System.currentTimeMillis() - intakeReverseStartTime.longValue()) > 500
                         && (System.currentTimeMillis() - intakeReverseStartTime.longValue() < 600)) {
                     sched.queueAction(intake.intakeReverse());
-                    Log.d("TeleOps_Pixel_detection", "Pixel changed from 1 to 2, reverse started at" + System.currentTimeMillis());
+                    Log.d("TeleOps_Pixel_detection", "Pixel count 1 -> 2, reverse started at" + System.currentTimeMillis());
                 }
 
                 if ((System.currentTimeMillis() - intakeReverseStartTime.longValue()) > 1800) {
@@ -199,13 +202,15 @@ public class ManualDrive extends LinearOpMode {
                 }
             }
 
-            if (Intake.pixelsCount == 1 && prevPixelCount == 0 && intake.stackIntakeState == Intake.StackIntakeState.UP && lastTimePixelDetected == null) {
-                lastTimePixelDetected = new Long(System.currentTimeMillis());
-                Log.d("TeleOps_Pixel_detection", "Pixel changed from 0 to 1. Detected at " + lastTimePixelDetected);
+            // detect the first pixel in time
+            if (Intake.pixelsCount == 1 && prevPixelCount == 0) {
+                if(intake.stackIntakeState == Intake.StackIntakeState.UP && lastTimePixelDetected == null) {
+                    lastTimePixelDetected = new Long(System.currentTimeMillis());
+                }
+                Log.d("TeleOps_Pixel_detection", "Pixel count changed 0 -> 1. Detected at " + lastTimePixelDetected);
             }
 
             prevPixelCount = Intake.pixelsCount;
-
         }
     }
 
@@ -226,6 +231,9 @@ public class ManualDrive extends LinearOpMode {
     boolean isStackIntakeOn = false;
     private void subsystemControls() {
         // Intake controls
+        //
+        //   xOnce for toggle intake ON/OFF
+        //
         if(g1.aLong()) {
             isPixelDetectionEnabled = false;
         }
@@ -233,10 +241,10 @@ public class ManualDrive extends LinearOpMode {
             if (intake.intakeState == Intake.IntakeState.ON) {
                 sched.queueAction(intake.intakeOff());
             } else {
+                Intake.pixelsCount = 0;
                 sched.queueAction(new SequentialAction(
                         intake.intakeOn(),
-                        outtake.prepareToTransfer(),
-                        new Intake.UpdatePixelCountAction(-2)));
+                        outtake.prepareToTransfer()));
             }
         }
 
@@ -286,7 +294,7 @@ public class ManualDrive extends LinearOpMode {
         }
 
         if(g1.dpadDown()) {
-            hang.hang();
+            sched.queueAction(hang.hang());
         }
         else if (g1.dpadDownOnce()) {
             sched.queueAction(hang.hangSlowly());

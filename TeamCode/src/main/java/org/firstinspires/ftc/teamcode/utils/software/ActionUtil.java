@@ -41,6 +41,7 @@ public class ActionUtil {
 
       @Override
       public boolean run(TelemetryPacket packet) {
+         Log.d("ActionUtil.Motor_RTP", "target: " + position + String.format("%.2f", power));
          motor.setTargetPosition(position);
          motor.setPower(power);
          motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);

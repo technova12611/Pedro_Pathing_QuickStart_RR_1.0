@@ -63,8 +63,8 @@ public class Outtake {
 
     public static double OUTTAKE_WIRE_SAFE_DOWN = 0.68;
     public static double OUTTAKE_WIRE_MIDDLE = 0.53;
-    public static double OUTTAKE_WIRE_HIGH = 0.48;
-    public static double OUTTAKE_WIRE_VERY_HIGH = 0.34;
+    public static double OUTTAKE_WIRE_HIGH = 0.45;
+    public static double OUTTAKE_WIRE_VERY_HIGH = 0.38;
 
     public static double OUTTAKE_WIRE_FOR_HANGING = 0.40;
 
@@ -169,7 +169,8 @@ public class Outtake {
                 OUTTAKE_TELEOPS = OUTTAKE_SLIDE_MAX;
             }
             Log.d("Outtake_Slide", "New position:" + OUTTAKE_TELEOPS + " | Current position: " + this.slide.getCurrentPosition() + " | increment: " + increment);
-            return this.slide.setTargetPositionAction(OUTTAKE_TELEOPS, "outtakeSlide");
+
+            return extendOuttakeTeleOps();
         }
         return new OuttakeLatchStateAction(OuttakeLatchState.CLOSED);
     }
@@ -229,8 +230,9 @@ public class Outtake {
     }
 
     public Action extendOuttakeTeleOps() {
+        double wirePosition = OUTTAKE_TELEOPS >= OUTTAKE_SLIDE_BELOW_LEVEL_2?OUTTAKE_WIRE_VERY_HIGH:OUTTAKE_WIRE_HIGH;
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_HIGH, "outtakeWireServo"),
+                new ActionUtil.ServoPositionAction(outtakeWireServo, wirePosition, "outtakeWireServo"),
                 this.slide.setTargetPositionAction(OUTTAKE_TELEOPS, "outtakeSlide")
         );
     }
