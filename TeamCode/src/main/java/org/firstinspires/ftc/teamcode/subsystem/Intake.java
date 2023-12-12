@@ -74,6 +74,8 @@ public class Intake {
             stackIntakeLinkage.setPosition(STACK_INTAKE_LINKAGE_INIT);
             stackIntakeServoLeft.setPosition(STACK_INTAKE_LEFT_PRELOAD);
             stackIntakeServoRight.setPosition(STACK_INTAKE_RIGHT_PRELOAD);
+            totalPixelCount = 1;
+            pixelsCount = 1;
         }
         else {
             stackIntakeLinkage.setPosition(STACK_INTAKE_LINKAGE_UP);
@@ -83,8 +85,6 @@ public class Intake {
 
         intakeState = IntakeState.OFF;
         stackIntakeState = StackIntakeState.UP;
-        totalPixelCount = 0;
-        pixelsCount = 0;
     }
 
     public enum IntakeState {

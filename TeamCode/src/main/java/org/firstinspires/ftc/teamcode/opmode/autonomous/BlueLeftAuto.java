@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 
 @Config
-@Autonomous(name = "BLUE Left Auto", group = "Auto BLUE", preselectTeleOp = "Manual Drive")
+@Autonomous(name = "BLUE Left Auto", group = "BLUE Auto", preselectTeleOp = "Manual Drive")
 public class BlueLeftAuto extends AutoBase {
    public static Pose2d[] spike = {
            new Pose2d(35.5, 25.5, Math.toRadians(-180)),

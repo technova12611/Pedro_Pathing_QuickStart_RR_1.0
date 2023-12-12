@@ -119,6 +119,7 @@ public abstract class AutoBase extends LinearOpMode {
         drive.pose = getStartPose();
         drive.imu.resetYaw();
 
+        MecanumDrive.previousLogTimestamp = System.currentTimeMillis();
         sched.run();
         Memory.LAST_POSE = drive.pose;
         Globals.drivePose = drive.pose;

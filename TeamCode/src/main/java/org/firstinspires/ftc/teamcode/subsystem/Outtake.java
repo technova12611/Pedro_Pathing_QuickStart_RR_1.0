@@ -31,7 +31,6 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_HIGH = OUTTAKE_SLIDE_ABOVE_LEVEL_2;
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
     public static int OUTTAKE_SLIDE_MID = 1250;
-
     public static int OUTTAKE_SLIDE_CYCLES = 1000;
     public static int OUTTAKE_SLIDE_LOW = 850;
     public static int OUTTAKE_SLIDE_INIT = 0;
@@ -178,7 +177,7 @@ public class Outtake {
     public Action retractOuttake() {
         return new SequentialAction(
                 prepareToSlide(),
-                new SleepAction(0.5),
+                new SleepAction(0.3),
                 new ParallelAction(
                     outtakeWireDown(),
                     this.slide.setTargetPositionAction(OUTTAKE_SLIDE_INIT, "outtakeSlide")

@@ -63,8 +63,12 @@ public final class MecanumDrive {
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
-        public double minProfileAccel = -30;
-        public double maxProfileAccel = 50;
+        public double minProfileAccel = -40;
+        public double maxProfileAccel = 55;
+
+        public double maxWheelVelHighSpeed = 60;
+        public double minProfileAccelHighSpeed = -45;
+        public double maxProfileAccelHighSpeed = 60;
 
         // turn profile parameters (in radians)
         public double maxAngVel = Math.PI; // shared with path
@@ -93,6 +97,12 @@ public final class MecanumDrive {
     public final AccelConstraint defaultAccelConstraint = new ProfileAccelConstraint(PARAMS.minProfileAccel,
             PARAMS.maxProfileAccel);
 
+    public final VelConstraint highSpeedVelConstraint = new MinVelConstraint(Arrays.asList(
+            kinematics.new WheelVelConstraint(PARAMS.maxWheelVelHighSpeed),
+            new AngularVelConstraint(PARAMS.maxAngVel)));
+    public final AccelConstraint highSpeedAccelConstraint = new ProfileAccelConstraint(PARAMS.minProfileAccelHighSpeed,
+            PARAMS.maxProfileAccelHighSpeed);
+
     public final DcMotorEx leftFront, leftBack, rightBack, rightFront;
 
     public final VoltageSensor voltageSensor;
@@ -103,6 +113,10 @@ public final class MecanumDrive {
     public Pose2d pose;
 
     private final LinkedList<Pose2d> poseHistory = new LinkedList<>();
+
+    public static Long previousLogTimestamp = null;
+
+    public static Long autoStartTimestamp = null;
 
     public MecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
         this.pose = pose;
@@ -382,14 +396,49 @@ public final class MecanumDrive {
         MecanumDrive drive;
         String label;
 
+        String message;
+
+        boolean logPixelCount = false;
+
         public DrivePoseLoggingAction(MecanumDrive drive, String label) {
             this.drive = drive;
             this.label = label;
         }
 
+        public DrivePoseLoggingAction(MecanumDrive drive, String label, String message) {
+            this.drive = drive;
+            this.label = label;
+            this.message = message;
+        }
+
+        public DrivePoseLoggingAction(MecanumDrive drive, String label, boolean logPixelCount) {
+            this.drive = drive;
+            this.label = label;
+            this.logPixelCount = logPixelCount;
+        }
+
+        public DrivePoseLoggingAction(MecanumDrive drive, String label, String message, boolean logPixelCount) {
+            this.drive = drive;
+            this.label = label;
+            this.logPixelCount = logPixelCount;
+            this.message = message;
+        }
+
         @Override
         public boolean run(TelemetryPacket packet) {
-            Log.d("Drive_Logger", "Drive Estimated Pose: " + "[" + this.label + "]" + new PoseMessage(drive.pose));
+            if(previousLogTimestamp == null) {
+                autoStartTimestamp = System.currentTimeMillis();
+                previousLogTimestamp = System.currentTimeMillis();
+            }
+            Log.d("Drive_Logger", "Estimated Pose: " + new PoseMessage(drive.pose)
+                    + "  [" + this.label + "]" + " | Elapsed time (ms): "
+                    + (System.currentTimeMillis() - MecanumDrive.previousLogTimestamp)
+                    + (logPixelCount? " | Pixel count:" + Intake.pixelsCount + " | Total Pixel count:" + Intake.totalPixelCount:"")
+                    + (message != null? " | { " + this.message + " }": "")
+                    + " | Auto Timer (s): " + String.format("%.3f",(System.currentTimeMillis() - autoStartTimestamp)/1000.0)
+            );
+
+            MecanumDrive.previousLogTimestamp = System.currentTimeMillis();
             return false;
         }
     }
