@@ -107,20 +107,33 @@ public abstract class AutoBase extends LinearOpMode {
             idle();
         }
 
-        portal.close();
-
         // Auto start
         resetRuntime(); // reset runtime timer
-        Memory.saveStringToFile(String.valueOf(System.currentTimeMillis()), Memory.SAVED_TIME_FILE_NAME); // save auto time for persistence
+        MecanumDrive.previousLogTimestamp = System.currentTimeMillis();
+        MecanumDrive.autoStartTimestamp = System.currentTimeMillis();
+
+        portal.close();
 
         if (isStopRequested()) return; // exit if stopped
 
+        // prepare for the run, build the auto path
+        //-------------------------------------------
         onRun();
+
+        // reset IMU
+        // ----------------------------
         drive.pose = getStartPose();
         drive.imu.resetYaw();
 
-        MecanumDrive.previousLogTimestamp = System.currentTimeMillis();
+        // run the auto path, all the actions are queued
+        //-------------------------------
         sched.run();
+
+        Log.d("Auto", "Auto program ended at " + getRuntime());
+
+        // end of the auto run
+        // keep position and settings in memory for Teleops
+        //--------------------------------------------------
         Memory.LAST_POSE = drive.pose;
         Globals.drivePose = drive.pose;
 
@@ -131,16 +144,35 @@ public abstract class AutoBase extends LinearOpMode {
             Globals.drivePose = drive.pose;
             idle();
         }
-
-        Log.d("Auto", "Auto program ended at " + getRuntime());
-        Log.d("Auto", "End program drive EstimatedPose " + new PoseMessage(drive.pose));
     }
 
+    // the following needs to be implemented by the real auto program
+    // mainly the path and other scoring actions
+
+    /**
+     * define the different starting pose for each locations
+     * RED Right, RED Left, BLUE Right, BLUE Left. All have different Starting Posees.
+     *
+     * @return
+     */
     protected abstract Pose2d getStartPose();
+
+    /**
+     * print the user friendly message to alert driver the program is running
+     */
     protected abstract void printDescription();
+
+    /**
+     * Initialize all the components, if anything is required beyond the base auto
+     */
     protected void onInit() {}
+
+    /**
+     * Build the auto path and queue up actions to execute
+     */
     protected abstract void onRun();
 
+    // these are needed to know where the robot located
     protected abstract AlliancePosition getAlliance();
     protected abstract FieldPosition getFieldPosition();
 }

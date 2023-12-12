@@ -31,7 +31,8 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_HIGH = OUTTAKE_SLIDE_ABOVE_LEVEL_2;
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
     public static int OUTTAKE_SLIDE_MID = 1250;
-    public static int OUTTAKE_SLIDE_CYCLES = 1000;
+    public static int OUTTAKE_SLIDE_CYCLES_ONE = 1150;
+    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1320;
     public static int OUTTAKE_SLIDE_LOW = 850;
     public static int OUTTAKE_SLIDE_INIT = 0;
 
@@ -140,7 +141,7 @@ public class Outtake {
         this.slidePivot.setPosition(SLIDE_PIVOT_INIT);
         this.outtakePivot.setPosition(OUTTAKE_PIVOT_INIT);
         this.latch.setPosition(LATCH_CLOSED);
-        this.outtakeWireServo.setPosition(OUTTAKE_WIRE_DOWN);
+        this.outtakeWireServo.setPosition(OUTTAKE_WIRE_SAFE_DOWN);
     }
 
     public void update() {
@@ -221,10 +222,17 @@ public class Outtake {
         );
     }
 
-    public Action extendOuttakeCycle() {
+    public Action extendOuttakeCycleOne() {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_MIDDLE, "outtakeWireServo"),
-                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_CYCLES, "outtakeSlide")
+                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_CYCLES_ONE, "outtakeSlide")
+        );
+    }
+
+    public Action extendOuttakeCycleTwo() {
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_MIDDLE, "outtakeWireServo"),
+                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_CYCLES_TWO, "outtakeSlide")
         );
     }
 

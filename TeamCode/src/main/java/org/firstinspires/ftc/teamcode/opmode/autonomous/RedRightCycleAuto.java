@@ -1,23 +1,16 @@
 package org.firstinspires.ftc.teamcode.opmode.autonomous;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.roadrunner.AccelConstraint;
-import com.acmerobotics.roadrunner.AngularVelConstraint;
-import com.acmerobotics.roadrunner.MinVelConstraint;
+import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
-import com.acmerobotics.roadrunner.VelConstraint;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
-import org.firstinspires.ftc.teamcode.subsystem.Intake;
-
-import java.util.Arrays;
 
 @Config
 @Autonomous(name = "RED Right Cycle Auto", group = "RED Auto", preselectTeleOp = "Manual Drive")
@@ -39,8 +32,8 @@ public class RedRightCycleAuto extends AutoBase {
             new Pose2d(spike[2].position.x, -12.0, Math.toRadians(180))
     };
 
-    public static Pose2d stackAlignment = new Pose2d(-50.0, -11.0, Math.toRadians(180));
-    public static Pose2d stackIntake = new Pose2d(-54.0, -12.1, Math.toRadians(180));
+    public static Pose2d stackAlignment = new Pose2d(-50.0, -11.5, Math.toRadians(180));
+    public static Pose2d stackIntake = new Pose2d(-54.5, -12.75, Math.toRadians(180));
 
 //   public static Pose2d stackAlignment = new Pose2d(-1.0, -12.0, Math.toRadians(180));
 //   public static Pose2d stackIntake = new Pose2d(-9.0, -12.0, Math.toRadians(180));
@@ -48,11 +41,12 @@ public class RedRightCycleAuto extends AutoBase {
     public static Pose2d backdropAlignment = new Pose2d(45.0, -10.5, Math.toRadians(180));
 
     public static Pose2d cycleScore[] = {
-            new Pose2d(49.7, -39.0, Math.toRadians(180)),
-            new Pose2d(49.7, -32.0, Math.toRadians(180)),
-            new Pose2d(49.7, -32.0, Math.toRadians(180))
+            new Pose2d(48.5, -39.0, Math.toRadians(180)),
+            new Pose2d(48.5, -32.0, Math.toRadians(180)),
+            new Pose2d(48.5, -32.0, Math.toRadians(180))
     };
 
+    public static Pose2d safeTrussPassStop = new Pose2d(-35.0, -10.5, Math.toRadians(180));
 
     // 0 = left, 1 = middle, 2 = right
     public static Pose2d start = new Pose2d(16.0, -62.0, Math.toRadians(90));
@@ -61,6 +55,8 @@ public class RedRightCycleAuto extends AutoBase {
     protected AlliancePosition getAlliance() {
         return AlliancePosition.RED;
     }
+
+    private int cycleCount = 0;
 
     @Override
     protected Pose2d getStartPose() {
@@ -74,12 +70,9 @@ public class RedRightCycleAuto extends AutoBase {
 
     @Override
     protected void onRun() {
-
         sched.addAction(
                 new SequentialAction(
-
                         new MecanumDrive.DrivePoseLoggingAction(drive, "starting_position"),
-
                         // to score yellow pixel on the backdrop
                         new ParallelAction(
                                 drive.actionBuilder(drive.pose)
@@ -148,6 +141,12 @@ public class RedRightCycleAuto extends AutoBase {
     }
 
     private void cyclePixelFromStack(Pose2d startingPosition) {
+        Action extendSlideAction;
+        if(++cycleCount == 2) {
+            extendSlideAction = outtake.extendOuttakeCycleTwo();
+        } else {
+            extendSlideAction = outtake.extendOuttakeCycleOne();
+        }
 
         sched.addAction(
                 new SequentialAction(
@@ -160,7 +159,7 @@ public class RedRightCycleAuto extends AutoBase {
                                         .build()
                         ),
 
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_start_position"),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_start"),
 
                         // move to stack alignment position
                         new ParallelAction(
@@ -175,7 +174,7 @@ public class RedRightCycleAuto extends AutoBase {
                                 )
                         ),
 
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "stack_alignment_position"),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "stack_alignment"),
 
                         // drive to the stack
                         new ParallelAction(
@@ -185,7 +184,7 @@ public class RedRightCycleAuto extends AutoBase {
                                 intake.intakeOn()
                         ),
 
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_position"),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_start"),
 
                         // intake the pixels from the stack
                         intake.intakeTwoStackedPixels(),
@@ -194,18 +193,30 @@ public class RedRightCycleAuto extends AutoBase {
 
                         // move back to the backdrop
                         new ParallelAction(
-                                drive.actionBuilder(stackIntake)
-                                        .setReversed(true)
-                                        .strafeTo(backdropAlignment.position,
-                                                this.drive.highSpeedVelConstraint, this.drive.highSpeedAccelConstraint)
-                                        .build(),
+                                new SequentialAction(
+                                    drive.actionBuilder(stackIntake)
+                                            .setReversed(true)
+                                            .strafeTo(safeTrussPassStop.position)
+                                            .build(),
+                                        new MecanumDrive.DrivePoseLoggingAction(drive, "safe_pass_stop"),
+
+                                        drive.actionBuilder(safeTrussPassStop)
+                                                .setReversed(true)
+                                                .strafeTo(backdropAlignment.position,
+                                                        this.drive.highSpeedVelConstraint,
+                                                        this.drive.highSpeedAccelConstraint)
+                                                .build()
+                                ),
+
                                 new SequentialAction(
                                         new SleepAction(0.5),
+                                        intake.stackIntakeLinkageUp(),
+                                        new SleepAction(1.5),
                                         intake.prepareTeleOpsIntake()
                                 )
                         ),
 
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_alignment_position"),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_alignment"),
 
                         // move to backdrop scoring position
                         new ParallelAction(
@@ -218,20 +229,19 @@ public class RedRightCycleAuto extends AutoBase {
                                         new SleepAction(0.2),
                                         outtake.prepareToSlide(),
                                         new SleepAction(0.5),
-                                        outtake.extendOuttakeCycle()
+                                        extendSlideAction
                                 )
                         ),
 
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_position"),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score"),
 
                         // score pixels
                         outtake.prepareToScoreCycle(),
                         new SleepAction(0.25),
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_open_latch"),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_open_latch"),
                         outtake.latchScore2(),
-                        new SleepAction(0.6),
-
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_end")
+                        new SleepAction(0.75),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_end")
                 ));
     }
 

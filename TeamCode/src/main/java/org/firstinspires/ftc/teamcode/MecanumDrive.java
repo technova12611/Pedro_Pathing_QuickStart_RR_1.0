@@ -427,15 +427,19 @@ public final class MecanumDrive {
         @Override
         public boolean run(TelemetryPacket packet) {
             if(previousLogTimestamp == null) {
-                autoStartTimestamp = System.currentTimeMillis();
-                previousLogTimestamp = System.currentTimeMillis();
+                MecanumDrive.previousLogTimestamp = System.currentTimeMillis();
             }
+
+            if(MecanumDrive.autoStartTimestamp == null){
+                MecanumDrive.autoStartTimestamp = System.currentTimeMillis();
+            }
+
             Log.d("Drive_Logger", "Estimated Pose: " + new PoseMessage(drive.pose)
                     + "  [" + this.label + "]" + " | Elapsed time (ms): "
                     + (System.currentTimeMillis() - MecanumDrive.previousLogTimestamp)
                     + (logPixelCount? " | Pixel count:" + Intake.pixelsCount + " | Total Pixel count:" + Intake.totalPixelCount:"")
                     + (message != null? " | { " + this.message + " }": "")
-                    + " | Auto Timer (s): " + String.format("%.3f",(System.currentTimeMillis() - autoStartTimestamp)/1000.0)
+                    + " | Auto Timer (s): " + String.format("%.3f",(System.currentTimeMillis() - MecanumDrive.autoStartTimestamp)/1000.0)
             );
 
             MecanumDrive.previousLogTimestamp = System.currentTimeMillis();

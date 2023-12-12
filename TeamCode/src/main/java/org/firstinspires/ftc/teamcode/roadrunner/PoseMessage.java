@@ -16,7 +16,7 @@ public final class PoseMessage {
     }
 
     public String toString() {
-        return String.format("(%.3f, %.3f, %.3f)", this.x, this.y, Math.toDegrees(this.heading));
+        return String.format("(%2.1f, %2.1f, %3.1f)", this.x, this.y, Math.toDegrees(this.heading));
     }
 }
 
