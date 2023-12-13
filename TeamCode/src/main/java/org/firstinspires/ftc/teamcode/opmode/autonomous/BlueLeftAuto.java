@@ -16,16 +16,16 @@ public class BlueLeftAuto extends AutoBase {
    public static Pose2d[] spike = {
            new Pose2d(35.5, 25.5, Math.toRadians(-180)),
            new Pose2d(28.5, 23.5, Math.toRadians(-180)),
-           new Pose2d(14.1, 33.5, Math.toRadians(-180))
+           new Pose2d(14.1, 34.25, Math.toRadians(-180))
    };
 
    public static Pose2d[] backdrop =  {
-           new Pose2d(49.2, 41.5, Math.toRadians(-180)),
-           new Pose2d(49.2, 36, Math.toRadians(-180)),
-           new Pose2d(49.2, 30.5, Math.toRadians(-180))
+           new Pose2d(48.75, 42.0, Math.toRadians(-180)),
+           new Pose2d(48.75, 36, Math.toRadians(-180)),
+           new Pose2d(48.75, 28.5, Math.toRadians(-180))
    };
    // 0 = left, 1 = middle, 2 = right
-   public static Pose2d start = new Pose2d(16.0, 62.0, Math.toRadians(-90));
+   public static Pose2d start = new Pose2d(16.0, 62.5, Math.toRadians(-90));
    public static Pose2d parking = new Pose2d(53.0, 60.0, Math.toRadians(-180));
 
    protected AlliancePosition getAlliance() {

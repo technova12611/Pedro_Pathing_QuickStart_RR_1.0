@@ -116,14 +116,14 @@ public abstract class AutoBase extends LinearOpMode {
 
         if (isStopRequested()) return; // exit if stopped
 
+        drive.pose = getStartPose();
+        // reset IMU
+        // ----------------------------
+        drive.imu.resetYaw();
+
         // prepare for the run, build the auto path
         //-------------------------------------------
         onRun();
-
-        // reset IMU
-        // ----------------------------
-        drive.pose = getStartPose();
-        drive.imu.resetYaw();
 
         // run the auto path, all the actions are queued
         //-------------------------------

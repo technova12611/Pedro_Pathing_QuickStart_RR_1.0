@@ -31,8 +31,8 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_HIGH = OUTTAKE_SLIDE_ABOVE_LEVEL_2;
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
     public static int OUTTAKE_SLIDE_MID = 1250;
-    public static int OUTTAKE_SLIDE_CYCLES_ONE = 1150;
-    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1320;
+    public static int OUTTAKE_SLIDE_CYCLES_ONE = 1100;
+    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1250;
     public static int OUTTAKE_SLIDE_LOW = 850;
     public static int OUTTAKE_SLIDE_INIT = 0;
 
@@ -50,6 +50,8 @@ public class Outtake {
 
     public static double OUTTAKE_PIVOT_DUMP_HIGH = 0.56;
 
+    public static double OUTTAKE_PIVOT_DUMP_CYCLE = 0.37;
+
     public static double OUTTAKE_PIVOT_DUMP_VERY_HIGH = 0.62;
 
     public static double SLIDE_PIVOT_INIT = 0.438;
@@ -59,9 +61,9 @@ public class Outtake {
 
     public static double SLIDE_PIVOT_DUMP_VERY_HIGH = 0.0;
 
-    public static double OUTTAKE_WIRE_DOWN = 0.70;
+    public static double OUTTAKE_WIRE_DOWN = 0.71;
 
-    public static double OUTTAKE_WIRE_SAFE_DOWN = 0.68;
+    public static double OUTTAKE_WIRE_SAFE_DOWN = 0.69;
     public static double OUTTAKE_WIRE_MIDDLE = 0.53;
     public static double OUTTAKE_WIRE_HIGH = 0.45;
     public static double OUTTAKE_WIRE_VERY_HIGH = 0.38;
@@ -319,7 +321,7 @@ public class Outtake {
 
     public Action prepareToScoreCycle() {
 
-        double outtakeDumpPosition = OUTTAKE_PIVOT_DUMP_MID;
+        double outtakeDumpPosition = OUTTAKE_PIVOT_DUMP_CYCLE;
         double slideDumpPosition = SLIDE_PIVOT_DUMP;
 
         Log.d("Outtake_Pivot_Servo", "Outtake Dump Servo Position: " + String.format("%.2f", outtakeDumpPosition));

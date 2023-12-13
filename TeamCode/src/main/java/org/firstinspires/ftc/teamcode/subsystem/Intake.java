@@ -27,12 +27,12 @@ public class Intake {
     final CRServo bottomRollerServo;
 
     public static double STACK_INTAKE_LEFT_INIT = 0.01;
-    public static double STACK_INTAKE_LEFT_PRELOAD = 0.18;
+    public static double STACK_INTAKE_LEFT_PRELOAD = 0.16;
     public static double STACK_INTAKE_LEFT_1ST_PIXEL = 0.58;
     public static double STACK_INTAKE_LEFT_2nd_PIXEL = 1.0;
 
     public static double STACK_INTAKE_RIGHT_INIT = 0.02;
-    public static double STACK_INTAKE_RIGHT_PRELOAD = 0.15;
+    public static double STACK_INTAKE_RIGHT_PRELOAD = 0.12;
     public static double STACK_INTAKE_RIGHT_1ST_PIXEL = 0.58;
     public static double STACK_INTAKE_RIGHT_2nd_PIXEL = 1.0;
 

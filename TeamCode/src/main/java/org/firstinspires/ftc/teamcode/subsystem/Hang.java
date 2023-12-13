@@ -18,9 +18,9 @@ import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 
 public class Hang {
 
-    public static int HANG_POSITION_MAX = 3000;
+    public static int HANG_POSITION_MAX = 5000;
     public static int HANG_POSITION = 2500;
-    public static int HANG_INREMENTAL_CHANGE_POSITION = 200;
+    public static int HANG_INREMENTAL_CHANGE_POSITION = 300;
 
     final DcMotorEx hangMotor;
 

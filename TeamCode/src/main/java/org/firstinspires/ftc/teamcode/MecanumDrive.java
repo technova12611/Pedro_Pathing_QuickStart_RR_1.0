@@ -43,6 +43,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 
 import java.lang.Math;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,11 +65,11 @@ public final class MecanumDrive {
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
         public double minProfileAccel = -40;
-        public double maxProfileAccel = 55;
+        public double maxProfileAccel = 60;
 
         public double maxWheelVelHighSpeed = 60;
-        public double minProfileAccelHighSpeed = -45;
-        public double maxProfileAccelHighSpeed = 60;
+        public double minProfileAccelHighSpeed = -50;
+        public double maxProfileAccelHighSpeed = 70;
 
         // turn profile parameters (in radians)
         public double maxAngVel = Math.PI; // shared with path
@@ -434,9 +435,12 @@ public final class MecanumDrive {
                 MecanumDrive.autoStartTimestamp = System.currentTimeMillis();
             }
 
+            DecimalFormat formatter = new DecimalFormat("###,### (ms)");
+
+
             Log.d("Drive_Logger", "Estimated Pose: " + new PoseMessage(drive.pose)
-                    + "  [" + this.label + "]" + " | Elapsed time (ms): "
-                    + (System.currentTimeMillis() - MecanumDrive.previousLogTimestamp)
+                    + "  [" + this.label + "]" + " | Elapsed time: "
+                    + formatter.format((System.currentTimeMillis() - MecanumDrive.previousLogTimestamp))
                     + (logPixelCount? " | Pixel count:" + Intake.pixelsCount + " | Total Pixel count:" + Intake.totalPixelCount:"")
                     + (message != null? " | { " + this.message + " }": "")
                     + " | Auto Timer (s): " + String.format("%.3f",(System.currentTimeMillis() - MecanumDrive.autoStartTimestamp)/1000.0)

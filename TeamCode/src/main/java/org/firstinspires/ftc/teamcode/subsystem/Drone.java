@@ -19,7 +19,7 @@ public class Drone {
 
     // Drone Tilt is Axon Mini Servo
     public static double TILT_INIT = 0.3;
-    public static double TILT_LAUNCH = 0.55;
+    public static double TILT_LAUNCH = 0.57;
 
     final Servo latch;
     final Servo tilt;
