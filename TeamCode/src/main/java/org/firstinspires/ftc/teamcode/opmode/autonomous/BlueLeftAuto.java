@@ -40,66 +40,8 @@ public class BlueLeftAuto extends NearAutoBase {
    }
 
    @Override
-   protected Pose2d getStartPose() {
-      return start;
-   }
-
-   @Override
    protected void printDescription() {
       telemetry.addData("Description", "BLUE Left Auto");
    }
 
-   @Override
-   protected void onRun() {
-
-      sched.addAction(
-              new SequentialAction(
-                      // to score yellow pixel on the backdrop
-                      new ParallelAction(
-                              drive.actionBuilder(drive.pose)
-                                      .strafeToLinearHeading(backdrop[SPIKE].position, backdrop[SPIKE].heading)
-                                      .build(),
-
-                              outtake.prepareToSlide(),
-                              new SequentialAction(
-                                      new SleepAction(1.5),
-                                      outtake.extendOuttakeLow()
-                              )
-                      ),
-
-                      outtake.prepareToScore(),
-                      new SleepAction(0.25),
-                      outtake.latchScore1(),
-                      new SleepAction(0.75),
-                      new ParallelAction(
-                              outtake.retractOuttake(),
-                              intake.stackIntakeLinkageDown(),
-
-                              // to score the purple pixel on the spike
-                              drive.actionBuilder(backdrop[SPIKE])
-                                      .strafeTo(spike[SPIKE].position)
-                                      .build()
-                      ),
-
-                      intake.scorePurplePreload(),
-                      new SleepAction(0.5),
-
-                      // to park and prepare for teleops
-                      new ParallelAction(
-                         intake.prepareTeleOpsIntake(),
-                         outtake.prepareToTransfer(),
-
-                         drive.actionBuilder(spike[SPIKE])
-                                 .setReversed(true)
-                                 .strafeTo(parking.position)
-                                 .build()
-                      )
-              )
-      );
-   }
-
-   @Override
-   public FieldPosition getFieldPosition() {
-      return FieldPosition.NEAR;
-   }
 }

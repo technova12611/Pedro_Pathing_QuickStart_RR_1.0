@@ -47,10 +47,12 @@ public abstract class NearAutoBase extends AutoBase {
                       outtake.prepareToScore(),
                       new SleepAction(0.25),
                       outtake.latchScore1(),
-                      new SleepAction(0.75),
+                      intake.stackIntakeLinkageDown(),
+                      new SleepAction(1.0),
                       new ParallelAction(
-                              outtake.retractOuttake(),
-                              intake.stackIntakeLinkageDown(),
+                          new SequentialAction(
+                              new SleepAction(0.25),
+                              outtake.retractOuttake()),
 
                               // to score the purple pixel on the spike
                               drive.actionBuilder(backdrop[SPIKE])

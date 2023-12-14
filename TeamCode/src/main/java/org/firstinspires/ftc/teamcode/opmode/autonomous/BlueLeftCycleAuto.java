@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 import org.firstinspires.ftc.teamcode.roadrunner.PoseMessage;
 
 @Config
-@Autonomous(name = "Blue LEFT Cycle Auto", group = "BLUE Auto", preselectTeleOp = "Manual Drive")
+@Autonomous(name = "Blue LEFT Cycle Auto (2+4)", group = "BLUE Auto", preselectTeleOp = "Manual Drive")
 public class BlueLeftCycleAuto extends NearCycleAutoBase {
 
     @Override

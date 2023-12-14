@@ -77,10 +77,15 @@ public abstract class FarAutoBase extends AutoBase {
                             new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_position"),
                             intake.intakeOneStackedPixels(),
 
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "intake_one_white"),
                             // move to stack intake position
                             drive.actionBuilder(stackIntake[SPIKE])
                                     .strafeTo(crossFieldAlignment[SPIKE].position)
-                                    .build()
+                                    .build(),
+
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "crossFieldAlignment", true),
+
+                            intake.prepareTeleOpsIntake()
                     )
             );
 
@@ -96,7 +101,7 @@ public abstract class FarAutoBase extends AutoBase {
                                     .build(),
                             // drop the purple pixel
                             intake.stackIntakeLinkageDown(),
-                            new SleepAction(0.5),
+                            new SleepAction(0.75),
                             intake.scorePurplePreload(),
                             new SleepAction(0.25),
 
@@ -130,7 +135,7 @@ public abstract class FarAutoBase extends AutoBase {
                             drive.actionBuilder(stackIntake[SPIKE])
                                     .strafeTo(crossFieldAlignment[SPIKE].position)
                                     .build(),
-                            new MecanumDrive.DrivePoseLoggingAction(drive, "cross_field_alignment"),
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "cross_field_alignment", true),
 
                             intake.prepareTeleOpsIntake()
 
