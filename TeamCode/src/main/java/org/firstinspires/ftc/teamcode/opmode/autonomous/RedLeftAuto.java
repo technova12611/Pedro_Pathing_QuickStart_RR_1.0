@@ -19,8 +19,8 @@ public class RedLeftAuto extends AutoBase {
     public static Pose2d start = new Pose2d(-40.0, -62.0, Math.toRadians(90));
 
     public static Pose2d[] spike = {
-            new Pose2d(-48.5, -45.5, Math.toRadians(90)),
-            new Pose2d(-34.0, -37.5, Math.toRadians(90)),
+            new Pose2d(-48.5, -45.0, Math.toRadians(90)),
+            new Pose2d(-43.0, -35.5, Math.toRadians(90)),
             new Pose2d(-38.0, -35.5, Math.toRadians(25))
     };
     public static Pose2d[] backdrop = {
@@ -55,28 +55,26 @@ public class RedLeftAuto extends AutoBase {
     protected void onRun() {
 
         Pose2d[] backOffFromSpike = {
-                new Pose2d(-40, -48, Math.toRadians(90)),
-                new Pose2d(-36, -40, Math.toRadians(90)),
+                new Pose2d(-35, -48, Math.toRadians(90)),
+                new Pose2d(-40, -42, Math.toRadians(90)),
                 new Pose2d(-40, -45, Math.toRadians(90))
         };
 
-        Pose2d backOffFromSpike2 = new Pose2d(-36, -45, Math.toRadians(90));
-
         Pose2d[] stackIntakeAlignment = {
-                new Pose2d(-50, -12.75, Math.toRadians(180)),
-                new Pose2d(-50, -38, Math.toRadians(180)),
-                new Pose2d(-50, -12.75, Math.toRadians(180))
+                new Pose2d(-36, -12.05, Math.toRadians(90)),
+                new Pose2d(-50, -34.5, Math.toRadians(180)),
+                new Pose2d(-50, -12.05, Math.toRadians(180))
         };
 
         Pose2d[] stackIntake = {
-                new Pose2d(-54, -12.75, Math.toRadians(180)),
-                new Pose2d(-54, -38, Math.toRadians(180)),
+                new Pose2d(-58, -12.75, Math.toRadians(180)),
+                new Pose2d(-56.5, -35, Math.toRadians(180)),
                 new Pose2d(-58.5, -12.75, Math.toRadians(180))
         };
-        Pose2d [] crossFieldAligment = {
-                new Pose2d(-48, -12, Math.toRadians(180)),
-                new Pose2d(-48, -12, Math.toRadians(180)),
-                new Pose2d(-48, -12, Math.toRadians(180))
+        Pose2d [] crossFieldAlignment = {
+                new Pose2d(-48, -11, Math.toRadians(180)),
+                new Pose2d(-40, -35, Math.toRadians(180)),
+                new Pose2d(-48, -11, Math.toRadians(180))
         };
         Pose2d backdropAlignment = new Pose2d(45.0, -10.5, Math.toRadians(180));
 
@@ -85,11 +83,13 @@ public class RedLeftAuto extends AutoBase {
             Pose2d moveUp1 =  new Pose2d(-40.0, -54.0, Math.toRadians(90));
             sched.addAction(
                     new SequentialAction(
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "auto_start"),
                             drive.actionBuilder(drive.pose)
                                     .strafeTo(moveUp1.position)
                                     .build(),
 
                             new ParallelAction(
+                                    new MecanumDrive.DrivePoseLoggingAction(drive, "to_spike"),
                                     drive.actionBuilder(moveUp1)
                                             .strafeToLinearHeading(spike[SPIKE].position, spike[SPIKE].heading)
                                             .build(),
@@ -99,18 +99,21 @@ public class RedLeftAuto extends AutoBase {
                             ),
 
                             // drop the purple pixel
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "spike"),
                             intake.scorePurplePreload(),
                             new SleepAction(0.25),
 
                             intake.prepareTeleOpsIntake(),
                             new SleepAction(0.25),
 
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "purple_pixel"),
                             drive.actionBuilder(spike[SPIKE])
                                     .strafeToLinearHeading(backOffFromSpike[SPIKE].position, backOffFromSpike[SPIKE].heading)
                                     .build(),
 
                             // move to middle stack on the left
                             new ParallelAction(
+                                    new MecanumDrive.DrivePoseLoggingAction(drive, "backOff_from_spike"),
                                     drive.actionBuilder(backOffFromSpike[SPIKE])
                                             .strafeToLinearHeading(stackIntakeAlignment[SPIKE].position, stackIntakeAlignment[SPIKE].heading)
                                             .build(),
@@ -119,6 +122,7 @@ public class RedLeftAuto extends AutoBase {
 
 
                             // move to stack intake position
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_alignment"),
                             drive.actionBuilder(stackIntakeAlignment[SPIKE])
                                     .strafeTo(stackIntake[SPIKE].position)
                                     .build(),
@@ -128,7 +132,7 @@ public class RedLeftAuto extends AutoBase {
 
                             // move to stack intake position
                             drive.actionBuilder(stackIntake[SPIKE])
-                                    .strafeTo(crossFieldAligment[SPIKE].position)
+                                    .strafeTo(crossFieldAlignment[SPIKE].position)
                                     .build()
                     )
             );
@@ -139,55 +143,49 @@ public class RedLeftAuto extends AutoBase {
 
             sched.addAction(
                     new SequentialAction(
-                            new ParallelAction(
-                                    drive.actionBuilder(drive.pose)
-                                            .strafeTo(spike[SPIKE].position)
-                                            .build(),
-                                    new SequentialAction(
-                                            new SleepAction(0.5),
-                                            intake.stackIntakeLinkageDown()
-                                    )
-                            ),
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "start"),
+                            drive.actionBuilder(drive.pose)
+                                    .strafeTo(spike[SPIKE].position)
+                                    .build(),
                             // drop the purple pixel
+                            intake.stackIntakeLinkageDown(),
+                            new SleepAction(0.5),
                             intake.scorePurplePreload(),
                             new SleepAction(0.25),
 
                             // backoff from spike
                             //
-                            new ParallelAction(
-                                    drive.actionBuilder(spike[SPIKE])
-                                            .setReversed(true)
-                                            .splineToSplineHeading(backOffFromSpike[SPIKE], Math.toRadians(0))
-                                            .build(),
-
-                                    new SequentialAction(
-                                            new SleepAction(0.25),
-                                            intake.prepareTeleOpsIntake(),
-                                            outtake.prepareToTransfer()
-                                    )),
-
-                            drive.actionBuilder(backOffFromSpike[SPIKE])
-                                    .turnTo(Math.toRadians(180))
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "spike"),
+                            drive.actionBuilder(spike[SPIKE])
+                                    .setReversed(true)
+                                    .strafeTo(backOffFromSpike[SPIKE].position)
                                     .build(),
 
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "backOff_from_spike"),
                             new ParallelAction(
-                                    drive.actionBuilder(new Pose2d(backOffFromSpike[SPIKE].position, Math.toRadians(180)))
-                                            .strafeTo(stackIntakeAlignment[SPIKE].position)
+                                    drive.actionBuilder(backOffFromSpike[SPIKE])
+                                            .strafeToLinearHeading(stackIntakeAlignment[SPIKE].position, stackIntakeAlignment[SPIKE].heading)
                                             .build(),
                                     intake.prepareStackIntake()
                             ),
 
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "stackIntake_alignment"),
                             // move to stack intake position
                             drive.actionBuilder(stackIntakeAlignment[SPIKE])
                                     .strafeTo(stackIntake[SPIKE].position)
                                     .build(),
 
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "stackIntake"),
                             intake.intakeOneStackedPixels(),
 
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "intake_one_white", true),
                             // move to stack intake position
                             drive.actionBuilder(stackIntake[SPIKE])
-                                    .strafeTo(crossFieldAligment[SPIKE].position)
-                                    .build()
+                                    .strafeTo(crossFieldAlignment[SPIKE].position)
+                                    .build(),
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "cross_field_alignment"),
+
+                            intake.prepareTeleOpsIntake()
 
                     )
             );
@@ -195,62 +193,74 @@ public class RedLeftAuto extends AutoBase {
         }
         // SPIKE is lef
         else {
+            Pose2d stackIntakeAlignment2 = new Pose2d(-50, -12.75, Math.toRadians(180));
             sched.addAction(
                     new SequentialAction(
                             new ParallelAction(
+                                    new MecanumDrive.DrivePoseLoggingAction(drive, "start"),
                                     drive.actionBuilder(drive.pose)
                                             .strafeTo(spike[SPIKE].position)
                                             .build(),
                                     new SequentialAction(
-                                            new SleepAction(0.5),
+                                            new SleepAction(0.2),
                                             intake.stackIntakeLinkageDown()
                                     )
                             ),
+
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "to_spike"),
                             // drop the purple pixel
                             intake.scorePurplePreload(),
                             new SleepAction(0.25),
 
+                            intake.prepareTeleOpsIntake(),
+                            outtake.prepareToTransfer(),
+
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "purple_pixel"),
                             // backoff from spike
                             //
-                            new ParallelAction(
-                                    drive.actionBuilder(spike[SPIKE])
+                            drive.actionBuilder(spike[SPIKE])
                                             .setReversed(true)
-                                            .splineToSplineHeading(backOffFromSpike[SPIKE], Math.toRadians(0))
+                                            .strafeTo(backOffFromSpike[SPIKE].position)
                                             .build(),
 
-                                    new SequentialAction(
-                                            new SleepAction(0.25),
-                                            intake.prepareTeleOpsIntake(),
-                                            outtake.prepareToTransfer()
-                                    )),
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "backOff_from_spike"),
 
-                            drive.actionBuilder(backOffFromSpike[SPIKE])
-                                    .strafeTo(backOffFromSpike2.position)
-                                    .build(),
-
-                            drive.actionBuilder(backOffFromSpike2)
-                                    .turnTo(Math.toRadians(180))
-                                    .build(),
-
+                            // move to intake alignment
                             new ParallelAction(
-                                    drive.actionBuilder(new Pose2d(backOffFromSpike2.position, Math.toRadians(180)))
-                                            .strafeTo(stackIntakeAlignment[SPIKE].position)
+                                    drive.actionBuilder(backOffFromSpike[SPIKE])
+                                            .strafeToLinearHeading(stackIntakeAlignment[SPIKE].position, stackIntakeAlignment[SPIKE].heading)
                                             .build(),
 
-                                    intake.prepareStackIntake()
+                                    new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_alignment"),
+                                    new SequentialAction(
+                                            new SleepAction(1.0),
+                                            intake.prepareStackIntake()
+                                    )
                             ),
 
-                            // move to stack intake position
                             drive.actionBuilder(stackIntakeAlignment[SPIKE])
-                                    .strafeTo(stackIntake[SPIKE].position)
+                                    .strafeToLinearHeading(stackIntakeAlignment2.position, stackIntakeAlignment2.heading)
                                     .build(),
 
-                            intake.intakeOneStackedPixels(),
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_alignment_2"),
 
                             // move to stack intake position
+                            drive.actionBuilder(stackIntakeAlignment2)
+                                    .strafeToLinearHeading(stackIntake[SPIKE].position, stackIntake[SPIKE].heading)
+                                    .build(),
+
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_"),
+                            intake.intakeOneStackedPixels(),
+
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "intake_one_white", true),
+                            // move to stack intake position
                             drive.actionBuilder(stackIntake[SPIKE])
-                                    .strafeTo(crossFieldAligment[SPIKE].position)
-                                    .build()
+                                    .strafeToLinearHeading(crossFieldAlignment[SPIKE].position, crossFieldAlignment[SPIKE].heading)
+                                    .build(),
+
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "cross_field_alignment", true),
+
+                            intake.prepareTeleOpsIntake()
 
                     )
             );

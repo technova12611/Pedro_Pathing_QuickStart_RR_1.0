@@ -141,7 +141,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         // drive to the stack
                         new ParallelAction(
                                 drive.actionBuilder(stackAlignment)
-                                        .strafeTo(stackIntake.position)
+                                        .strafeToLinearHeading(stackIntake.position, stackIntake.heading)
                                         .build(),
                                 intake.intakeOn()
                         ),
@@ -158,13 +158,13 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                 new SequentialAction(
                                     drive.actionBuilder(stackIntake)
                                             .setReversed(true)
-                                            .strafeTo(safeTrussPassStop.position)
+                                            .strafeToLinearHeading(safeTrussPassStop.position, safeTrussPassStop.heading)
                                             .build(),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "safe_pass_stop"),
 
                                         drive.actionBuilder(safeTrussPassStop)
                                                 .setReversed(true)
-                                                .strafeTo(backdropAlignment.position,
+                                                .strafeToLinearHeading(backdropAlignment.position,backdropAlignment.heading,
                                                         this.drive.highSpeedVelConstraint,
                                                         this.drive.highSpeedAccelConstraint)
                                                 .build(),
