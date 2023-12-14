@@ -15,16 +15,15 @@ import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 import org.firstinspires.ftc.teamcode.roadrunner.PoseMessage;
 
 @Config
-@Autonomous(name = "BLUE Left Cycle Auto", group = "BLUE Auto", preselectTeleOp = "Manual Drive")
+@Autonomous(name = "Blue LEFT Cycle Auto", group = "BLUE Auto", preselectTeleOp = "Manual Drive")
 public class BlueLeftCycleAuto extends NearCycleAutoBase {
 
     @Override
     protected void onInit() {
-        this.start = new Pose2d(16.0, 62.0, Math.toRadians(-90));
-        this.firstSplineTangent = -Math.PI / 2;
+        this.start = BlueLeftAuto.blue_start;
 
-        this.backdrop = BlueLeftAuto.backdrop;
-        this.spike = BlueLeftAuto.spike;
+        this.backdrop = BlueLeftAuto.blue_backdrop;
+        this.spike = BlueLeftAuto.blue_spike;
 
         this.cycleStart = new Pose2d[]{
                 new Pose2d(spike[0].position.x, 12.0, Math.toRadians(-180)),

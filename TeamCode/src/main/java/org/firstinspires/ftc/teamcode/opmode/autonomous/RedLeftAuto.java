@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 
 @Config
-@Autonomous(name = "RED Left Auto", group = "RED Auto", preselectTeleOp = "Manual Drive")
+@Autonomous(name = "RED LEFT Auto (2+1)", group = "RED Auto", preselectTeleOp = "Manual Drive")
 public class RedLeftAuto extends AutoBase {
     // 0 = left, 1 = middle, 2 = right
     public static Pose2d start = new Pose2d(-40.0, -62.0, Math.toRadians(90));

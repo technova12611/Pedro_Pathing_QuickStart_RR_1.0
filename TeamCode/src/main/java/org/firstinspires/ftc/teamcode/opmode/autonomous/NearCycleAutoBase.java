@@ -14,39 +14,23 @@ import org.firstinspires.ftc.teamcode.roadrunner.PoseMessage;
 
 public abstract class NearCycleAutoBase extends AutoBase {
     // 0 = left, 1 = middle, 2 = right
-    public Pose2d start = RedRightAuto.start;
-    public Pose2d[] backdrop = RedRightAuto.backdrop;
-
-    public Pose2d[] spike = RedRightAuto.spike;
-
-    public Pose2d[] cycleStart = {
-            new Pose2d(spike[0].position.x, -12.0, Math.toRadians(180)),
-            new Pose2d(spike[1].position.x, -12.0, Math.toRadians(180)),
-            new Pose2d(spike[2].position.x, -12.0, Math.toRadians(180))
-    };
-
-    public Pose2d stackAlignment = new Pose2d(-50.0, -11.0, Math.toRadians(180));
-    public Pose2d stackIntake = new Pose2d(-54.75, -12.05, Math.toRadians(180));
-    public Pose2d safeTrussPassStop = new Pose2d(-49.0, -11.0, Math.toRadians(180));
-    public Pose2d backdropAlignment = new Pose2d(45.0, -11.0, Math.toRadians(180));
-
-    public Pose2d cycleScore[] = {
-            new Pose2d(48.75, -39.0, Math.toRadians(180)),
-            new Pose2d(48.75, -32.0, Math.toRadians(180)),
-            new Pose2d(48.75, -32.0, Math.toRadians(180))
-    };
-
-    public Pose2d parking = new Pose2d(45.0, -20.0, Math.toRadians(180));
+    public Pose2d start;
+    public Pose2d[] backdrop ;
+    public Pose2d[] spike;
+    public Pose2d[] cycleStart;
+    public Pose2d stackAlignment;
+    public Pose2d stackIntake;
+    public Pose2d safeTrussPassStop;
+    public Pose2d backdropAlignment;
+    public Pose2d[] cycleScore;
+    public Pose2d parking;
     private int cycleCount = 0;
-
-    public double firstSplineTangent = Math.PI / 2;
 
     @Override
     protected void onRun() {
 
         Log.d("Drive_logger", "starting:" + new PoseMessage(drive.pose));
         Log.d("Drive_logger", "backdrop position:" + new PoseMessage(backdrop[SPIKE]));
-        Log.d("Drive_logger", "firstSplineTangent:" + String.format("%.2f", firstSplineTangent));
 
         sched.addAction(
                 new SequentialAction(
@@ -54,11 +38,11 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         // to score yellow pixel on the backdrop
                         new ParallelAction(
                                 drive.actionBuilder(drive.pose)
-                                        .setTangent(0)
-                                        .splineTo(backdrop[SPIKE].position, firstSplineTangent)
+                                        .strafeToLinearHeading(backdrop[SPIKE].position, backdrop[SPIKE].heading)
                                         .build(),
 
                                 outtake.prepareToSlide(),
+
                                 new SequentialAction(
                                         new SleepAction(1.5),
                                         outtake.extendOuttakeLow()

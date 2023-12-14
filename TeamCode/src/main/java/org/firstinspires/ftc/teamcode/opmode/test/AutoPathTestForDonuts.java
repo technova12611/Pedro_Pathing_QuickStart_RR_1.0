@@ -26,14 +26,14 @@ import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 @Autonomous(group = "Test")
 public final class AutoPathTestForDonuts extends LinearOpMode {
 
-    public static Pose2d starting = new Pose2d(16, 62, -Math.PI/2);
+    public static Pose2d starting = new Pose2d(16, -62, Math.PI/2);
  //   public static Pose2d starting = new Pose2d(48.5, -35.5, Math.PI);
 
     //   public static Pose2d starting = new Pose2d(16.0, -63.0, Math.PI/2);
 
-    public static Pose2d backdrop = new Pose2d(48.5, 35.5, -Math.PI);
+    public static Pose2d backdrop = new Pose2d(49.0, -35.5, Math.PI);
 
-    public static Pose2d spike = new Pose2d(27.0, 24.0, -Math.PI);
+    public static Pose2d spike = new Pose2d(28.5, -25.5, Math.PI);
 
 
     protected AutoActionScheduler sched;
@@ -67,17 +67,20 @@ public final class AutoPathTestForDonuts extends LinearOpMode {
         // 6. drop the purple pixel
         // 7. drive to parking
         sched.addAction(
+
             new SequentialAction(
+                    new MecanumDrive.DrivePoseLoggingAction(drive, "program_start"),
                     drive.actionBuilder(drive.pose)
                             .setTangent(0)
-                            .splineTo(spike.position, -Math.PI/2)
+                            .strafeToLinearHeading(backdrop.position, backdrop.heading)
                             .build(),
+                    new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_end"),
                     new SleepAction(0.5),
                     drive.actionBuilder(backdrop)
                             //.setTangent(0)
                             .strafeTo(spike.position)
                             .build(),
-                    new SleepAction(3)
+                    new MecanumDrive.DrivePoseLoggingAction(drive, "spike_end")
             )
         );
 

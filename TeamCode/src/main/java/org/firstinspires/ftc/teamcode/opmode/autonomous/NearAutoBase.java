@@ -11,35 +11,20 @@ import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 
 @Config
-@Autonomous(name = "Blue RIGHT Auto (2+1)", group = "BLUE Auto", preselectTeleOp = "Manual Drive")
-public class BlueRightAuto extends AutoBase {
-   public static Pose2d[] spike = {
-           new Pose2d(35.5, 25.5, Math.toRadians(-180)),
-           new Pose2d(28.5, 23.5, Math.toRadians(-180)),
-           new Pose2d(14.1, 33.5, Math.toRadians(-180))
-   };
-
-   public static Pose2d[] backdrop =  {
-           new Pose2d(49.2, 41.5, Math.toRadians(-180)),
-           new Pose2d(49.2, 36, Math.toRadians(-180)),
-           new Pose2d(49.2, 30.5, Math.toRadians(-180))
-   };
+public abstract class NearAutoBase extends AutoBase {
+   public Pose2d[] spike;
+   public Pose2d[] backdrop;
    // 0 = left, 1 = middle, 2 = right
-   public static Pose2d start = new Pose2d(16.0, 62.0, Math.toRadians(-90));
-   public static Pose2d parking = new Pose2d(53.0, 60.0, Math.toRadians(-180));
+   public Pose2d start;
+   public Pose2d parking;
 
    protected AlliancePosition getAlliance() {
-      return AlliancePosition.BLUE;
+      return AlliancePosition.RED;
    }
 
    @Override
    protected Pose2d getStartPose() {
       return start;
-   }
-
-   @Override
-   protected void printDescription() {
-      telemetry.addData("Description", "BLUE Right Auto");
    }
 
    @Override
@@ -49,18 +34,16 @@ public class BlueRightAuto extends AutoBase {
               new SequentialAction(
                       // to score yellow pixel on the backdrop
                       new ParallelAction(
-                              drive.actionBuilder(drive.pose)
-                                      .setTangent(0)
-                                      .splineTo(backdrop[SPIKE].position, -Math.PI/2)
-                                      .build(),
+                      drive.actionBuilder(drive.pose)
+                              .strafeToLinearHeading(backdrop[SPIKE].position, backdrop[SPIKE].heading)
+                              .build(),
 
-                              outtake.prepareToSlide(),
-                              new SequentialAction(
-                                      new SleepAction(1.5),
-                                      outtake.extendOuttakeLow()
-                              )
+                          outtake.prepareToSlide(),
+                          new SequentialAction(
+                                  new SleepAction(1.5),
+                              outtake.extendOuttakeLow()
+                          )
                       ),
-
                       outtake.prepareToScore(),
                       new SleepAction(0.25),
                       outtake.latchScore1(),
@@ -80,13 +63,12 @@ public class BlueRightAuto extends AutoBase {
 
                       // to park and prepare for teleops
                       new ParallelAction(
-                         intake.prepareTeleOpsIntake(),
-                         outtake.prepareToTransfer(),
-
-                         drive.actionBuilder(spike[SPIKE])
-                                 .setReversed(true)
-                                 .strafeTo(parking.position)
-                                 .build()
+                              intake.prepareTeleOpsIntake(),
+                              outtake.prepareToTransfer(),
+                              drive.actionBuilder(spike[SPIKE])
+                                      .setReversed(true)
+                                      .strafeTo(parking.position)
+                                      .build()
                       )
               )
       );
@@ -94,6 +76,7 @@ public class BlueRightAuto extends AutoBase {
 
    @Override
    public FieldPosition getFieldPosition() {
-      return FieldPosition.FAR;
+       return FieldPosition.NEAR;
    }
+
 }
