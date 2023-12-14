@@ -12,88 +12,66 @@ import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 
 @Config
 @Autonomous(name = "Blue RIGHT Auto (2+1)", group = "BLUE Auto", preselectTeleOp = "Manual Drive")
-public class BlueRightAuto extends AutoBase {
-   public static Pose2d[] spike = {
-           new Pose2d(35.5, 25.5, Math.toRadians(-180)),
-           new Pose2d(28.5, 23.5, Math.toRadians(-180)),
-           new Pose2d(14.1, 33.5, Math.toRadians(-180))
-   };
+public class BlueRightAuto extends FarAutoBase {
+   @Override
+   protected void onInit() {
+      this.start = new Pose2d(-40.0, 62.0, Math.toRadians(90));
+      this.spike = new Pose2d[] {
+              new Pose2d(-38.0, 35.5, Math.toRadians(25)),
+              new Pose2d(-43.0, 35.5, Math.toRadians(90)),
+              new Pose2d(-48.5, 45.0, Math.toRadians(90))
+      };
+      this.backdrop = new Pose2d[] {
+              new Pose2d(49.2, 42, Math.toRadians(180)),
+              new Pose2d(49.2, 36, Math.toRadians(180)),
+              new Pose2d(49.2, 29, Math.toRadians(180))
+      };
 
-   public static Pose2d[] backdrop =  {
-           new Pose2d(49.2, 41.5, Math.toRadians(-180)),
-           new Pose2d(49.2, 36, Math.toRadians(-180)),
-           new Pose2d(49.2, 30.5, Math.toRadians(-180))
-   };
-   // 0 = left, 1 = middle, 2 = right
-   public static Pose2d start = new Pose2d(16.0, 62.0, Math.toRadians(-90));
-   public static Pose2d parking = new Pose2d(53.0, 60.0, Math.toRadians(-180));
+      this.parking = new Pose2d(45.0, 20.0, Math.toRadians(180));
 
+      this.cycleScore = new Pose2d[] {
+              new Pose2d(49.0, 32.0, Math.toRadians(180)),
+              new Pose2d(49.0, 32.0, Math.toRadians(180)),
+              new Pose2d(49.0, 39.0, Math.toRadians(180)),
+      };
+
+      this.backOffFromSpike = new Pose2d[] {
+              new Pose2d(-40, 45, Math.toRadians(90)),
+              new Pose2d(-40, 42, Math.toRadians(90)),
+              new Pose2d(-35, 48, Math.toRadians(90))
+      };
+
+      this.stackIntakeAlignment = new Pose2d[] {
+              new Pose2d(-50, 12.05, Math.toRadians(180)),
+              new Pose2d(-50, 34.5, Math.toRadians(180)),
+              new Pose2d(-36, 12.05, Math.toRadians(90))
+      };
+
+      this.stackIntake = new Pose2d[] {
+              new Pose2d(-58, 12.0, Math.toRadians(180)),
+              new Pose2d(-56.5, 35, Math.toRadians(180)),
+              new Pose2d(-58.5, 12.0, Math.toRadians(180))
+      };
+      this.crossFieldAlignment = new Pose2d[] {
+              new Pose2d(-48, 11, Math.toRadians(180)),
+              new Pose2d(-40, 35, Math.toRadians(180)),
+              new Pose2d(-48, 11, Math.toRadians(180))
+      };
+
+      this.backdropAlignment = new Pose2d(45.0, 10.5, Math.toRadians(180));
+
+      this.moveUp1 =  new Pose2d(-40.0, 54.0, Math.toRadians(90));
+
+      this.stackIntakeAlignment2 = new Pose2d(-50, 12.75, Math.toRadians(180));
+   }
+
+   @Override
    protected AlliancePosition getAlliance() {
       return AlliancePosition.BLUE;
    }
 
    @Override
-   protected Pose2d getStartPose() {
-      return start;
-   }
-
-   @Override
    protected void printDescription() {
-      telemetry.addData("Description", "BLUE Right Auto");
-   }
-
-   @Override
-   protected void onRun() {
-
-      sched.addAction(
-              new SequentialAction(
-                      // to score yellow pixel on the backdrop
-                      new ParallelAction(
-                              drive.actionBuilder(drive.pose)
-                                      .setTangent(0)
-                                      .splineTo(backdrop[SPIKE].position, -Math.PI/2)
-                                      .build(),
-
-                              outtake.prepareToSlide(),
-                              new SequentialAction(
-                                      new SleepAction(1.5),
-                                      outtake.extendOuttakeLow()
-                              )
-                      ),
-
-                      outtake.prepareToScore(),
-                      new SleepAction(0.25),
-                      outtake.latchScore1(),
-                      new SleepAction(0.75),
-                      new ParallelAction(
-                              outtake.retractOuttake(),
-                              intake.stackIntakeLinkageDown(),
-
-                              // to score the purple pixel on the spike
-                              drive.actionBuilder(backdrop[SPIKE])
-                                      .strafeTo(spike[SPIKE].position)
-                                      .build()
-                      ),
-
-                      intake.scorePurplePreload(),
-                      new SleepAction(0.5),
-
-                      // to park and prepare for teleops
-                      new ParallelAction(
-                         intake.prepareTeleOpsIntake(),
-                         outtake.prepareToTransfer(),
-
-                         drive.actionBuilder(spike[SPIKE])
-                                 .setReversed(true)
-                                 .strafeTo(parking.position)
-                                 .build()
-                      )
-              )
-      );
-   }
-
-   @Override
-   public FieldPosition getFieldPosition() {
-      return FieldPosition.FAR;
+      telemetry.addData("Description", "Blue RIGHT Auto");
    }
 }

@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 public class BlueLeftAuto extends NearAutoBase {
    public static Pose2d[] blue_spike = {
            new Pose2d(35.5, 25.5, Math.toRadians(-180)),
-           new Pose2d(28.5, 23.5, Math.toRadians(-180)),
+           new Pose2d(29.25, 23.5, Math.toRadians(-180)),
            new Pose2d(14.1, 34.25, Math.toRadians(-180))
    };
 

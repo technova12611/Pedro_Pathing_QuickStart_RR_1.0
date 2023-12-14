@@ -54,7 +54,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         outtake.prepareToScore(),
                         new SleepAction(0.20),
                         outtake.latchScore1(),
-                        new SleepAction(0.50),
+                        new SleepAction(0.70),
                         new ParallelAction(
                                 outtake.retractOuttake(),
                                 intake.stackIntakeLinkageDown(),
