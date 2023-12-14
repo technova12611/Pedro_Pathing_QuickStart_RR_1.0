@@ -26,7 +26,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
     };
 
     public Pose2d stackAlignment = new Pose2d(-50.0, -11.0, Math.toRadians(180));
-    public Pose2d stackIntake = new Pose2d(-54.75, -12.75, Math.toRadians(180));
+    public Pose2d stackIntake = new Pose2d(-54.75, -12.05, Math.toRadians(180));
     public Pose2d safeTrussPassStop = new Pose2d(-49.0, -11.0, Math.toRadians(180));
     public Pose2d backdropAlignment = new Pose2d(45.0, -11.0, Math.toRadians(180));
 

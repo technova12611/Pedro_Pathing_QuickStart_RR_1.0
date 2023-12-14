@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.roadrunner.tuning;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
@@ -28,13 +30,23 @@ public final class StrafeTest extends LinearOpMode {
         waitForStart();
 
         Actions.runBlocking(
-            drive.actionBuilder(drive.pose)
-                    .strafeToLinearHeading(new Vector2d(distance,0), -Math.PI/2)
+            drive.actionBuilderSlow(drive.pose)
+                    .strafeTo(new Vector2d(distance,0))
                     .build());
 
         while (!isStopRequested()) {
-            telemetry.addData("Pose estimate: ", new PoseMessage(drive.pose).toString());
+            drive.updatePoseEstimate();
+            telemetry.addData("Pose estimate: ", new PoseMessage(drive.pose));
             telemetry.addData("par encoder end value: ", ((TwoDeadWheelLocalizer) drive.localizer).par.getPositionAndVelocity().position);
+            telemetry.addData("perp encoder end value: ", ((TwoDeadWheelLocalizer) drive.localizer).perp.getPositionAndVelocity().position);
+
+            TelemetryPacket p = new TelemetryPacket();
+            Canvas c = p.fieldOverlay();
+            drive.drawPoseHistory(c);
+
+            FtcDashboard dash = FtcDashboard.getInstance();
+            dash.sendTelemetryPacket(p);
+
             telemetry.update();
         }
 

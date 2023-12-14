@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 public class RedRightAuto extends AutoBase {
    public static Pose2d[] spike = {
            new Pose2d(14.5, -34.5, Math.toRadians(180)),
-           new Pose2d(28.5, -24.5, Math.toRadians(180)),
+           new Pose2d(28.5, -25.25, Math.toRadians(180)),
            new Pose2d(36.0, -27.5, Math.toRadians(180))
    };
    public static Pose2d[] backdrop =  {

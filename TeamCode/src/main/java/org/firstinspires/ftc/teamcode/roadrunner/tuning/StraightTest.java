@@ -30,8 +30,10 @@ public final class StraightTest extends LinearOpMode {
                     .build());
 
         while (!isStopRequested()) {
-            telemetry.addData("Pose estimate: ", new PoseMessage(drive.pose).toString());
+            drive.updatePoseEstimate();
+            telemetry.addData("Pose estimate: ", new PoseMessage(drive.pose));
             telemetry.addData("par encoder end value: ", ((TwoDeadWheelLocalizer) drive.localizer).par.getPositionAndVelocity().position);
+            telemetry.addData("perp encoder end value: ", ((TwoDeadWheelLocalizer) drive.localizer).perp.getPositionAndVelocity().position);
             telemetry.update();
         }
     }

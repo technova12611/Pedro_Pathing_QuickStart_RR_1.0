@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmode.test;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -21,10 +23,15 @@ import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 @Config
 @Autonomous(group = "Test")
 public final class AutoPathTest extends LinearOpMode {
-    public static Pose2d starting = new Pose2d(16.0, -62.5, Math.PI/2);
+    public static Pose2d starting = new Pose2d(16.0, -62.0, Math.PI/2);
+    public static Pose2d cycleStart = new Pose2d(28.5, -11.0, Math.PI);
     public static Pose2d backdrop = new Pose2d(48.5, -36.0, Math.PI);
     public static Pose2d spike = new Pose2d(28.5, -24.5, Math.PI);
     public static Pose2d parking = new Pose2d(52.0, -60.0, Math.PI);
+
+    public static Pose2d stackAlignment = new Pose2d(-50.0, -11.0, Math.PI);
+    public static Pose2d stackIntake = new Pose2d(-54.75, -12.5, Math.PI);
+    public Pose2d safeTrussPassStop = new Pose2d(-49.0, -11.0, Math.toRadians(180));
 
     protected AutoActionScheduler sched;
     protected Intake intake;
@@ -57,36 +64,46 @@ public final class AutoPathTest extends LinearOpMode {
         // 7. drive to parking
         sched.addAction(
                 new SequentialAction(
-                        // to score yellow pixel on the backdrop
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "path_begin"),
                         drive.actionBuilder(drive.pose)
-                                .setTangent(0)
-                                .splineTo(backdrop.position, Math.PI/2)
+                                .strafeToLinearHeading(cycleStart.position, cycleStart.heading)
                                 .build(),
-                        outtake.extendOuttakeLow(),
-                        outtake.prepareToScore(),
-                        outtake.latchScore1(),
-                        new SleepAction(0.75),
+
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "stackAlignment"),
                         new ParallelAction(
-                            outtake.retractOuttake(),
-                            intake.stackIntakeLinkageDown(),
-
-                            // to score the purple pixel on the spike
-                            drive.actionBuilder(backdrop)
-                                    .strafeTo(spike.position)
-                                    .build()
+                            drive.actionBuilderFast(cycleStart)
+                                    .strafeTo(stackAlignment.position)
+                                    .build(),
+                                new SequentialAction(
+                                new SleepAction(1.0),
+                                    intake.prepareStackIntake()
+                            )
                         ),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "stackIntake"),
+                        drive.actionBuilder(stackAlignment)
+                                .strafeTo(stackIntake.position)
+                                .build(),
 
-                        intake.scorePurplePreload(),
-                        new SleepAction(0.5),
+                        intake.intakeTwoStackedPixels(),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "stackIntake_end"),
 
-                        // to park and prepare for teleops
-                        intake.prepareTeleOpsIntake(),
-                        //outtake.prepareToTransfer(),
+                        new ParallelAction(
+                                new SequentialAction(
+                                        drive.actionBuilder(stackIntake)
+                                                .setReversed(true)
+                                                .strafeTo(safeTrussPassStop.position)
+                                                .build(),
+                                        new MecanumDrive.DrivePoseLoggingAction(drive, "safe_pass_stop")
+                                ),
 
-                        drive.actionBuilder(spike)
-                                .setReversed(true)
-                                .strafeTo(parking.position)
-                                .build()
+                                new SequentialAction(
+                                        new SleepAction(0.5),
+                                        intake.stackIntakeLinkageUp(),
+                                        new SleepAction(1.25),
+                                        intake.prepareTeleOpsIntake(),
+                                        new MecanumDrive.DrivePoseLoggingAction(drive, "Intake_off")
+                                )
+                        )
                 )
         );
 
@@ -108,6 +125,8 @@ public final class AutoPathTest extends LinearOpMode {
             }
             idle();
         }
+
+        Log.d("Drive_logger", "End drive pose: " + new PoseMessage(drive.pose));
     }
 
     final public void update() {

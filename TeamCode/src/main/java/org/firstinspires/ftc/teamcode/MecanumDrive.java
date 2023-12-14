@@ -53,14 +53,18 @@ public final class MecanumDrive {
 
     public static class Params {
         // drive model parameters
-        public double inPerTick = 0.002934; //24.0 / 8163.0;
-        public double lateralInPerTick = 0.00275;
+        public double inPerTick = 0.002938; //0.002934; //24.0 / 8163.0;
+        public double lateralInPerTick = 0.00273;
         public double trackWidthTicks = 4982.1078188621495; //4691.229665989946;
 
         // feedforward parameters (in tick units)
         public double kS = 1.407;//1.43456;//1.2;
-        public double kV = 0.0003875;//0.0004008; //0.00027;//0.00009;
-        public double kA = 0.0000738; //0.000075;
+        public double kV = 0.0004003;// 0.0003895;//0.0004008; //0.00027;//0.00009;
+        public double kA = 0.0000739; //0.000075;
+
+        public double maxWheelVelSlow = 50;
+        public double minProfileAccelSlow = -30;
+        public double maxProfileAccelSlow = 50;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
@@ -77,11 +81,11 @@ public final class MecanumDrive {
 
         // path controller gains
         public double axialGain = 7.25; //5.25;
-        public double lateralGain = 16.25; //16.5;
+        public double lateralGain = 18.25; //16.5;
         public double headingGain = 11.25; //7.5; // shared with turn
 
-        public double axialVelGain = 0.5; //0.25;
-        public double lateralVelGain = 0.05; //0.01;
+        public double axialVelGain = 0.25; //0.25;
+        public double lateralVelGain = 0.25; //0.01;
         public double headingVelGain = 0.025; //0.01; // shared with turn
     }
 
@@ -103,6 +107,12 @@ public final class MecanumDrive {
             new AngularVelConstraint(PARAMS.maxAngVel)));
     public final AccelConstraint highSpeedAccelConstraint = new ProfileAccelConstraint(PARAMS.minProfileAccelHighSpeed,
             PARAMS.maxProfileAccelHighSpeed);
+
+    public final VelConstraint slowVelConstraint = new MinVelConstraint(Arrays.asList(
+            kinematics.new WheelVelConstraint(PARAMS.maxWheelVelSlow),
+            new AngularVelConstraint(PARAMS.maxAngVel)));
+    public final AccelConstraint slowAccelConstraint = new ProfileAccelConstraint(PARAMS.minProfileAccelSlow,
+            PARAMS.maxProfileAccelSlow);
 
     public final DcMotorEx leftFront, leftBack, rightBack, rightFront;
 
@@ -353,7 +363,7 @@ public final class MecanumDrive {
         return twist.velocity().value();
     }
 
-    private void drawPoseHistory(Canvas c) {
+    public void drawPoseHistory(Canvas c) {
         double[] xPoints = new double[poseHistory.size()];
         double[] yPoints = new double[poseHistory.size()];
 
@@ -390,6 +400,28 @@ public final class MecanumDrive {
                 beginPose, 1e-6, 0.0,
                 defaultTurnConstraints,
                 defaultVelConstraint, defaultAccelConstraint,
+                0.25, 0.1);
+    }
+
+    public TrajectoryActionBuilder actionBuilderSlow(Pose2d beginPose) {
+        Log.d("TrajectoryActionBuilder_slow", "Drive path builder begin position: " + new PoseMessage(beginPose));
+        return new TrajectoryActionBuilder(
+                TurnAction::new,
+                FollowTrajectoryAction::new,
+                beginPose, 1e-6, 0.0,
+                defaultTurnConstraints,
+                slowVelConstraint, slowAccelConstraint,
+                0.25, 0.1);
+    }
+
+    public TrajectoryActionBuilder actionBuilderFast(Pose2d beginPose) {
+        Log.d("TrajectoryActionBuilder_fast", "Drive path builder begin position: " + new PoseMessage(beginPose));
+        return new TrajectoryActionBuilder(
+                TurnAction::new,
+                FollowTrajectoryAction::new,
+                beginPose, 1e-6, 0.0,
+                defaultTurnConstraints,
+                highSpeedVelConstraint, highSpeedAccelConstraint,
                 0.25, 0.1);
     }
 

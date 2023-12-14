@@ -15,24 +15,26 @@ import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 @Config
 @Autonomous(name = "RED Left Auto", group = "RED Auto", preselectTeleOp = "Manual Drive")
 public class RedLeftAuto extends AutoBase {
+    // 0 = left, 1 = middle, 2 = right
+    public static Pose2d start = new Pose2d(-40.0, -62.0, Math.toRadians(90));
+
     public static Pose2d[] spike = {
             new Pose2d(-48.5, -45.5, Math.toRadians(90)),
             new Pose2d(-34.0, -37.5, Math.toRadians(90)),
-            new Pose2d(-38.0, -34.5, Math.toRadians(30))
+            new Pose2d(-38.0, -35.5, Math.toRadians(25))
     };
     public static Pose2d[] backdrop = {
             new Pose2d(49.2, -29, Math.toRadians(180)),
             new Pose2d(49.2, -36, Math.toRadians(180)),
             new Pose2d(49.2, -42, Math.toRadians(180))
     };
-    // 0 = left, 1 = middle, 2 = right
-    public static Pose2d start = new Pose2d(-40.0, -62.0, Math.toRadians(90));
+
     public static Pose2d parking = new Pose2d(45.0, -20.0, Math.toRadians(180));
 
     public static Pose2d cycleScore[] = {
-            new Pose2d(49.7, -39.0, Math.toRadians(180)),
-            new Pose2d(49.7, -32.0, Math.toRadians(180)),
-            new Pose2d(49.7, -32.0, Math.toRadians(180))
+            new Pose2d(49.0, -39.0, Math.toRadians(180)),
+            new Pose2d(49.0, -32.0, Math.toRadians(180)),
+            new Pose2d(49.0, -32.0, Math.toRadians(180))
     };
 
     protected AlliancePosition getAlliance() {
@@ -55,21 +57,21 @@ public class RedLeftAuto extends AutoBase {
         Pose2d[] backOffFromSpike = {
                 new Pose2d(-40, -48, Math.toRadians(90)),
                 new Pose2d(-36, -40, Math.toRadians(90)),
-                new Pose2d(-40, -45, Math.toRadians(180))
+                new Pose2d(-40, -45, Math.toRadians(90))
         };
 
         Pose2d backOffFromSpike2 = new Pose2d(-36, -45, Math.toRadians(90));
 
         Pose2d[] stackIntakeAlignment = {
-                new Pose2d(-50, -13, Math.toRadians(180)),
+                new Pose2d(-50, -12.75, Math.toRadians(180)),
                 new Pose2d(-50, -38, Math.toRadians(180)),
-                new Pose2d(-50, -25, Math.toRadians(180))
+                new Pose2d(-50, -12.75, Math.toRadians(180))
         };
 
         Pose2d[] stackIntake = {
-                new Pose2d(-53, -13, Math.toRadians(180)),
-                new Pose2d(-53, -38, Math.toRadians(180)),
-                new Pose2d(-53, -25, Math.toRadians(180))
+                new Pose2d(-54, -12.75, Math.toRadians(180)),
+                new Pose2d(-54, -38, Math.toRadians(180)),
+                new Pose2d(-58.5, -12.75, Math.toRadians(180))
         };
         Pose2d [] crossFieldAligment = {
                 new Pose2d(-48, -12, Math.toRadians(180)),
@@ -80,14 +82,18 @@ public class RedLeftAuto extends AutoBase {
 
         // SPIKE is right
         if (SPIKE == 2) {
+            Pose2d moveUp1 =  new Pose2d(-40.0, -54.0, Math.toRadians(90));
             sched.addAction(
                     new SequentialAction(
+                            drive.actionBuilder(drive.pose)
+                                    .strafeTo(moveUp1.position)
+                                    .build(),
+
                             new ParallelAction(
-                                    drive.actionBuilder(drive.pose)
-                                            .splineTo(spike[SPIKE].position, spike[SPIKE].heading)
+                                    drive.actionBuilder(moveUp1)
+                                            .strafeToLinearHeading(spike[SPIKE].position, spike[SPIKE].heading)
                                             .build(),
                                     new SequentialAction(
-                                            new SleepAction(0.5),
                                             intake.stackIntakeLinkageDown()
                                     )
                             ),
@@ -100,14 +106,13 @@ public class RedLeftAuto extends AutoBase {
                             new SleepAction(0.25),
 
                             drive.actionBuilder(spike[SPIKE])
-                                    .strafeToLinearHeading(backOffFromSpike[SPIKE].position, Math.toRadians(180))
+                                    .strafeToLinearHeading(backOffFromSpike[SPIKE].position, backOffFromSpike[SPIKE].heading)
                                     .build(),
-
 
                             // move to middle stack on the left
                             new ParallelAction(
                                     drive.actionBuilder(backOffFromSpike[SPIKE])
-                                            .strafeTo(stackIntakeAlignment[SPIKE].position)
+                                            .strafeToLinearHeading(stackIntakeAlignment[SPIKE].position, stackIntakeAlignment[SPIKE].heading)
                                             .build(),
                                     intake.prepareStackIntake()
                             ),
@@ -118,6 +123,7 @@ public class RedLeftAuto extends AutoBase {
                                     .strafeTo(stackIntake[SPIKE].position)
                                     .build(),
 
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_position"),
                             intake.intakeOneStackedPixels(),
 
                             // move to stack intake position
