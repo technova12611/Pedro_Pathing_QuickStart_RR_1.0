@@ -1,18 +1,10 @@
 package org.firstinspires.ftc.teamcode.opmode.autonomous;
 
-import android.util.Log;
-
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.SequentialAction;
-import com.acmerobotics.roadrunner.SleepAction;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
-import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
-import org.firstinspires.ftc.teamcode.roadrunner.PoseMessage;
 
 @Config
 @Autonomous(name = "Blue LEFT Cycle Auto (2+4)", group = "BLUE Auto", preselectTeleOp = "Manual Drive")
@@ -32,7 +24,8 @@ public class BlueLeftCycleAuto extends NearCycleAutoBase {
         };
 
         this.stackAlignment = new Pose2d(-50.0, 11.0, Math.toRadians(-180));
-        this.stackIntake = new Pose2d(-54.25, 11.25, Math.toRadians(-180));
+        this.stackIntake1 = new Pose2d(-54.25, 11.0, Math.toRadians(-180));
+        this.stackIntake2 = new Pose2d(-54.25, 11.5, Math.toRadians(-180));
         this.safeTrussPassStop = new Pose2d(-49.0, 11.0, Math.toRadians(-180));
 
         this.backdropAlignment = new Pose2d(45.0, 11.0, Math.toRadians(-180));

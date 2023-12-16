@@ -5,6 +5,7 @@ import android.util.Size;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -19,7 +20,7 @@ import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.vision.VisionPortal;
 
 @Config
-//@Disabled
+@Disabled
 @TeleOp(group = "Test")
 public class VisionPipelineTest extends LinearOpMode {
     private PropBasePipeline propPipeline;

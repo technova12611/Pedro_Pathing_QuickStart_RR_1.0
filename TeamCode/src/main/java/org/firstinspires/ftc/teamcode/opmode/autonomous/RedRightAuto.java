@@ -21,9 +21,9 @@ public class RedRightAuto extends NearAutoBase {
            new Pose2d(36.0, -27.5, Math.toRadians(180))
    };
    public static Pose2d[] red_backdrop =  {
-           new Pose2d(49.2, -29, Math.toRadians(180)),
-           new Pose2d(49.2, -36, Math.toRadians(180)),
-           new Pose2d(49.2, -42, Math.toRadians(180))
+           new Pose2d(49.25, -29, Math.toRadians(180)),
+           new Pose2d(49.25, -36, Math.toRadians(180)),
+           new Pose2d(49.25, -42, Math.toRadians(180))
    };
    // 0 = left, 1 = middle, 2 = right
    public static Pose2d red_start = new Pose2d(16.0, -62.0, Math.toRadians(90));

@@ -20,7 +20,6 @@ import java.util.List;
  * This is a test program for tuning any servo's positions.
  */
 @Config
-@Disabled
 @TeleOp(group = "Test")
 public class ServoTest extends LinearOpMode {
     public static String NAME = "servo";

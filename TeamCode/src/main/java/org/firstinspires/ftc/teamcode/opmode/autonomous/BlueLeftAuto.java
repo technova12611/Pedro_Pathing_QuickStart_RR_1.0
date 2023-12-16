@@ -20,9 +20,9 @@ public class BlueLeftAuto extends NearAutoBase {
    };
 
    public static Pose2d[] blue_backdrop =  {
-           new Pose2d(48.75, 42.0, Math.toRadians(-180)),
-           new Pose2d(48.75, 36, Math.toRadians(-180)),
-           new Pose2d(48.75, 28.5, Math.toRadians(-180))
+           new Pose2d(49.0, 42.0, Math.toRadians(-180)),
+           new Pose2d(49.0, 36, Math.toRadians(-180)),
+           new Pose2d(49.0, 28.5, Math.toRadians(-180))
    };
    // 0 = left, 1 = middle, 2 = right
    public static Pose2d blue_start = new Pose2d(16.0, 62.5, Math.toRadians(-90));

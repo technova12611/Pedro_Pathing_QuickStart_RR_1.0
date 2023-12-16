@@ -15,24 +15,32 @@ import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
 import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 
 @Config
-
 public class Hang {
-
     public static int HANG_POSITION_MAX = 5000;
     public static int HANG_POSITION = 2500;
     public static int HANG_INREMENTAL_CHANGE_POSITION = 300;
 
+    public static int DROPDOWN_AFTER_HANG_POSITION = 750;
+
+    public static double HOOK_BLOCKER_BLOCK = 0.81;
+    public static double  HOOK_BLOCKER_UNBLOCK = 0.6;
+
     final DcMotorEx hangMotor;
+    final Servo hangHookBlocker;
 
     public Hang(HardwareMap hardwareMap) {
 
         this.hangMotor = HardwareCreator.createMotor(hardwareMap, "hangMotor");
         this.hangMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         this.hangMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        this.hangHookBlocker = HardwareCreator.createServo(hardwareMap, "hangHookBlocker");
     }
 
     public void initialize() {
+
         this.hangMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        this.hangHookBlocker.setPosition(HOOK_BLOCKER_BLOCK);
     }
 
     public Action hang() {
@@ -45,9 +53,23 @@ public class Hang {
     }
 
     public String getCurrentPosition () {
-        String message = "Hang motor position: " +  this.hangMotor.getCurrentPosition();
-        //Log.d("HangMotor", message);
-        return message;
+        return "Hang motor position: " +  this.hangMotor.getCurrentPosition();
+    }
+
+    public Action unblockHook() {
+        return new ActionUtil.ServoPositionAction(hangHookBlocker, HOOK_BLOCKER_UNBLOCK, "hangHookBlocker");
+    }
+
+    public void dropdownFromHang() {
+        if (hangMotor.getCurrentPosition() > (DROPDOWN_AFTER_HANG_POSITION + 200)) {
+            hangMotor.setTargetPosition(DROPDOWN_AFTER_HANG_POSITION);
+            hangMotor.setPower(0.5);
+            hangMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
+    }
+
+    public boolean isMotorBusy() {
+        return this.hangMotor.isBusy();
     }
 
 }

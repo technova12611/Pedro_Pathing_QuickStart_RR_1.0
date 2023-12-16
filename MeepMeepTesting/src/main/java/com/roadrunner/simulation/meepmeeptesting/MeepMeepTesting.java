@@ -18,7 +18,7 @@ public class MeepMeepTesting {
                 .setDimensions(16,17)
                 .setColorScheme(new ColorSchemeRedDark())
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
-                .setConstraints(60, 70, Math.toRadians(180), Math.toRadians(180), 16)
+                .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 16)
                 .followTrajectorySequence(drive ->
                                 drive.trajectorySequenceBuilder(new Pose2d(16.0, -62, Math.toRadians(90)))
                                         .setTangent(0)
@@ -26,19 +26,17 @@ public class MeepMeepTesting {
                                         .strafeTo(new Vector2d(28.5,-24.5))
                                         .strafeTo(new Vector2d(28.5,-12.0))
                                         .strafeTo(new Vector2d(-50,-11.0))
-                                        .strafeTo(new Vector2d(-55,-12.50))
-                                        .setReversed(true)
+                                        .splineToConstantHeading(new Vector2d(-55,-11.50), Math.PI)
                                         .strafeTo(new Vector2d(-52,-10.50))
-                                        .setTangent(0)
                                         .strafeTo(new Vector2d(40,-12.0))
-                                        .strafeTo(new Vector2d(48.5,-32.0))
+                                        .splineToConstantHeading(new Vector2d(48.5,-32.0), Math.PI/2)
                                         .setReversed(false)
                                         .strafeTo(new Vector2d(24,-12.0))
                                         .strafeTo(new Vector2d(-50,-12.0))
-                                        .strafeTo(new Vector2d(-53,-13.0))
+                                        .splineToConstantHeading(new Vector2d(-53,-13.0), Math.PI)
                                         .setReversed(true)
-                                        .splineTo(new Vector2d(30,-12.0), Math.toRadians(0))
-                                        .strafeTo(new Vector2d(49,-36.0))
+                                        .strafeTo(new Vector2d(40,-12.0))
+                                        .splineToConstantHeading(new Vector2d(48.5,-36.0), Math.PI/2)
                                         .build()
                 );
 
@@ -70,44 +68,44 @@ public class MeepMeepTesting {
 //                                .build()
 //                );
 
-                RoadRunnerBotEntity mySecondBot = new DefaultBotBuilder(meepMeep)
-                .setDimensions(16,17)
-                .setColorScheme(new ColorSchemeRedLight())
-                // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
-                .setConstraints(80, 80, Math.toRadians(180), Math.toRadians(180), 16)
-                .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(-40.0, -62, Math.toRadians(90)))
-                                .splineTo(new Vector2d(-35.0,-36), Math.toRadians(30))
-                                .setReversed(true)
-                                .splineToSplineHeading(new Pose2d(-40,-48, Math.toRadians(180)), Math.toRadians(0))
-                                .setReversed(false)
-                                .strafeTo(new Vector2d(-53.0,-25))
-                                .strafeTo(new Vector2d(-48.0,-12))
-//
-//                                .lineTo(new Vector2d(-34, -37))
+//                RoadRunnerBotEntity mySecondBot = new DefaultBotBuilder(meepMeep)
+//                .setDimensions(16,17)
+//                .setColorScheme(new ColorSchemeRedLight())
+//                // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
+//                .setConstraints(80, 80, Math.toRadians(180), Math.toRadians(180), 16)
+//                .followTrajectorySequence(drive ->
+//                        drive.trajectorySequenceBuilder(new Pose2d(-40.0, -62, Math.toRadians(90)))
+//                                .splineTo(new Vector2d(-35.0,-36), Math.toRadians(30))
 //                                .setReversed(true)
-//                                .lineTo(new Vector2d(-36, -40))
-//                                .turn(Math.toRadians(90))
-//                                .lineTo(new Vector2d(-55, -38))
+//                                .splineToSplineHeading(new Pose2d(-40,-48, Math.toRadians(180)), Math.toRadians(0))
+//                                .setReversed(false)
+//                                .strafeTo(new Vector2d(-53.0,-25))
+//                                .strafeTo(new Vector2d(-48.0,-12))
+////
+////                                .lineTo(new Vector2d(-34, -37))
+////                                .setReversed(true)
+////                                .lineTo(new Vector2d(-36, -40))
+////                                .turn(Math.toRadians(90))
+////                                .lineTo(new Vector2d(-55, -38))
+////
+////
+////                                .lineTo(new Vector2d(-48, -45))
+////                                .strafeTo(new Vector2d(-36, -45))
+////                                .lineTo(new Vector2d(-36, -12))
+////                                .turn(Math.toRadians(90))
+////                                .lineTo(new Vector2d(-54, -12))
 //
-//
-//                                .lineTo(new Vector2d(-48, -45))
-//                                .strafeTo(new Vector2d(-36, -45))
-//                                .lineTo(new Vector2d(-36, -12))
-//                                .turn(Math.toRadians(90))
-//                                .lineTo(new Vector2d(-54, -12))
-
-                                .setReversed(true)
-                                .lineTo(new Vector2d(40, -12))
-                                .strafeTo(new Vector2d(49, -29))
-                                .build()
-                );
+//                                .setReversed(true)
+//                                .lineTo(new Vector2d(40, -12))
+//                                .strafeTo(new Vector2d(49, -29))
+//                                .build()
+//                );
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_CENTERSTAGE_JUICE_DARK)
                 .setDarkMode(true)
                 .setBackgroundAlpha(0.95f)
                 .addEntity(myBot)
-                .addEntity(mySecondBot)
+//                .addEntity(mySecondBot)
                 .start();
     }
 }

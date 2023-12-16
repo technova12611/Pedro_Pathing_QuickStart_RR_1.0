@@ -19,7 +19,8 @@ public abstract class NearCycleAutoBase extends AutoBase {
     public Pose2d[] spike;
     public Pose2d[] cycleStart;
     public Pose2d stackAlignment;
-    public Pose2d stackIntake;
+    public Pose2d stackIntake1;
+    public Pose2d stackIntake2;
     public Pose2d safeTrussPassStop;
     public Pose2d backdropAlignment;
     public Pose2d[] cycleScore;
@@ -44,7 +45,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                 outtake.prepareToSlide(),
 
                                 new SequentialAction(
-                                        new SleepAction(1.5),
+                                        new SleepAction(1.2),
                                         outtake.extendOuttakeLow()
                                 )
                         ),
@@ -54,15 +55,19 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         outtake.prepareToScore(),
                         new SleepAction(0.20),
                         outtake.latchScore1(),
-                        new SleepAction(0.70),
+                        new SleepAction(0.50),
+                        intake.stackIntakeLinkageDown(),
+                        new SleepAction(0.25),
                         new ParallelAction(
-                                outtake.retractOuttake(),
-                                intake.stackIntakeLinkageDown(),
+                            new SequentialAction(
+                                new SleepAction(0.2),
+                                outtake.retractOuttake()
+                            ),
 
-                                // to score the purple pixel on the spike
-                                drive.actionBuilder(backdrop[SPIKE])
-                                        .strafeTo(spike[SPIKE].position)
-                                        .build()
+                            // to score the purple pixel on the spike
+                            drive.actionBuilder(backdrop[SPIKE])
+                                    .strafeTo(spike[SPIKE].position)
+                                    .build()
                         ),
 
                         new MecanumDrive.DrivePoseLoggingAction(drive, "spike_position"),
@@ -104,10 +109,13 @@ public abstract class NearCycleAutoBase extends AutoBase {
 
     private void cyclePixelFromStack(Pose2d startingPosition) {
         Action extendSlideAction;
+        Pose2d stackIntakePosition;
         if(++cycleCount == 2) {
             extendSlideAction = outtake.extendOuttakeCycleTwo();
+            stackIntakePosition = stackIntake2;
         } else {
             extendSlideAction = outtake.extendOuttakeCycleOne();
+            stackIntakePosition = stackIntake1;
         }
 
         sched.addAction(
@@ -141,7 +149,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         // drive to the stack
                         new ParallelAction(
                                 drive.actionBuilder(stackAlignment)
-                                        .strafeToLinearHeading(stackIntake.position, stackIntake.heading)
+                                        .strafeToLinearHeading(stackIntakePosition.position, stackIntakePosition.heading)
                                         .build(),
                                 intake.intakeOn()
                         ),
@@ -156,11 +164,11 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         // move back to the backdrop
                         new ParallelAction(
                                 new SequentialAction(
-                                    drive.actionBuilder(stackIntake)
+                                    drive.actionBuilder(stackIntakePosition)
                                             .setReversed(true)
                                             .strafeToLinearHeading(safeTrussPassStop.position, safeTrussPassStop.heading)
                                             .build(),
-                                        new MecanumDrive.DrivePoseLoggingAction(drive, "safe_pass_stop"),
+                                        new MecanumDrive.DrivePoseLoggingAction(drive, "safe_pass_stop", true),
 
                                         drive.actionBuilder(safeTrussPassStop)
                                                 .setReversed(true)
@@ -204,7 +212,9 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         // score pixels
                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_open_latch"),
                         outtake.latchScore2(),
-                        new SleepAction(0.75),
+                        new SleepAction(0.60),
+                        outtake.latchScore0(),
+                        new SleepAction(0.25),
                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_end")
                 ));
     }

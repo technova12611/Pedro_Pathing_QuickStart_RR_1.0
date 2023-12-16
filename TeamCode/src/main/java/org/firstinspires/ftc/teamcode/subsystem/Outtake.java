@@ -50,7 +50,7 @@ public class Outtake {
 
     public static double OUTTAKE_PIVOT_DUMP_HIGH = 0.56;
 
-    public static double OUTTAKE_PIVOT_DUMP_CYCLE = 0.37;
+    public static double OUTTAKE_PIVOT_DUMP_CYCLE = 0.39;
 
     public static double OUTTAKE_PIVOT_DUMP_VERY_HIGH = 0.62;
 
@@ -64,11 +64,13 @@ public class Outtake {
     public static double OUTTAKE_WIRE_DOWN = 0.71;
 
     public static double OUTTAKE_WIRE_SAFE_DOWN = 0.69;
-    public static double OUTTAKE_WIRE_MIDDLE = 0.53;
+
+    public static double OUTTAKE_WIRE_MIDDLE = 0.50;
     public static double OUTTAKE_WIRE_HIGH = 0.45;
     public static double OUTTAKE_WIRE_VERY_HIGH = 0.38;
 
-    public static double OUTTAKE_WIRE_FOR_HANGING = 0.40;
+    public static double OUTTAKE_WIRE_FOR_HANGING_DOWN = 0.73;
+    public static double OUTTAKE_WIRE_FOR_HANGING_UP = 0.40;
 
     final MotorWithPID slide;
     public boolean slidePIDEnabled = true;
@@ -181,6 +183,7 @@ public class Outtake {
         return new SequentialAction(
                 prepareToSlide(),
                 new SleepAction(0.3),
+                latchClosed(),
                 new ParallelAction(
                     outtakeWireDown(),
                     this.slide.setTargetPositionAction(OUTTAKE_SLIDE_INIT, "outtakeSlide")
@@ -192,6 +195,13 @@ public class Outtake {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_1, "latch"),
                 new Intake.UpdatePixelCountAction(-1),
+                new OuttakeLatchStateAction(OuttakeLatchState.LATCH_1)
+        );
+    }
+
+    public Action latchScore0() {
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_1, "latch"),
                 new OuttakeLatchStateAction(OuttakeLatchState.LATCH_1)
         );
     }
@@ -248,7 +258,6 @@ public class Outtake {
 
     public Action prepareToSlide() {
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
                 new ActionUtil.ServoPositionAction(outtakePivot, OUTTAKE_PIVOT_SLIDING, "outtakePivot"),
                 new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_SLIDING, "slidePivot")
         );
@@ -273,31 +282,18 @@ public class Outtake {
         if(!isHangingHookUp) {
             isHangingHookUp = true;
             return new SequentialAction(
-                    new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_FOR_HANGING, "outtakeWire")
+                    new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_FOR_HANGING_DOWN, "outtakeWire"),
+                    new SleepAction(0.30),
+                    new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_FOR_HANGING_UP, "outtakeWire")
             );
         } else {
             isHangingHookUp = false;
-            return new SequentialAction(
-                    new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_SAFE_DOWN, "outtakeWire")
-            );
+            return new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_SAFE_DOWN, "outtakeWire");
         }
     }
 
     public Action outtakeWireDown() {
-
-        double currentPosition = outtakeWireServo.getPosition();
-
-        if(currentPosition < OUTTAKE_WIRE_MIDDLE - 0.05) {
-            return new SequentialAction(
-                    new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_SAFE_DOWN, "outtakeWire"),
-                    new SleepAction(0.35),
-                    new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_DOWN, "outtakeWire")
-            );
-        }
-
-        return new SequentialAction(
-                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_DOWN, "outtakeWire")
-        );
+        return new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_DOWN, "outtakeWire");
     }
 
     public Action prepareToScore() {
