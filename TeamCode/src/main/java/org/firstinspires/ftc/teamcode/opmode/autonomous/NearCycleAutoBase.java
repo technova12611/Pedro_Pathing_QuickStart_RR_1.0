@@ -182,7 +182,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                 new SequentialAction(
                                         new SleepAction(0.5),
                                         intake.stackIntakeLinkageUp(),
-                                        new SleepAction(1.25),
+                                        new SleepAction(2.05),
                                         intake.prepareTeleOpsIntake(),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "Intake_off")
                                 )
@@ -212,9 +212,9 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         // score pixels
                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_open_latch"),
                         outtake.latchScore2(),
-                        new SleepAction(0.60),
+                        new SleepAction(0.7),
                         outtake.latchScore0(),
-                        new SleepAction(0.25),
+                        new SleepAction(0.1),
                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_end")
                 ));
     }

@@ -32,8 +32,8 @@ public class Outtake {
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
     public static int OUTTAKE_SLIDE_MID = 1250;
     public static int OUTTAKE_SLIDE_CYCLES_ONE = 1000;
-    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1250;
-    public static int OUTTAKE_SLIDE_LOW = 890;
+    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1150;
+    public static int OUTTAKE_SLIDE_LOW = 845;
     public static int OUTTAKE_SLIDE_INIT = 0;
 
     public static int OUTTAKE_SLIDE_INCREMENT= 300;

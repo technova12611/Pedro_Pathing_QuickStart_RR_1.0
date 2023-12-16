@@ -78,7 +78,6 @@ public class ServoMotorTest extends LinearOpMode {
 
     public static int OUTTAKE_MOTOR_INTERNAL_PIDF_POSITION = 0;
 
-    public static int OUTTAKE_MOTOR_POWER = 0;
     public static int INTAKE_MOTOR_VELOCITY = 0;
 
     public static double INTAKE_MOTOR_POWER = 0;
