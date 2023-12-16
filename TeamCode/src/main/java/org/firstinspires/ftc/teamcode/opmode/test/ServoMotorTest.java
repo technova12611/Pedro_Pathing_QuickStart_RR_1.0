@@ -21,6 +21,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.subsystem.Drone;
 import org.firstinspires.ftc.teamcode.subsystem.Hang;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Outtake;
@@ -45,8 +46,6 @@ public class ServoMotorTest extends LinearOpMode {
     Servo outtakeLatch;
     Servo outtakePivot;
     Servo slidePivot;
-    Servo hangServoRight;
-    Servo hangServoLeft;
     Servo droneLatch;
     Servo droneTilt;
     Servo outtakeWireServo;
@@ -64,15 +63,15 @@ public class ServoMotorTest extends LinearOpMode {
     AnalogInput slidePivotVoltage;
     AnalogInput outtakePivotVoltage;
 
-    public static double STACK_INTAKE_LEFT_VALUE = 0.05;
-    public static double STACK_INTAKE_RIGHT_VALUE = 0.05;
+    public static double STACK_INTAKE_LEFT_VALUE = Intake.STACK_INTAKE_LEFT_INIT;
+    public static double STACK_INTAKE_RIGHT_VALUE = Intake.STACK_INTAKE_RIGHT_INIT;
     public static double STACK_INTAKE_LINKAGE_VALUE = Intake.STACK_INTAKE_LINKAGE_UP;
     public static double BOTTOM_ROLLER_CRSERVO_VALUE = 0.0;
     public static double OUTTAKE_LATCH_VALUE = Outtake.LATCH_CLOSED;
     public static double OUTTAKE_PIVOT_VALUE = Outtake.OUTTAKE_PIVOT_INIT;
     public static double SLIDE_PIVOT_VALUE = Outtake.SLIDE_PIVOT_INIT;
-    public static double DRONE_LATCH_VALUE = 0.4;
-    public static double DRONE_TILT_VALUE = 0.3;
+    public static double DRONE_LATCH_VALUE = Drone.LATCH_CLOSED;
+    public static double DRONE_TILT_VALUE = Drone.TILT_INIT;
     public static double OUTTAKE_WIRE_SERVO_VALUE = Outtake.OUTTAKE_WIRE_MIDDLE;
 
     public static int OUTTAKE_MOTOR_POSITION = 0;
@@ -122,8 +121,6 @@ public class ServoMotorTest extends LinearOpMode {
         this.outtakeLatch = HardwareCreator.createServo(hardwareMap, "outtakeLatch");
         this.slidePivot = HardwareCreator.createServo(hardwareMap, "outtakeSlidePivot");
         this.outtakePivot = HardwareCreator.createServo(hardwareMap, "outtakePivot");
-        this.hangServoRight = HardwareCreator.createServo(hardwareMap, "hangServoRight");
-        this.hangServoLeft = HardwareCreator.createServo(hardwareMap, "hangServoLeft");
         this.droneLatch = HardwareCreator.createServo(hardwareMap, "droneLatch");
         this.droneTilt = HardwareCreator.createServo(hardwareMap, "droneTilt");
         this.outtakeWireServo = HardwareCreator.createServo(hardwareMap, "outtakeWireServo");
@@ -415,8 +412,6 @@ public class ServoMotorTest extends LinearOpMode {
             telemetry.addData("outtakeLatch: ", "%3.2f", outtakeLatch.getPosition());
             telemetry.addData("outtakePivot: ", "%3.2f", outtakePivot.getPosition());
             telemetry.addData("slidePivot: ", "%3.2f", slidePivot.getPosition());
-            telemetry.addData("hangServoRight: ", "%3.2f", hangServoRight.getPosition());
-            telemetry.addData("hangServoLeft: ", "%3.2f", hangServoLeft.getPosition());
             telemetry.addData("droneLatch: ", "%3.2f", droneLatch.getPosition());
             telemetry.addData("tilt: ", "%3.2f", droneTilt.getPosition());
             telemetry.addData("outtakeWireServo: ", "%3.2f", outtakeWireServo.getPosition());

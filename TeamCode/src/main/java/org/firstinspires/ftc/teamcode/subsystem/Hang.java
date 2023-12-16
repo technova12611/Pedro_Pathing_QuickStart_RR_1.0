@@ -20,7 +20,7 @@ public class Hang {
     public static int HANG_POSITION = 2500;
     public static int HANG_INREMENTAL_CHANGE_POSITION = 300;
 
-    public static int DROPDOWN_AFTER_HANG_POSITION = 750;
+    public static int DROPDOWN_AFTER_HANG_POSITION = 500;
 
     public static double HOOK_BLOCKER_BLOCK = 0.81;
     public static double  HOOK_BLOCKER_UNBLOCK = 0.6;

@@ -33,7 +33,7 @@ import org.firstinspires.ftc.teamcode.utils.software.SmartGameTimer;
 import java.util.Arrays;
 
 @Config
-@TeleOp(group = "Drive", name="Manual Drive")
+@TeleOp(group = "Drive", name = "Manual Drive")
 public class ManualDrive extends LinearOpMode {
     public static double TURN_SPEED = 0.75;
     public static double DRIVE_SPEED = 1.0;
@@ -71,89 +71,84 @@ public class ManualDrive extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        try {
-            telemetry.addLine("Initializing...");
-            telemetry.update();
+        telemetry.addLine("Initializing...");
+        telemetry.update();
 
-            // Init
-            g1 = new GamePadController(gamepad1);
-            g2 = new GamePadController(gamepad2);
+        // Init
+        g1 = new GamePadController(gamepad1);
+        g2 = new GamePadController(gamepad2);
+        g1.update();
+        g2.update();
+        sched = new ActionScheduler();
+        drive = new MecanumDrive(hardwareMap, Memory.LAST_POSE);
+        intake = new Intake(hardwareMap);
+        outtake = new Outtake(hardwareMap);
+        hang = new Hang(hardwareMap);
+        drone = new Drone(hardwareMap);
+
+        smartGameTimer = new SmartGameTimer(false);
+
+        if (Globals.RUN_AUTO) {
+            drive.pose = Globals.drivePose;
+        }
+        outtake.isAuto = false;
+        Globals.RUN_AUTO = false;
+        outtake.prepTeleop();
+
+        intake.initialize(false);
+        // Init opmodes
+        outtake.initialize();
+        drone.initialize();
+        hang.initialize();
+
+        // Ready!
+        telemetry.addLine("Manual Drive is Ready!");
+        telemetry.addLine("Drive Pose: " + new PoseMessage(drive.pose));
+        telemetry.update();
+
+        velConstraintOverride = new MinVelConstraint(Arrays.asList(
+                this.drive.kinematics.new WheelVelConstraint(45.0),
+                new AngularVelConstraint(Math.PI / 2)));
+
+        waitForStart();
+
+        // Opmode start
+        if (opModeIsActive()) {
+            resetRuntime();
+            g1.reset();
+            g2.reset();
+
+            // Finish pulling in slides
+            if (!smartGameTimer.isNominal()) {
+                outtake.finishPrepTeleop();
+            }
+        }
+
+        // Main loop
+        while (opModeIsActive()) {
             g1.update();
             g2.update();
-            sched = new ActionScheduler();
-            drive = new MecanumDrive(hardwareMap, Memory.LAST_POSE);
-            intake = new Intake(hardwareMap);
-            outtake = new Outtake(hardwareMap);
-            hang = new Hang(hardwareMap);
-            drone = new Drone(hardwareMap);
 
-            smartGameTimer = new SmartGameTimer(false);
+            move();
+            subsystemControls();
+            pixelDetection();
 
-            if (Globals.RUN_AUTO) {
-                drive.pose = Globals.drivePose;
-            }
-            outtake.isAuto = false;
-            Globals.RUN_AUTO = false;
-            outtake.prepTeleop();
+            drive.updatePoseEstimate();
+            sched.update();
+            outtake.update();
+            intake.update();
 
-            intake.initialize(false);
-            // Init opmodes
-            outtake.initialize();
-            drone.initialize();
-            hang.initialize();
-
-            // Ready!
-            telemetry.addLine("Manual Drive is Ready!");
-            telemetry.addLine("Drive Pose: " + new PoseMessage(drive.pose));
+            telemetry.addData("Time left: ", smartGameTimer.formattedString() + " (" + smartGameTimer.status() + ")");
+            telemetry.addLine(intake.getStackServoPositions());
+            telemetry.addLine(outtake.getServoPositions());
+            telemetry.addLine("Current Pixel count: " + Intake.pixelsCount + " | Total count: " + Intake.totalPixelCount + " | Prev count: " + prevPixelCount);
+            telemetry.addLine("Intake state: " + intake.intakeState);
+            telemetry.addLine(hang.getCurrentPosition());
             telemetry.update();
-
-            velConstraintOverride = new MinVelConstraint(Arrays.asList(
-                    this.drive.kinematics.new WheelVelConstraint(45.0),
-                    new AngularVelConstraint(Math.PI / 2)));
-
-            waitForStart();
-
-            // Opmode start
-            if (opModeIsActive()) {
-                resetRuntime();
-                g1.reset();
-                g2.reset();
-
-                // Finish pulling in slides
-                if (!smartGameTimer.isNominal()) {
-                    outtake.finishPrepTeleop();
-                }
-            }
-
-            // Main loop
-            while (opModeIsActive()) {
-                g1.update();
-                g2.update();
-
-                move();
-                subsystemControls();
-                pixelDetection();
-
-                drive.updatePoseEstimate();
-                sched.update();
-                outtake.update();
-                intake.update();
-
-                telemetry.addData("Time left: ", smartGameTimer.formattedString() + " (" + smartGameTimer.status() + ")");
-                telemetry.addLine(intake.getStackServoPositions());
-                telemetry.addLine(outtake.getServoPositions());
-                telemetry.addLine("Current Pixel count: " + Intake.pixelsCount + " | Total count: " + Intake.totalPixelCount + " | Prev count: " + prevPixelCount);
-                telemetry.addLine("Intake state: " + intake.intakeState);
-                telemetry.addLine(hang.getCurrentPosition());
-                telemetry.update();
-            }
-
-            // On termination
-            Memory.LAST_POSE = drive.pose;
         }
-        finally {
-            hang.dropdownFromHang();
-        }
+
+        // On termination
+        Memory.LAST_POSE = drive.pose;
     }
 
     private void pixelDetection() {
@@ -209,7 +204,7 @@ public class ManualDrive extends LinearOpMode {
 
             // detect the first pixel in time
             if (Intake.pixelsCount == 1 && prevPixelCount == 0) {
-                if(intake.stackIntakeState == Intake.StackIntakeState.UP && lastTimePixelDetected == null) {
+                if (intake.stackIntakeState == Intake.StackIntakeState.UP && lastTimePixelDetected == null) {
                     lastTimePixelDetected = new Long(System.currentTimeMillis());
                 }
                 Log.d("TeleOps_Pixel_detection", "Pixel count changed 0 -> 1. Detected at " + lastTimePixelDetected);
@@ -220,7 +215,7 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void move() {
-        double speed = (1-Math.abs(g1.right_stick_x)) * (DRIVE_SPEED - SLOW_DRIVE_SPEED) + SLOW_DRIVE_SPEED;
+        double speed = (1 - Math.abs(g1.right_stick_x)) * (DRIVE_SPEED - SLOW_DRIVE_SPEED) + SLOW_DRIVE_SPEED;
         double input_x = Math.pow(-g1.left_stick_y, 3) * speed;
         double input_y = Math.pow(-g1.left_stick_x, 3) * speed;
 
@@ -234,15 +229,15 @@ public class ManualDrive extends LinearOpMode {
 
     boolean isSlideOut = false;
     boolean isStackIntakeOn = false;
+
     private void subsystemControls() {
         // Intake controls
         //
         //   xOnce for toggle intake ON/OFF
         //
-        if(g1.aLong()) {
+        if (g1.aLong()) {
             isPixelDetectionEnabled = false;
-        }
-        else if (!g1.start() && g1.xOnce()) {
+        } else if (!g1.start() && g1.xOnce()) {
             if (intake.intakeState == Intake.IntakeState.ON) {
                 sched.queueAction(intake.intakeOff());
             } else {
@@ -266,15 +261,13 @@ public class ManualDrive extends LinearOpMode {
         }
 
         // Outtake controls
-        if(g1.yLong()) {
+        if (g1.yLong()) {
             sched.queueAction(outtake.latchScore2());
-        }
-        else if (g1.yOnce()) {
+        } else if (g1.yOnce()) {
             if (isSlideOut) {
-                if(outtake.latchState == Outtake.OuttakeLatchState.LATCH_1) {
+                if (outtake.latchState == Outtake.OuttakeLatchState.LATCH_1) {
                     sched.queueAction(outtake.latchScore2());
-                }
-                else {
+                } else {
                     sched.queueAction(outtake.latchScore1());
                 }
             } else {
@@ -287,7 +280,7 @@ public class ManualDrive extends LinearOpMode {
             }
         }
 
-        if (Math.abs(g1.right_stick_y) > 0.25  && isSlideOut) {
+        if (Math.abs(g1.right_stick_y) > 0.25 && isSlideOut) {
             sched.queueAction(outtake.moveSliderBlocking(-g1.right_stick_y));
         }
 
@@ -298,26 +291,29 @@ public class ManualDrive extends LinearOpMode {
             sched.queueAction(new SleepAction(0.35));
             sched.queueAction(outtake.outtakeWireForHanging());
 
-            if(outtake.isHangingHookUp) {
+            if (outtake.isHangingHookUp) {
                 isHangingActivated = true;
             } else {
                 isHangingActivated = false;
             }
         }
 
-        if(g1.dpadDownLong()) {
-            sched.queueAction(hang.hang());
-        }
-        else if (g1.dpadDownOnce()) {
-            sched.queueAction(hang.hangSlowly());
+        if (g1.dpadDownLong()) {
+            if(isHangingActivated) {
+                sched.queueAction(hang.hang());
+            }
+        } else if (g1.dpadDownOnce()) {
+            if(isHangingActivated) {
+                sched.queueAction(hang.hangSlowly());
+            }
         }
 
         // move left and right by one slot
         if (g1.dpadLeftOnce() || g1.dpadRightOnce()) {
 
-            int multiplier = (Globals.RUN_AUTO)?1:-1;
+            int multiplier = (Globals.RUN_AUTO) ? 1 : -1;
 
-            double strafeDistance = (g1.dpadLeftOnce()? STRAFE_DISTANCE:-STRAFE_DISTANCE)*multiplier;
+            double strafeDistance = (g1.dpadLeftOnce() ? STRAFE_DISTANCE : -STRAFE_DISTANCE) * multiplier;
 
             autoRunSched = new AutoActionScheduler(this::update);
             Log.d("ManualDrive", "Pose before strafe: " + new PoseMessage(this.drive.pose) + " | target=" + strafeDistance);
@@ -330,28 +326,27 @@ public class ManualDrive extends LinearOpMode {
 
             autoRunSched.run();
 
-            Log.d("ManualDrive", "Pose after strafe: " + new PoseMessage(this.drive.pose) + " | actual=" + (drive.pose.position.y-start_y));
+            Log.d("ManualDrive", "Pose after strafe: " + new PoseMessage(this.drive.pose) + " | actual=" + (drive.pose.position.y - start_y));
         }
 
         // drone launch
         if (g1.backOnce()) {
-            sched.queueAction( intake.stackIntakeLinkageDown());
-            sched.queueAction( new SleepAction(0.25));
-            sched.queueAction( drone.scoreDrone());
-            sched.queueAction( new SleepAction(0.25));
-            sched.queueAction( intake.stackIntakeLinkageUp());
+            sched.queueAction(intake.stackIntakeLinkageDown());
+            sched.queueAction(new SleepAction(0.25));
+            sched.queueAction(drone.scoreDrone());
+            sched.queueAction(new SleepAction(0.25));
+            sched.queueAction(intake.stackIntakeLinkageUp());
         }
 
         // stack intake
-        if(g1.start() && g1.x()) {
-            if(!isStackIntakeOn) {
+        if (g1.start() && g1.x()) {
+            if (!isStackIntakeOn) {
                 isStackIntakeOn = true;
                 sched.queueAction(intake.intakeTwoStackedPixels());
             }
-        }
-        else if(g1.aOnce()) {
+        } else if (g1.aOnce()) {
             isStackIntakeOn = false;
-            if(intake.stackIntakeState == Intake.StackIntakeState.DOWN) {
+            if (intake.stackIntakeState == Intake.StackIntakeState.DOWN) {
                 sched.queueAction(new SequentialAction(
                         intake.prepareTeleOpsIntake(),
                         intake.intakeOff()));
@@ -364,14 +359,23 @@ public class ManualDrive extends LinearOpMode {
             }
         }
 
-        if(g1.guideOnce()) {
-            sched.queueAction(outtake.reverseDump());
+        if (g1.guideOnce()) {
+            //sched.queueAction(outtake.reverseDump());
+            Log.d("Hang_drop_down", "Hang current position: " + hang.getCurrentPosition());
+            hang.dropdownFromHang();
+            long startTime = System.currentTimeMillis();
+            while (hang.isMotorBusy() && (System.currentTimeMillis() - startTime) < 2000) {
+                idle();
+            }
+
+            Log.d("Hang_drop_down", "Hang after position: " + hang.getCurrentPosition());
         }
     }
+
     private void field_centric_move() {
-        double speed = (1-Math.abs(g1.right_stick_x)) * (DRIVE_SPEED - SLOW_DRIVE_SPEED) + SLOW_DRIVE_SPEED;
-        double input_x = Math.pow(-g1.left_stick_y, 3) * speed * (isHangingActivated?slowModeForHanging:1.0);
-        double input_y = Math.pow(-g1.left_stick_x, 3) * speed *  (isHangingActivated?slowModeForHanging:1.0);
+        double speed = (1 - Math.abs(g1.right_stick_x)) * (DRIVE_SPEED - SLOW_DRIVE_SPEED) + SLOW_DRIVE_SPEED;
+        double input_x = Math.pow(-g1.left_stick_y, 3) * speed * (isHangingActivated ? slowModeForHanging : 1.0);
+        double input_y = Math.pow(-g1.left_stick_x, 3) * speed * (isHangingActivated ? slowModeForHanging : 1.0);
         Vector2d input = new Vector2d(input_x, input_y);
         input = drive.pose.heading.times(input);
 

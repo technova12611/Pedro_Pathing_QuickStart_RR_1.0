@@ -31,9 +31,9 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_HIGH = OUTTAKE_SLIDE_ABOVE_LEVEL_2;
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
     public static int OUTTAKE_SLIDE_MID = 1250;
-    public static int OUTTAKE_SLIDE_CYCLES_ONE = 1100;
+    public static int OUTTAKE_SLIDE_CYCLES_ONE = 1000;
     public static int OUTTAKE_SLIDE_CYCLES_TWO = 1250;
-    public static int OUTTAKE_SLIDE_LOW = 850;
+    public static int OUTTAKE_SLIDE_LOW = 890;
     public static int OUTTAKE_SLIDE_INIT = 0;
 
     public static int OUTTAKE_SLIDE_INCREMENT= 300;
@@ -45,7 +45,7 @@ public class Outtake {
     public static double OUTTAKE_PIVOT_REVERSE_DUMP = 0.01;
     public static double OUTTAKE_PIVOT_INIT = 0.175;
     public static double OUTTAKE_PIVOT_SLIDING = 0.23;
-    public static double OUTTAKE_PIVOT_DUMP_LOW = 0.36;
+    public static double OUTTAKE_PIVOT_DUMP_LOW = 0.37;
     public static double OUTTAKE_PIVOT_DUMP_MID = 0.39;
 
     public static double OUTTAKE_PIVOT_DUMP_HIGH = 0.56;
@@ -70,7 +70,7 @@ public class Outtake {
     public static double OUTTAKE_WIRE_VERY_HIGH = 0.38;
 
     public static double OUTTAKE_WIRE_FOR_HANGING_DOWN = 0.73;
-    public static double OUTTAKE_WIRE_FOR_HANGING_UP = 0.40;
+    public static double OUTTAKE_WIRE_FOR_HANGING_UP = 0.38;
 
     final MotorWithPID slide;
     public boolean slidePIDEnabled = true;
