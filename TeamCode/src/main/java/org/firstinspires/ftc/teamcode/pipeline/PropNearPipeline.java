@@ -27,7 +27,7 @@ public class PropNearPipeline extends PropBasePipeline {
 
         super.init(width, height, calibration);
 
-        redDeltaThreshold = 1.25;
+        redDeltaThreshold = 1.95;
         blueDeltaThreshold = 1.25;
     }
 

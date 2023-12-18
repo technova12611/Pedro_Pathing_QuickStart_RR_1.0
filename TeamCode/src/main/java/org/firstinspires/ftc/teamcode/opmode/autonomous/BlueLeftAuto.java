@@ -15,17 +15,17 @@ import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 public class BlueLeftAuto extends NearAutoBase {
    public static Pose2d[] blue_spike = {
            new Pose2d(35.5, 25.5, Math.toRadians(-180)),
-           new Pose2d(29.25, 23.5, Math.toRadians(-180)),
+           new Pose2d(29.25, 24.5, Math.toRadians(-180)),
            new Pose2d(14.1, 34.25, Math.toRadians(-180))
    };
 
    public static Pose2d[] blue_backdrop =  {
-           new Pose2d(49.0, 42.0, Math.toRadians(-180)),
-           new Pose2d(49.0, 36, Math.toRadians(-180)),
-           new Pose2d(49.0, 28.5, Math.toRadians(-180))
+           new Pose2d(49.2, 42.0, Math.toRadians(-180)),
+           new Pose2d(49.2, 36, Math.toRadians(-180)),
+           new Pose2d(49.2, 28.5, Math.toRadians(-180))
    };
    // 0 = left, 1 = middle, 2 = right
-   public static Pose2d blue_start = new Pose2d(16.0, 62.5, Math.toRadians(-90));
+   public static Pose2d blue_start = new Pose2d(16.0, 62.0, Math.toRadians(-90));
    public static Pose2d blue_parking = new Pose2d(53.0, 60.0, Math.toRadians(-180));
 
    @Override

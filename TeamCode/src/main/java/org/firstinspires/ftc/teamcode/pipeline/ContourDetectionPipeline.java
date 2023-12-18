@@ -48,6 +48,13 @@ public class ContourDetectionPipeline implements VisionProcessor, CameraStreamSo
     // Use this picture for you own color https://github.com/PinkToTheFuture/OpenCV_FreightFrenzy_2021-2022/blob/main/YCbCr.jpeg
     // Note that the Cr and Cb values range between 0-255. this means that the origin of the coordinate system is (128,128)
 
+//    lower_red = np.array([0, 100, 100])
+//    upper_red = np.array([10, 255, 255])
+//
+//            # Define the lower and upper boundaries of the blue color in HSV
+//    lower_blue = np.array([110, 100, 100])
+//    upper_blue = np.array([130, 255, 255])
+
     // Volatile because accessed by OpMode without sync
     public volatile boolean error = false;
     public volatile Exception debug;

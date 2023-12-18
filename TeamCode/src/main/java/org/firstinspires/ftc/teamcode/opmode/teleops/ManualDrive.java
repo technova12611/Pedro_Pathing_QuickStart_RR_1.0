@@ -359,16 +359,23 @@ public class ManualDrive extends LinearOpMode {
             }
         }
 
-        if (g1.guideOnce()) {
-            //sched.queueAction(outtake.reverseDump());
-            Log.d("Hang_drop_down", "Hang current position: " + hang.getCurrentPosition());
-            hang.dropdownFromHang();
-            long startTime = System.currentTimeMillis();
-            while (hang.isMotorBusy() && (System.currentTimeMillis() - startTime) < 2000) {
-                idle();
-            }
+        if(g1.start() && g1.guide()) {
+            outtake.resetSlideEncoder();
+        }
+        else if (g1.guideOnce()) {
 
-            Log.d("Hang_drop_down", "Hang after position: " + hang.getCurrentPosition());
+            if(isHangingActivated) {
+                Log.d("Hang_drop_down", "Hang current position: " + hang.getCurrentPosition());
+                hang.dropdownFromHang();
+                long startTime = System.currentTimeMillis();
+                while (hang.isMotorBusy() && (System.currentTimeMillis() - startTime) < 2000) {
+                    idle();
+                }
+
+                Log.d("Hang_drop_down", "Hang after position: " + hang.getCurrentPosition());
+            } else {
+                sched.queueAction(outtake.reverseDump());
+            }
         }
     }
 

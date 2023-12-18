@@ -35,7 +35,8 @@ public abstract class NearAutoBase extends AutoBase {
                       // to score yellow pixel on the backdrop
                       new ParallelAction(
                       drive.actionBuilder(drive.pose)
-                              .strafeToLinearHeading(backdrop[SPIKE].position, backdrop[SPIKE].heading)
+                              .strafeToLinearHeading(backdrop[SPIKE].position,
+                                      backdrop[SPIKE].heading, drive.slowVelConstraint,drive.slowAccelConstraint)
                               .build(),
 
                           outtake.prepareToSlide(),
@@ -45,18 +46,22 @@ public abstract class NearAutoBase extends AutoBase {
                           )
                       ),
                       outtake.prepareToScore(),
-                      new SleepAction(0.25),
+                      new SleepAction(0.5),
                       outtake.latchScore1(),
                       intake.stackIntakeLinkageDown(),
                       new SleepAction(1.0),
+                      outtake.afterScore(),
+                      new SleepAction(0.25),
+
                       new ParallelAction(
                           new SequentialAction(
+                                  outtake.prepareToSlide(),
                               new SleepAction(0.25),
                               outtake.retractOuttake()),
 
                               // to score the purple pixel on the spike
                               drive.actionBuilder(backdrop[SPIKE])
-                                      .strafeTo(spike[SPIKE].position)
+                                      .strafeTo(spike[SPIKE].position, drive.slowVelConstraint,drive.slowAccelConstraint)
                                       .build()
                       ),
 

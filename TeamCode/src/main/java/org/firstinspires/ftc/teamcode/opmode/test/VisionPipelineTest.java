@@ -20,15 +20,14 @@ import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.vision.VisionPortal;
 
 @Config
-@Disabled
 @TeleOp(group = "Test")
 public class VisionPipelineTest extends LinearOpMode {
     private PropBasePipeline propPipeline;
     private VisionPortal portal;
 
     public static Side side = Side.RIGHT;
-    public static int cameraWidth = 1920; // 640
-    public static int cameraHeight = 1080; // 320
+    public static int cameraWidth = 1920;
+    public static int cameraHeight = 1080;
 
     public void runOpMode() throws InterruptedException {
 

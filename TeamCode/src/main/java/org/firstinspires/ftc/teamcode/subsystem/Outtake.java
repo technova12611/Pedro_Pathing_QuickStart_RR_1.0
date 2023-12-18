@@ -33,14 +33,14 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_MID = 1250;
     public static int OUTTAKE_SLIDE_CYCLES_ONE = 1000;
     public static int OUTTAKE_SLIDE_CYCLES_TWO = 1150;
-    public static int OUTTAKE_SLIDE_LOW = 845;
+    public static int OUTTAKE_SLIDE_LOW = 865;
     public static int OUTTAKE_SLIDE_INIT = 0;
 
     public static int OUTTAKE_SLIDE_INCREMENT= 300;
 
     public static double LATCH_CLOSED = 0.55;
     public static double LATCH_SCORE_1 = 0.415;
-    public static double LATCH_SCORE_2 = 0.48;
+    public static double LATCH_SCORE_2 = 0.47;
 
     public static double OUTTAKE_PIVOT_REVERSE_DUMP = 0.01;
     public static double OUTTAKE_PIVOT_INIT = 0.175;
@@ -57,13 +57,16 @@ public class Outtake {
     public static double SLIDE_PIVOT_INIT = 0.438;
     public static double SLIDE_PIVOT_SLIDING = 0.52;
     public static double SLIDE_PIVOT_DUMP = 0.25;
+
+    public static double SLIDE_PIVOT_DUMP_2 = 0.265;
+
     public static double SLIDE_PIVOT_DUMP_HIGH = 0.10;
 
     public static double SLIDE_PIVOT_DUMP_VERY_HIGH = 0.0;
 
-    public static double OUTTAKE_WIRE_DOWN = 0.71;
+    public static double OUTTAKE_WIRE_DOWN = 0.72;
 
-    public static double OUTTAKE_WIRE_SAFE_DOWN = 0.69;
+    public static double OUTTAKE_WIRE_SAFE_DOWN = 0.70;
 
     public static double OUTTAKE_WIRE_MIDDLE = 0.50;
     public static double OUTTAKE_WIRE_HIGH = 0.45;
@@ -196,6 +199,12 @@ public class Outtake {
                 new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_1, "latch"),
                 new Intake.UpdatePixelCountAction(-1),
                 new OuttakeLatchStateAction(OuttakeLatchState.LATCH_1)
+        );
+    }
+
+    public Action afterScore() {
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_DUMP_2, "slidePivot")
         );
     }
 
@@ -348,6 +357,10 @@ public class Outtake {
         return "SlidePivot: " + String.format("%.2f", this.slidePivot.getPosition()) +
                 " | OuttakePivot: " + String.format("%.2f", this.outtakePivot.getPosition()) +
                 " | Latch: " + String.format("%.2f", this.latch.getPosition());
+    }
+
+    public void resetSlideEncoder() {
+        this.slide.zeroMotorInternals();
     }
 
 }

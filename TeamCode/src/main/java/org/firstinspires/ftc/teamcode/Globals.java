@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.pipeline.Side;
 public class Globals {
 
     public static AlliancePosition COLOR = AlliancePosition.RED;
-    public static FieldPosition FIELD = FieldPosition.FAR;
+    public static FieldPosition FIELD = FieldPosition.NEAR;
     /**
      * Match constants.
      */
