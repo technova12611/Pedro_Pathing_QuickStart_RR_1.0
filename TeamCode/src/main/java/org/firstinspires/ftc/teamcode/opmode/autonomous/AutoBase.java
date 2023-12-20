@@ -23,6 +23,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Memory;
 import org.firstinspires.ftc.teamcode.subsystem.Outtake;
 import org.firstinspires.ftc.teamcode.subsystem.Drone;
+import org.firstinspires.ftc.teamcode.utils.hardware.GamePadController;
 import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 import org.firstinspires.ftc.vision.VisionPortal;
 
@@ -42,6 +43,16 @@ public abstract class AutoBase extends LinearOpMode {
     public static Side side = Side.RIGHT;
     public static int SPIKE = 2;
 
+    private GamePadController g1, g2;
+
+    // configure a wait time to allow partner time to finish the backdrop
+    //----------------------------------------------------------------
+    public int farSideAutoWaitTimeInSeconds = 0;
+
+    private int[] waitTimeOptions = {0,5,10,15,20};
+
+    private int selectionIdx = 0;
+
     final public void update() {
         telemetry.addData("Time left", 30 - getRuntime());
         outtake.update();
@@ -57,6 +68,9 @@ public abstract class AutoBase extends LinearOpMode {
         Globals.RUN_AUTO = true;
 
         // Init subsystems
+        g1 = new GamePadController(gamepad1);
+        g2 = new GamePadController(gamepad2);
+
         this.drive = new MecanumDrive(hardwareMap, Memory.LAST_POSE);
         this.intake = new Intake(hardwareMap);
         this.outtake = new Outtake(hardwareMap);
@@ -97,13 +111,46 @@ public abstract class AutoBase extends LinearOpMode {
             printDescription();
 
             if(getAlliance() == AlliancePosition.RED) {
-                telemetry.addData("Mean Right color:", "%3.2f", propPipeline.meanSideColor);
-                telemetry.addData("Mean Left color:", "%3.2f", propPipeline.meanCenterColor);
+                if(getFieldPosition() == FieldPosition.NEAR) {
+                    telemetry.addData("Mean Left color:", "%3.2f", propPipeline.meanCenterColor);
+                    telemetry.addData("Mean Right color:", "%3.2f", propPipeline.meanSideColor);
+                } else {
+                    telemetry.addData("Mean Center color:", "%3.2f", propPipeline.meanCenterColor);
+                    telemetry.addData("Mean Left color:", "%3.2f", propPipeline.meanSideColor);
+                }
             } else {
-                telemetry.addData("Mean Left color:", "%3.2f", propPipeline.meanSideColor);
-                telemetry.addData("Mean Center color:", "%3.2f",propPipeline.meanCenterColor);
+
+                if(getFieldPosition() == FieldPosition.NEAR) {
+                    telemetry.addData("Mean Left color:", "%3.2f", propPipeline.meanSideColor);
+                    telemetry.addData("Mean Center color:", "%3.2f",propPipeline.meanCenterColor);
+                } else {
+                    telemetry.addData("Mean Center color:", "%3.2f", propPipeline.meanCenterColor);
+                    telemetry.addData("Mean Right color:", "%3.2f", propPipeline.meanSideColor);
+                }
             }
             telemetry.addData("Spike Position", side.toString());
+
+            if(getFieldPosition() == FieldPosition.FAR) {
+                // use dpad to select wait time
+                if(g1.dpadUpOnce()) {
+                    selectionIdx++;
+                } else if(g1.dpadDownOnce()) {
+                    selectionIdx--;
+                }
+
+                // cycle the idx
+                if(selectionIdx < 0) {
+                    selectionIdx = waitTimeOptions.length;
+                } else if (selectionIdx > waitTimeOptions.length) {
+                    selectionIdx = 0;
+                }
+
+                farSideAutoWaitTimeInSeconds = waitTimeOptions[selectionIdx];
+            }
+
+            telemetry.addLine("----------------------------");
+            telemetry.addData("Wait Time to Score Yellow: ", farSideAutoWaitTimeInSeconds + " (seconds)");
+
             telemetry.update();
             idle();
         }

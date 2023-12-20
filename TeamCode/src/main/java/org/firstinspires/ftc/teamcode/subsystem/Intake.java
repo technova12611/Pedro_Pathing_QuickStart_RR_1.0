@@ -81,6 +81,8 @@ public class Intake {
             stackIntakeLinkage.setPosition(STACK_INTAKE_LINKAGE_UP);
             stackIntakeServoLeft.setPosition(STACK_INTAKE_LEFT_INIT);
             stackIntakeServoRight.setPosition(STACK_INTAKE_RIGHT_INIT);
+
+            pixelsCount = 0;
         }
 
         intakeState = IntakeState.OFF;

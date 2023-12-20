@@ -24,7 +24,17 @@ public abstract class FarAutoBase extends AutoBase {
 
     @Override
     protected void onRun() {
+
+        // depends on the spike position, the paths are different
+        //
+        // For LEFT and RIGHT, intake from the FURTHEST stack
+        // For CENTER, intake from the NEAREST stack
+        //
+        // For BLUE and RED, they share the same paths, only difference is the position
+        //-------------------------------------------------------------------------------
+
         // RED SPIKE right or BLUE left
+        //--------------------------------------------
         if ((SPIKE == 2 && getAlliance() == AlliancePosition.RED) ||
                 (SPIKE == 0 && getAlliance() == AlliancePosition.BLUE)) {
 
@@ -91,6 +101,7 @@ public abstract class FarAutoBase extends AutoBase {
 
         }
         // SPIKE is center
+        //-----------------------------------
         else if (SPIKE == 1) {
 
             sched.addAction(
@@ -144,6 +155,7 @@ public abstract class FarAutoBase extends AutoBase {
 
         }
         // RED SPIKE left OR BLUE SPIKE right
+        //------------------------------------------------
         else {
             sched.addAction(
                     new SequentialAction(
@@ -215,93 +227,98 @@ public abstract class FarAutoBase extends AutoBase {
 
                     )
             );
-
         }
 
-//        sched.addAction(
-//                new SequentialAction(
-//
-//                        new ParallelAction(
-//
-//                                drive.actionBuilder(crossFieldAlignment[SPIKE])
-//                                        .setReversed(true)
-//                                        .strafeToLinearHeading(backdropAlignment[SPIKE].position,backdropAlignment[SPIKE].heading,drive.slowVelConstraint,drive.slowAccelConstraint)
-//                                        .build(),
-//                                new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_alignment_end"),
-//
-//                                new SequentialAction(
-//                                        new SleepAction(0.5),
-//                                        intake.stackIntakeLinkageUp(),
-//                                        new SleepAction(2.05),
-//                                        intake.prepareTeleOpsIntake(),
-//                                        new MecanumDrive.DrivePoseLoggingAction(drive, "Intake_off")
-//                                )
-//                        ),
-//                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_alignment_position"),
-//
-//                        new ParallelAction(
-//
-//                                drive.actionBuilder(backdropAlignment[SPIKE])
-//                                        .setReversed(true)
-//                                        .strafeTo(backdrop[SPIKE].position, drive.slowVelConstraint,drive.slowAccelConstraint)
-//                                        .build(),
-//
-//                                new SequentialAction(
-//                                        new SleepAction(0.2),
-//                                        outtake.prepareToSlide(),
-//                                        new SleepAction(0.5),
-//                                        outtake.extendOuttakeLow()
-//                                )
-//                        ),
-//
-//                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_score_position"),
-//
-//                        outtake.prepareToScore(),
-//                        new SleepAction(0.5),
-//                        outtake.latchScore1(),
-//                        new SleepAction(0.75),
-//
-//                        new MecanumDrive.DrivePoseLoggingAction(drive, "score_yellow_preload"),
-//                        drive.actionBuilder(backdrop[SPIKE])
-//                                .setReversed(true)
-//                                .strafeTo(cycleScore[SPIKE].position, drive.slowVelConstraint,drive.slowAccelConstraint)
-//                                .build(),
-//
-//                        new MecanumDrive.DrivePoseLoggingAction(drive, "strafe_to_score_white"),
-//
-//                        outtake.extendOuttakeCycleTwo(),
-//                        outtake.prepareToScoreCycle(),
-//                        new SleepAction(0.75),
-//                        outtake.latchScore2(),
-//                        new SleepAction(0.75),
-//
-//                        outtake.afterScore(),
-//                        new SleepAction(0.25),
-//                        outtake.prepareToSlide(),
-//                        new SleepAction(0.25),
-//                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_score_end")
-//                )
-//        );
+        sched.addAction(new SleepAction(farSideAutoWaitTimeInSeconds));
 
-//        sched.addAction(new ParallelAction(
-//                        new SequentialAction(
-//                                outtake.retractOuttake(),
-//                                new SleepAction(0.5),
-//                                new MecanumDrive.DrivePoseLoggingAction(drive, "slides_retracted_completed"),
-//                                intake.prepareTeleOpsIntake(),
-//                                outtake.prepareToTransfer()
-//                        ),
-//
-//                        new SequentialAction(
-//                                new MecanumDrive.DrivePoseLoggingAction(drive, "start_of_parking"),
-//                                // to score the purple pixel on the spike
-//                                drive.actionBuilder(cycleScore[SPIKE])
-//                                        .strafeTo(parking.position)
-//                                        .build(),
-//                                new MecanumDrive.DrivePoseLoggingAction(drive, "end_of_parking")
-//                        )
-//                )
-//        );
+        // Move to the backdrop side, and potentially add a configurable sleep time
+        //-------------------------------------------------------------------------
+        sched.addAction(
+                new SequentialAction(
+
+                        new ParallelAction(
+
+                                drive.actionBuilder(crossFieldAlignment[SPIKE])
+                                        .setReversed(true)
+                                        .strafeToLinearHeading(backdropAlignment[SPIKE].position,backdropAlignment[SPIKE].heading,drive.slowVelConstraint,drive.slowAccelConstraint)
+                                        .build(),
+                                new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_alignment_end"),
+
+                                new SequentialAction(
+                                        new SleepAction(0.5),
+                                        intake.stackIntakeLinkageUp(),
+                                        new SleepAction(2.05),
+                                        intake.prepareTeleOpsIntake(),
+                                        new MecanumDrive.DrivePoseLoggingAction(drive, "Intake_off")
+                                )
+                        ),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_alignment_position"),
+
+                        new ParallelAction(
+
+                                drive.actionBuilder(backdropAlignment[SPIKE])
+                                        .setReversed(true)
+                                        .strafeTo(backdrop[SPIKE].position, drive.slowVelConstraint,drive.slowAccelConstraint)
+                                        .build(),
+
+                                new SequentialAction(
+                                        new SleepAction(0.2),
+                                        outtake.prepareToSlide(),
+                                        new SleepAction(0.5),
+                                        outtake.extendOuttakeLow()
+                                )
+                        ),
+
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_score_position"),
+
+                        outtake.prepareToScore(),
+                        new SleepAction(0.5),
+                        outtake.latchScore1(),
+                        new SleepAction(0.75),
+
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "score_yellow_preload"),
+                        drive.actionBuilder(backdrop[SPIKE])
+                                .setReversed(true)
+                                .strafeTo(cycleScore[SPIKE].position, drive.slowVelConstraint,drive.slowAccelConstraint)
+                                .build(),
+
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "strafe_to_score_white"),
+
+                        outtake.extendOuttakeCycleTwo(),
+                        outtake.prepareToScoreCycle(),
+                        new SleepAction(0.75),
+                        outtake.latchScore2(),
+                        new SleepAction(0.75),
+
+                        outtake.afterScore(),
+                        new SleepAction(0.25),
+                        outtake.prepareToSlide(),
+                        new SleepAction(0.25),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_score_end")
+                )
+        );
+
+        // prepare for teleops and parking if time
+        //-------------------------------------------------
+        sched.addAction(new ParallelAction(
+                        new SequentialAction(
+                                outtake.retractOuttake(),
+                                new SleepAction(0.5),
+                                new MecanumDrive.DrivePoseLoggingAction(drive, "slides_retracted_completed"),
+                                intake.prepareTeleOpsIntake(),
+                                outtake.prepareToTransfer()
+                        ),
+
+                        new SequentialAction(
+                                new MecanumDrive.DrivePoseLoggingAction(drive, "start_of_parking"),
+                                // to score the purple pixel on the spike
+                                drive.actionBuilder(cycleScore[SPIKE])
+                                        .strafeTo(parking.position)
+                                        .build(),
+                                new MecanumDrive.DrivePoseLoggingAction(drive, "end_of_parking")
+                        )
+                )
+        );
     }
 
     @Override

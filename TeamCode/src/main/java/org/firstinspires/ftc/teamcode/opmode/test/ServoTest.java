@@ -26,7 +26,6 @@ public class ServoTest extends LinearOpMode {
     public static boolean REVERSED = false;
     public static HardwareCreator.ServoType SERVO_TYPE = HardwareCreator.ServoType.DEFAULT;
     public static double POSITION = 0.5;
-
     private List<String> servoNames;
     private static int servoIndex = -1;
 
