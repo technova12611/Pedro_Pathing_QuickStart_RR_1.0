@@ -8,6 +8,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 import org.firstinspires.ftc.teamcode.pipeline.PropBasePipeline;
@@ -138,7 +139,8 @@ public abstract class AutoBase extends LinearOpMode {
         Globals.drivePose = drive.pose;
 
         Log.d("Auto", "Auto path ended at " + getRuntime());
-        Log.d("Auto", "End path drive EstimatedPose " + new PoseMessage(drive.pose));
+        Log.d("Auto", "End path drive Estimated Pose " + new PoseMessage(drive.pose) + "| " +
+                "Heading: " + String.format("%3.2f", drive.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)));
 
         while(opModeIsActive()) {
             Globals.drivePose = drive.pose;

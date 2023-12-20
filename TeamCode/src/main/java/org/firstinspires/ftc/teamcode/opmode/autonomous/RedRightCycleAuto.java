@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 
 @Config
-@Autonomous(name = "RED Right Cycle Auto (2+4)", group = "RED Auto", preselectTeleOp = "Manual Drive")
+@Autonomous(name = "RED Near Cycle Auto (2+4)", group = "RED Auto", preselectTeleOp = "Manual Drive")
 public class RedRightCycleAuto extends NearCycleAutoBase {
 
     @Override

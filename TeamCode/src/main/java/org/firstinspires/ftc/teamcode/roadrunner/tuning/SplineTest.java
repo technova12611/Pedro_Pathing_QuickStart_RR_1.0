@@ -8,13 +8,16 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.PoseMessage;
 import org.firstinspires.ftc.teamcode.roadrunner.TwoDeadWheelLocalizer;
 
 public final class SplineTest extends LinearOpMode {
 
-    public static double distance = 30.0;
+    public static double distance = 24.0;
+
+    public static int mode = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -22,8 +25,6 @@ public final class SplineTest extends LinearOpMode {
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        telemetry.addData("par encoder begin value: ", ((TwoDeadWheelLocalizer) drive.localizer).par.getPositionAndVelocity().position);
-        telemetry.addData("perp encoder begin value: ", ((TwoDeadWheelLocalizer) drive.localizer).perp.getPositionAndVelocity().position);
 
         waitForStart();
 
@@ -33,20 +34,22 @@ public final class SplineTest extends LinearOpMode {
 //                       .splineTo(new Vector2d(60, 0), Math.PI)
                         .build());
 
-        Thread.sleep(2000);
 
-        drive.updatePoseEstimate();
+        if(mode != 0) {
+            Thread.sleep(2000);
+            drive.updatePoseEstimate();
 
-        Actions.runBlocking(
-                drive.actionBuilder(drive.pose)
-                        .setReversed(true)
-                        .splineTo(new Vector2d(0, 0), Math.toRadians(180))
-                        .build());
+            Actions.runBlocking(
+                    drive.actionBuilder(drive.pose)
+                            .setReversed(true)
+                            .splineTo(new Vector2d(0, 0), Math.toRadians(180))
+                            .build());
+        }
 
         while (!isStopRequested()) {
-            telemetry.addData("Pose estimate: ", new PoseMessage(drive.pose).toString());
-            telemetry.addData("par encoder end value: ", ((TwoDeadWheelLocalizer) drive.localizer).par.getPositionAndVelocity().position);
-            telemetry.addData("perp encoder end value: ", ((TwoDeadWheelLocalizer) drive.localizer).perp.getPositionAndVelocity().position);
+            drive.updatePoseEstimate();
+            telemetry.addData("Pose estimate: ", new PoseMessage(drive.pose));
+            telemetry.addData("IMU heading: ", String.format("%3.2f",drive.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)));
             telemetry.update();
         }
 

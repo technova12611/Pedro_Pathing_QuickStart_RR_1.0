@@ -11,23 +11,23 @@ import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 
 @Config
-@Autonomous(name = "RED Right Auto (2+0)", group = "RED Auto", preselectTeleOp = "Manual Drive")
+@Autonomous(name = "RED Near Auto (2+0)", group = "RED Auto", preselectTeleOp = "Manual Drive")
 public class RedRightAuto extends NearAutoBase {
 
    // 0 = left, 1 = middle, 2 = right
    public static Pose2d[] red_spike = {
-           new Pose2d(14.1, -34.5, Math.toRadians(180)),
-           new Pose2d(28.5, -25.75, Math.toRadians(180)),
-           new Pose2d(36.0, -27.5, Math.toRadians(180))
+           new Pose2d(13.1, -34.5, Math.toRadians(180)),
+           new Pose2d(27.2, -26.2, Math.toRadians(180)),
+           new Pose2d(33.5, -27.5, Math.toRadians(180))
    };
    public static Pose2d[] red_backdrop =  {
-           new Pose2d(49.1, -31, Math.toRadians(180)),
-           new Pose2d(49.1, -36, Math.toRadians(180)),
-           new Pose2d(49.1, -42, Math.toRadians(180))
+           new Pose2d(48.2, -31, Math.toRadians(180)),
+           new Pose2d(48.2, -36, Math.toRadians(180)),
+           new Pose2d(48.2, -42, Math.toRadians(180))
    };
    // 0 = left, 1 = middle, 2 = right
    public static Pose2d red_start = new Pose2d(16.0, -62.0, Math.toRadians(90));
-   public static Pose2d red_parking = new Pose2d(53.0, -60.0, Math.toRadians(180));
+   public static Pose2d red_parking = new Pose2d(53.0, -61.0, Math.toRadians(180));
 
    @Override
    protected void onInit() {

@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 
@@ -45,9 +46,10 @@ public abstract class NearAutoBase extends AutoBase {
                               outtake.extendOuttakeLow()
                           )
                       ),
+                      new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_position"),
                       outtake.prepareToScore(),
                       new SleepAction(0.5),
-                      outtake.latchScore1(),
+                      outtake.latchScore2(),
                       intake.stackIntakeLinkageDown(),
                       new SleepAction(1.0),
                       outtake.afterScore(),
@@ -64,6 +66,7 @@ public abstract class NearAutoBase extends AutoBase {
                                       .strafeTo(spike[SPIKE].position, drive.slowVelConstraint,drive.slowAccelConstraint)
                                       .build()
                       ),
+                      new MecanumDrive.DrivePoseLoggingAction(drive, "spike_position"),
 
                       intake.scorePurplePreload(),
                       new SleepAction(0.5),
@@ -76,7 +79,8 @@ public abstract class NearAutoBase extends AutoBase {
                                       .setReversed(true)
                                       .strafeTo(parking.position)
                                       .build()
-                      )
+                      ),
+                     new MecanumDrive.DrivePoseLoggingAction(drive, "parking_position")
               )
       );
    }
