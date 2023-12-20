@@ -62,6 +62,9 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
     public double meanSideColor = 0.0;
     public double meanCenterColor = 0.0;
 
+    public double maxSideColor = 0.0;
+    public double maxCenterColor = 0.0;
+
     public Scalar side = new Scalar(0,0,0);
     public Scalar center = new Scalar(0,0,0);
 
@@ -117,7 +120,6 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
         if(allianceColor == AlliancePosition.RED) {
             sideColor = side.val[2] / 1000000.0;
             centerColor = center.val[2] / 1000000.0;
-
         } else {
             sideColor = side.val[0] / 1000000.0;
             centerColor = center.val[0] / 1000000.0;
@@ -136,6 +138,14 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
 
         meanSideColor = sideZoneColorList.getMean();
         meanCenterColor = centerZoneColorList.getMean();
+
+        if(meanSideColor > maxSideColor) {
+            maxSideColor = meanSideColor;
+        }
+
+        if(meanCenterColor > maxCenterColor) {
+            maxCenterColor = meanCenterColor;
+        }
 
         if(allianceColor == AlliancePosition.BLUE){
             if ( meanSideColor < threshold) {
@@ -157,6 +167,7 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
         } else {
             if ( (meanCenterColor < threshold && meanSideColor >threshold) ||
                     (meanCenterColor < threshold && meanCenterColor < meanSideColor) ||
+                    (meanCenterColor < maxCenterColor - threshold ) ||
                     (meanSideColor - meanCenterColor > redDeltaThreshold &&
                     meanSideColor < 5.5 && meanCenterColor < 5.5)) {
                 // center zone has it
@@ -165,7 +176,8 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
                 Imgproc.rectangle(frame, sideZoneArea, YELLOW, 3);
             }
             else if ( (meanSideColor < threshold && meanCenterColor >threshold) ||
-                    (meanSideColor < threshold && meanSideColor < meanCenterColor)
+                    (meanSideColor < threshold && meanSideColor < meanCenterColor) ||
+                    (meanSideColor < maxSideColor - threshold)
                     || (meanCenterColor - meanSideColor > redDeltaThreshold
                     && meanSideColor < 5.5 && meanCenterColor < 5.5)) {
                 // left zone has it
