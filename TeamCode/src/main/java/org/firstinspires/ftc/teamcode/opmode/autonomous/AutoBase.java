@@ -110,46 +110,51 @@ public abstract class AutoBase extends LinearOpMode {
             SPIKE = side.ordinal();
             printDescription();
 
+            telemetry.addLine(" <----- Team Prop Vision Detection -----> ");
+            telemetry.addLine(" Wait a few seconds to capture the Maximum color value ");
+            telemetry.addLine(" before placing the team prop on the field ");
+
+            String sideStr = "Left";
+            String centerStr = "Center";
+
             if(getAlliance() == AlliancePosition.RED) {
                 if(getFieldPosition() == FieldPosition.NEAR) {
-                    telemetry.addData("Mean Left color:", "%3.2f", propPipeline.meanCenterColor);
-                    telemetry.addData("Mean Right color:", "%3.2f", propPipeline.meanSideColor);
+                    centerStr = "Left";
+                    sideStr = "Right";
                 } else {
-                    telemetry.addData("Mean Center color:", "%3.2f", propPipeline.meanCenterColor);
-                    telemetry.addData("Mean Left color:", "%3.2f", propPipeline.meanSideColor);
+                    sideStr = "Left";
                 }
             } else {
-
-                if(getFieldPosition() == FieldPosition.NEAR) {
-                    telemetry.addData("Mean Left color:", "%3.2f", propPipeline.meanSideColor);
-                    telemetry.addData("Mean Center color:", "%3.2f",propPipeline.meanCenterColor);
-                } else {
-                    telemetry.addData("Mean Center color:", "%3.2f", propPipeline.meanCenterColor);
-                    telemetry.addData("Mean Right color:", "%3.2f", propPipeline.meanSideColor);
+                if(getFieldPosition() == FieldPosition.FAR) {
+                    sideStr = "Right";
                 }
             }
+
+            telemetry.addData(centerStr + " color:", "Mean: %3.2f | Max: ", propPipeline.meanCenterColor, propPipeline.maxCenterColor);
+            telemetry.addData(sideStr + " color:", "Mean: %3.2f | Max: ", propPipeline.meanSideColor, propPipeline.maxSideColor);
             telemetry.addData("Spike Position", side.toString());
 
             if(getFieldPosition() == FieldPosition.FAR) {
                 // use dpad to select wait time
-                if(g1.dpadUpOnce()) {
+                if (g1.dpadUpOnce()) {
                     selectionIdx++;
-                } else if(g1.dpadDownOnce()) {
+                } else if (g1.dpadDownOnce()) {
                     selectionIdx--;
                 }
 
                 // cycle the idx
-                if(selectionIdx < 0) {
+                if (selectionIdx < 0) {
                     selectionIdx = waitTimeOptions.length;
                 } else if (selectionIdx > waitTimeOptions.length) {
                     selectionIdx = 0;
                 }
 
                 farSideAutoWaitTimeInSeconds = waitTimeOptions[selectionIdx];
-            }
 
-            telemetry.addLine("----------------------------");
-            telemetry.addData("Wait Time to Score Yellow: ", farSideAutoWaitTimeInSeconds + " (seconds)");
+                telemetry.addLine("<------- FAR side Wait Time Selection ------->");
+                telemetry.addLine("  Use DPAD Up/Down button to select wait time ");
+                telemetry.addData(   "    Wait Time to Score Yellow: ", farSideAutoWaitTimeInSeconds + " (seconds)");
+            }
 
             telemetry.update();
             idle();
@@ -180,7 +185,7 @@ public abstract class AutoBase extends LinearOpMode {
         Log.d("Auto", "Auto program ended at " + getRuntime());
 
         // end of the auto run
-        // keep position and settings in memory for Teleops
+        // keep position and settings in memory for TeleOps
         //--------------------------------------------------
         Memory.LAST_POSE = drive.pose;
         Globals.drivePose = drive.pose;
