@@ -49,7 +49,7 @@ public abstract class AutoBase extends LinearOpMode {
     //----------------------------------------------------------------
     public int farSideAutoWaitTimeInSeconds = 0;
 
-    private int[] waitTimeOptions = {0,5,10,15,20};
+    private int[] waitTimeOptions = {0,5,8};
 
     private int selectionIdx = 0;
 

@@ -26,9 +26,9 @@ public class RedLeftAuto extends FarAutoBase {
                 new Pose2d(-36.7, -36.25, Math.toRadians(25))
         };
         this.backdrop = new Pose2d[] {
-                new Pose2d(48.8, -29, Math.toRadians(180)),
-                new Pose2d(48.8, -36, Math.toRadians(180)),
-                new Pose2d(48.8, -42, Math.toRadians(180))
+                new Pose2d(47.8, -29, Math.toRadians(180)),
+                new Pose2d(47.8, -36, Math.toRadians(180)),
+                new Pose2d(47.8, -42, Math.toRadians(180))
         };
 
         this.parking = new Pose2d(45.0, -20.0, Math.toRadians(180));
@@ -63,9 +63,9 @@ public class RedLeftAuto extends FarAutoBase {
         };
 
         cycleScore = new Pose2d[] {
-                new Pose2d(47.0, -39.0, Math.toRadians(180)),
-                new Pose2d(47.0, -31.75, Math.toRadians(180)),
-                new Pose2d(47.0, -31.75, Math.toRadians(180))
+                new Pose2d(47.5, -39.0, Math.toRadians(180)),
+                new Pose2d(47.5, -31.75, Math.toRadians(180)),
+                new Pose2d(47.5, -31.75, Math.toRadians(180))
         };
 
         this.moveUp1 =  new Pose2d(-40.0, -54.0, Math.toRadians(90));

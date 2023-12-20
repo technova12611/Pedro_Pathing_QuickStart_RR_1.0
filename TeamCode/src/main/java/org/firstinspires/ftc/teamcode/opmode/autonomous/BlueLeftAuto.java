@@ -16,11 +16,11 @@ public class BlueLeftAuto extends NearAutoBase {
    public static Pose2d[] blue_spike = {
            new Pose2d(35.0, 25.5, Math.toRadians(-180)),
            new Pose2d(28.2, 24.5, Math.toRadians(-180)),
-           new Pose2d(14.1, 34.75, Math.toRadians(-180))
+           new Pose2d(14.3, 34.75, Math.toRadians(-180))
    };
 
    public static Pose2d[] blue_backdrop =  {
-           new Pose2d(48.6, 44.0, Math.toRadians(-180)),
+           new Pose2d(48.6, 43.0, Math.toRadians(-180)),
            new Pose2d(48.6, 36, Math.toRadians(-180)),
            new Pose2d(48.6, 28.5, Math.toRadians(-180))
    };

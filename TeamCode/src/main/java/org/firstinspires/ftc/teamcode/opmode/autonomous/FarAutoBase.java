@@ -275,6 +275,11 @@ public abstract class FarAutoBase extends AutoBase {
                         new SleepAction(0.5),
                         outtake.latchScore1(),
                         new SleepAction(0.75),
+                        outtake.afterScore(),
+                        new SleepAction(0.3),
+
+                        outtake.prepareToSlide(),
+                        new SleepAction(0.3),
 
                         new MecanumDrive.DrivePoseLoggingAction(drive, "score_yellow_preload"),
                         drive.actionBuilder(backdrop[SPIKE])
@@ -284,7 +289,7 @@ public abstract class FarAutoBase extends AutoBase {
 
                         new MecanumDrive.DrivePoseLoggingAction(drive, "strafe_to_score_white"),
 
-                        outtake.extendOuttakeCycleTwo(),
+                        outtake.extendOuttakeCycleOne(),
                         outtake.prepareToScoreCycle(),
                         new SleepAction(0.75),
                         outtake.latchScore2(),

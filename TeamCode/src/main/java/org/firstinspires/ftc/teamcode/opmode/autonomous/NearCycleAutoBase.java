@@ -73,7 +73,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         new MecanumDrive.DrivePoseLoggingAction(drive, "spike_position"),
 
                         intake.scorePurplePreload(),
-                        new SleepAction(0.25)
+                        new SleepAction(0.2)
                 )
         );
 
