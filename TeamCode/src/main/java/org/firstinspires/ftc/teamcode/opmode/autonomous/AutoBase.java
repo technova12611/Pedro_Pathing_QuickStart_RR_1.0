@@ -109,7 +109,7 @@ public abstract class AutoBase extends LinearOpMode {
 
             SPIKE = side.ordinal();
             printDescription();
-
+            telemetry.addLine("   ");
             telemetry.addLine(" <----- Team Prop Vision Detection -----> ");
             telemetry.addLine(" Wait a few seconds to capture the Maximum color value ");
             telemetry.addLine(" before placing the team prop on the field ");
@@ -130,9 +130,11 @@ public abstract class AutoBase extends LinearOpMode {
                 }
             }
 
-            telemetry.addData(centerStr + " color:", "Mean: %3.2f | Max: ", propPipeline.meanCenterColor, propPipeline.maxCenterColor);
-            telemetry.addData(sideStr + " color:", "Mean: %3.2f | Max: ", propPipeline.meanSideColor, propPipeline.maxSideColor);
+            telemetry.addData(centerStr + " color:", "Mean: %3.2f | Max: %3.2f ", propPipeline.meanCenterColor, propPipeline.maxCenterColor);
+            telemetry.addData(sideStr + " color:", "Mean: %3.2f | Max: %3.2f ", propPipeline.meanSideColor, propPipeline.maxSideColor);
             telemetry.addData("Spike Position", side.toString());
+
+            telemetry.addData("Vision init elapsed time: ", propPipeline.elapsedTime + "(ms)");
 
             if(getFieldPosition() == FieldPosition.FAR) {
                 // use dpad to select wait time
@@ -151,6 +153,7 @@ public abstract class AutoBase extends LinearOpMode {
 
                 farSideAutoWaitTimeInSeconds = waitTimeOptions[selectionIdx];
 
+                telemetry.addLine("   ");
                 telemetry.addLine("<------- FAR side Wait Time Selection ------->");
                 telemetry.addLine("  Use DPAD Up/Down button to select wait time ");
                 telemetry.addData(   "    Wait Time to Score Yellow: ", farSideAutoWaitTimeInSeconds + " (seconds)");
@@ -165,37 +168,56 @@ public abstract class AutoBase extends LinearOpMode {
         MecanumDrive.previousLogTimestamp = System.currentTimeMillis();
         MecanumDrive.autoStartTimestamp = System.currentTimeMillis();
 
-        portal.close();
+        try {
+            portal.close();
+        }catch(Exception e) {
+            // ignore
+        }
 
         if (isStopRequested()) return; // exit if stopped
+
+        Log.d("Auto_logger", String.format("Auto program started at %.3f", getRuntime()));
 
         drive.pose = getStartPose();
         // reset IMU
         // ----------------------------
-        drive.imu.resetYaw();
+        try {
+            drive.imu.resetYaw();
+        } catch (Exception e) {
+            //
+        }
 
         // prepare for the run, build the auto path
         //-------------------------------------------
         onRun();
 
+        Log.d("Auto_logger", String.format("Auto program after onRun %.3f", getRuntime()));
+
         // run the auto path, all the actions are queued
         //-------------------------------
         sched.run();
 
-        Log.d("Auto", "Auto program ended at " + getRuntime());
+        Log.d("Auto_logger", String.format("Auto program ended at %.3f", getRuntime()));
 
+        drive.updatePoseEstimate();
         // end of the auto run
         // keep position and settings in memory for TeleOps
         //--------------------------------------------------
         Memory.LAST_POSE = drive.pose;
         Globals.drivePose = drive.pose;
 
-        Log.d("Auto", "Auto path ended at " + getRuntime());
-        Log.d("Auto", "End path drive Estimated Pose " + new PoseMessage(drive.pose) + "| " +
+        Log.d("Auto_logger", "End path drive Estimated Pose: " + new PoseMessage(drive.pose) + "| " +
                 "Heading: " + String.format("%3.2f", drive.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)));
 
+        double logStartTime = getRuntime();
         while(opModeIsActive()) {
+            drive.updatePoseEstimate();
             Globals.drivePose = drive.pose;
+            if(getRuntime() - logStartTime > 1.0) {
+                Log.d("Auto_logger","End program drive Estimated Pose: " + new PoseMessage(drive.pose) + "| " +
+                        "Heading: " + String.format("%3.2f", drive.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)));
+                logStartTime = getRuntime();
+            }
             idle();
         }
     }

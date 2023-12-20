@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.roadrunner;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.DualNum;
 import com.acmerobotics.roadrunner.Time;
@@ -13,13 +15,16 @@ import com.acmerobotics.roadrunner.ftc.RawEncoder;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @Config
 public final class ThreeDeadWheelLocalizer implements Localizer {
     public static class Params {
-        public double par0YTicks = -2443.8494827666686;//-2426.512456471011; y position of the first parallel encoder (in tick units)
-        public double par1YTicks = 2530.6258;//2353.900487578953; // y position of the second parallel encoder (in tick units)
-        public double perpXTicks = -650.620899175634;//-560.3783221003024; // x position of the perpendicular encoder (in tick units)
+        public double par0YTicks = -2467.9133801212834;//-2426.512456471011; y position of the first parallel encoder (in tick units)
+        public double par1YTicks = 2467.9133801212834;//2530.6258; // y position of the second parallel encoder (in tick units)
+        public double perpXTicks = -566.222994370873; //-650.620899175634;//-560.3783221003024; // x position of the perpendicular encoder (in tick units)
     }
 
     public static Params PARAMS = new Params();
@@ -29,6 +34,8 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
     public final double inPerTick;
 
     private int lastPar0Pos, lastPar1Pos, lastPerpPos;
+
+    public IMU imu;
 
     public ThreeDeadWheelLocalizer(HardwareMap hardwareMap, double inPerTick) {
         par0 = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "par")));
@@ -77,6 +84,12 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
         lastPar0Pos = par0PosVel.position;
         lastPar1Pos = par1PosVel.position;
         lastPerpPos = perpPosVel.position;
+
+//        Log.d("Localizer_Update", String.format("par0_delta: %d | par1_delta: %d | angle: %3.3f | IMU:%3.3f",
+//                par0PosDelta, par1PosDelta, Math.toDegrees(twist.value().angle), imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)));
+
+//        Log.d("Localizer_Update", String.format("par0_delta: %d | par1_delta: %d | angle: %3.3f",
+//        par0PosDelta, par1PosDelta, Math.toDegrees(twist.value().angle)));
 
         return twist;
     }

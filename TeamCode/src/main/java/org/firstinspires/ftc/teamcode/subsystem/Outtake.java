@@ -45,8 +45,8 @@ public class Outtake {
     public static double OUTTAKE_PIVOT_REVERSE_DUMP = 0.01;
     public static double OUTTAKE_PIVOT_INIT = 0.175;
     public static double OUTTAKE_PIVOT_SLIDING = 0.23;
-    public static double OUTTAKE_PIVOT_DUMP_LOW = 0.37;
-    public static double OUTTAKE_PIVOT_DUMP_MID = 0.39;
+    public static double OUTTAKE_PIVOT_DUMP_LOW = 0.38;
+    public static double OUTTAKE_PIVOT_DUMP_MID = 0.40;
 
     public static double OUTTAKE_PIVOT_DUMP_HIGH = 0.56;
 
@@ -58,7 +58,7 @@ public class Outtake {
     public static double SLIDE_PIVOT_SLIDING = 0.52;
     public static double SLIDE_PIVOT_DUMP = 0.25;
 
-    public static double SLIDE_PIVOT_DUMP_2 = 0.265;
+    public static double SLIDE_PIVOT_DUMP_2 = 0.270;
 
     public static double SLIDE_PIVOT_DUMP_HIGH = 0.10;
 
@@ -70,7 +70,7 @@ public class Outtake {
 
     public static double OUTTAKE_WIRE_MIDDLE = 0.50;
     public static double OUTTAKE_WIRE_HIGH = 0.45;
-    public static double OUTTAKE_WIRE_VERY_HIGH = 0.38;
+    public static double OUTTAKE_WIRE_VERY_HIGH = 0.37;
 
     public static double OUTTAKE_WIRE_FOR_HANGING_DOWN = 0.73;
     public static double OUTTAKE_WIRE_FOR_HANGING_UP = 0.38;

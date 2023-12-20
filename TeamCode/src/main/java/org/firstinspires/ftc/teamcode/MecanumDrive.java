@@ -57,7 +57,7 @@ public final class MecanumDrive {
         // drive model parameters
         public double inPerTick = 0.002938; //0.002934; //24.0 / 8163.0;
         public double lateralInPerTick = 0.00273;
-        public double trackWidthTicks = 4810.861094343746;//4623.060031773916;//4620.300191769058; //4982.1078188621495; //4691.229665989946;
+        public double trackWidthTicks = 4665.3368763274475;//4810.861094343746;//4623.060031773916;//4620.300191769058; //4982.1078188621495; //4691.229665989946;
 
         // feedforward parameters (in tick units)
         public double kS = 1.407;//1.43456;//1.2;
@@ -84,11 +84,11 @@ public final class MecanumDrive {
         // path controller gains
         public double axialGain = 7.25; //5.25;
         public double lateralGain = 18.25; //16.5;
-        public double headingGain = 16.25; //7.5; // shared with turn
+        public double headingGain = 12.25; //7.5; // shared with turn
 
         public double axialVelGain = 0.525; //0.25;
         public double lateralVelGain = 0.25; //0.01;
-        public double headingVelGain = 0.015; //0.01; // shared with turn
+        public double headingVelGain = 0.025; //0.01; // shared with turn
     }
 
     public static Params PARAMS = new Params();
@@ -166,9 +166,10 @@ public final class MecanumDrive {
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-//        localizer = new TwoDeadWheelLocalizer(hardwareMap, imu, PARAMS.inPerTick);
+        localizer = new TwoDeadWheelLocalizer(hardwareMap, imu, PARAMS.inPerTick);
 
-        localizer = new ThreeDeadWheelLocalizer(hardwareMap, PARAMS.inPerTick);
+//        localizer = new ThreeDeadWheelLocalizer(hardwareMap, PARAMS.inPerTick);
+//        ((ThreeDeadWheelLocalizer)localizer).imu = imu;
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
@@ -466,13 +467,10 @@ public final class MecanumDrive {
             if(previousLogTimestamp == null) {
                 MecanumDrive.previousLogTimestamp = System.currentTimeMillis();
             }
-
             if(MecanumDrive.autoStartTimestamp == null){
                 MecanumDrive.autoStartTimestamp = System.currentTimeMillis();
             }
-
             DecimalFormat formatter = new DecimalFormat("###,### (ms)");
-
 
             Log.d("Drive_Logger", "Estimated Pose: " + new PoseMessage(drive.pose)
                     + "  [" + this.label + "]" + " | Elapsed time: "
@@ -480,7 +478,7 @@ public final class MecanumDrive {
                     + (logPixelCount? " | Pixel count:" + Intake.pixelsCount + " | Total Pixel count:" + Intake.totalPixelCount:"")
                     + (message != null? " | { " + this.message + " }": "")
                     + " | Auto Timer (s): " + String.format("%.3f",(System.currentTimeMillis() - MecanumDrive.autoStartTimestamp)/1000.0)
-                    + " | heading: " + String.format("%3.2f", this.drive.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES))
+//                    + " | heading: " + String.format("%3.2f", this.drive.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES))
             );
 
             MecanumDrive.previousLogTimestamp = System.currentTimeMillis();

@@ -88,8 +88,8 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
     @Override
     public void init(int width, int height, CameraCalibration calibration) {
         allianceColor = Globals.COLOR;
-        sideZoneColorList = new MovingArrayList(15);
-        centerZoneColorList = new MovingArrayList(15);
+        sideZoneColorList = new MovingArrayList(10);
+        centerZoneColorList = new MovingArrayList(10);
 
         startTime = System.currentTimeMillis();
     }
@@ -132,7 +132,7 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
         centerZoneColorList.add(centerColor);
 
         arraySize = centerZoneColorList.getArrayList().size();
-        if(arraySize == 12) {
+        if(arraySize == 8) {
             elapsedTime = System.currentTimeMillis() - startTime;
         }
 

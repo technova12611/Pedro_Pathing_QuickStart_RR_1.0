@@ -18,22 +18,22 @@ public class BlueLeftCycleAuto extends NearCycleAutoBase {
         this.spike = BlueLeftAuto.blue_spike;
 
         this.cycleStart = new Pose2d[]{
-                new Pose2d(spike[0].position.x, 11.75, Math.toRadians(-180)),
-                new Pose2d(spike[1].position.x, 11.75, Math.toRadians(-180)),
-                new Pose2d(spike[2].position.x, 11.75, Math.toRadians(-180))
+                new Pose2d(spike[0].position.x, 12.0, Math.toRadians(-180)),
+                new Pose2d(spike[1].position.x, 12.0, Math.toRadians(-180)),
+                new Pose2d(spike[2].position.x, 12.0, Math.toRadians(-180))
         };
 
-        this.stackAlignment = new Pose2d(-49.0, 11.0, Math.toRadians(-180));
-        this.stackIntake1 = new Pose2d(-55.25, 12.0, Math.toRadians(-180));
-        this.stackIntake2 = new Pose2d(-56.25, 12.75, Math.toRadians(-180));
-        this.safeTrussPassStop = new Pose2d(-49.0, 11.5, Math.toRadians(-180));
+        this.stackAlignment = new Pose2d(-49.0, 12.0, Math.toRadians(-180));
+        this.stackIntake1 = new Pose2d(-55.5, 11.7, Math.toRadians(-180));
+        this.stackIntake2 = new Pose2d(-56.3, 13.0, Math.toRadians(-180));
+        this.safeTrussPassStop = new Pose2d(-49.0, 12.25, Math.toRadians(-180));
 
-        this.backdropAlignment = new Pose2d(45.0, 11.5, Math.toRadians(-180));
+        this.backdropAlignment = new Pose2d(45.0, 12.25, Math.toRadians(-180));
 
         this.cycleScore = new Pose2d[]{
-                new Pose2d(48.75, 33.0, Math.toRadians(-180)),
-                new Pose2d(48.75, 31.0, Math.toRadians(-180)),
-                new Pose2d(48.75, 38.0, Math.toRadians(-180))
+                new Pose2d(48.05, 33.0, Math.toRadians(-180)),
+                new Pose2d(48.05, 31.0, Math.toRadians(-180)),
+                new Pose2d(48.05, 38.0, Math.toRadians(-180))
         };
 
         this.parking = new Pose2d(45.0, 20.0, Math.toRadians(-180));
