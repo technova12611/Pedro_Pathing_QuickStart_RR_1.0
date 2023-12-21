@@ -36,7 +36,7 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_LOW = 865;
     public static int OUTTAKE_SLIDE_INIT = 0;
 
-    public static int OUTTAKE_SLIDE_INCREMENT= 300;
+    public static int OUTTAKE_SLIDE_INCREMENT= 250;
 
     public static double LATCH_CLOSED = 0.55;
     public static double LATCH_SCORE_1 = 0.415;
@@ -45,20 +45,19 @@ public class Outtake {
     public static double OUTTAKE_PIVOT_REVERSE_DUMP = 0.01;
     public static double OUTTAKE_PIVOT_INIT = 0.175;
     public static double OUTTAKE_PIVOT_SLIDING = 0.23;
-    public static double OUTTAKE_PIVOT_DUMP_LOW = 0.41;
-    public static double OUTTAKE_PIVOT_DUMP_MID = 0.43;
+    public static double OUTTAKE_PIVOT_DUMP_LOW = 0.37;
+    public static double OUTTAKE_PIVOT_DUMP_MID = 0.385;
 
     public static double OUTTAKE_PIVOT_DUMP_HIGH = 0.56;
 
-    public static double OUTTAKE_PIVOT_DUMP_CYCLE = 0.42;
+    public static double OUTTAKE_PIVOT_DUMP_CYCLE = 0.385;
 
     public static double OUTTAKE_PIVOT_DUMP_VERY_HIGH = 0.62;
 
     public static double SLIDE_PIVOT_INIT = 0.438;
     public static double SLIDE_PIVOT_SLIDING = 0.52;
-    public static double SLIDE_PIVOT_DUMP = 0.25;
-
-    public static double SLIDE_PIVOT_DUMP_2 = 0.263;
+    public static double SLIDE_PIVOT_DUMP = 0.238;
+    public static double SLIDE_PIVOT_DUMP_2 = 0.265;
 
     public static double SLIDE_PIVOT_DUMP_HIGH = 0.10;
 

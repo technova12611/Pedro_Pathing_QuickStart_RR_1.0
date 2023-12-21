@@ -22,7 +22,7 @@ public class RedRightAuto extends NearAutoBase {
    };
    public static Pose2d[] red_backdrop =  {
            new Pose2d(49.5, -32.25, Math.toRadians(180)), // 29.0 for left
-           new Pose2d(49.5, -38.0, Math.toRadians(180)),  // 35.5 for left
+           new Pose2d(49.5, -38.5, Math.toRadians(180)),  // 35.5 for left
            new Pose2d(49.5, -44.0, Math.toRadians(180))  // 42 for left
    };
    // 0 = left, 1 = middle, 2 = right
