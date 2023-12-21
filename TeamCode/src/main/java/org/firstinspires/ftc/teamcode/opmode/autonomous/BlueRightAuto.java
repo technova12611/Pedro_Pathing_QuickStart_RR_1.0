@@ -18,21 +18,22 @@ public class BlueRightAuto extends FarAutoBase {
       this.start = new Pose2d(-40.0, 62.0, Math.toRadians(-90));
       this.spike = new Pose2d[] {
               new Pose2d(-36.5, 38.5, Math.toRadians(-25)),
-              new Pose2d(-42.0, 36.0, Math.toRadians(-90)),
+              new Pose2d(-42.5, 36.7, Math.toRadians(-90)),
               new Pose2d(-48.0, 45.0, Math.toRadians(-90))
       };
+
       this.backdrop = new Pose2d[] {
-              new Pose2d(46.8, 41.5, Math.toRadians(-180)),
-              new Pose2d(46.8, 36, Math.toRadians(-180)),
-              new Pose2d(46.8, 28, Math.toRadians(-180))
+              new Pose2d(46.2, 41.5, Math.toRadians(-180)),
+              new Pose2d(46.2, 35.5, Math.toRadians(-180)),
+              new Pose2d(46.2, 28.0, Math.toRadians(-180))
       };
 
       this.parking = new Pose2d(45.0, 20.0, Math.toRadians(-180));
 
       this.cycleScore = new Pose2d[] {
-              new Pose2d(46.8, 32.0, Math.toRadians(-180)),
-              new Pose2d(46.8, 32.0, Math.toRadians(-180)),
-              new Pose2d(46.8, 39.0, Math.toRadians(-180)),
+              new Pose2d(46.2, 32.0, Math.toRadians(-180)),
+              new Pose2d(46.2, 32.0, Math.toRadians(-180)),
+              new Pose2d(46.2, 39.0, Math.toRadians(-180)),
       };
 
       this.backOffFromSpike = new Pose2d[] {
@@ -48,9 +49,9 @@ public class BlueRightAuto extends FarAutoBase {
       };
 
       this.stackIntake = new Pose2d[] {
-              new Pose2d(-58.5, 11.5, Math.toRadians(-180)),
-              new Pose2d(-58.5, 35.5, Math.toRadians(-180)),
-              new Pose2d(-58.5, 11.5, Math.toRadians(180))
+              new Pose2d(-58.8, 11.5, Math.toRadians(-180)),
+              new Pose2d(-58.8, 35.5, Math.toRadians(-180)),
+              new Pose2d(-58.8, 11.5, Math.toRadians(180))
       };
       this.crossFieldAlignment = new Pose2d[] {
               new Pose2d(-48, 11.5, Math.toRadians(-180)),
@@ -59,9 +60,9 @@ public class BlueRightAuto extends FarAutoBase {
       };
 
       this.backdropAlignment = new Pose2d[] {
-              new Pose2d(45.0, 11.5, Math.toRadians(-180)),
-                      new Pose2d(45.0, 35.0, Math.toRadians(-180)),
-                              new Pose2d(45.0, 11.5, Math.toRadians(-180))};
+              new Pose2d(43.0, 11.5, Math.toRadians(-180)),
+                      new Pose2d(43.0, 35.5, Math.toRadians(-180)),
+                              new Pose2d(43.0, 11.5, Math.toRadians(-180))};
 
       this.moveUp1 =  new Pose2d(-40.0, 54.0, Math.toRadians(-90));
 

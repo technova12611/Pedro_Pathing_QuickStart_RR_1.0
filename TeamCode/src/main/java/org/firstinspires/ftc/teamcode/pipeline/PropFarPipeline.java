@@ -31,7 +31,7 @@ public class PropFarPipeline extends PropBasePipeline {
         blueLeftX = 375;
         blueLeftY = 80;
 
-        blueCenterX = 950;
+        blueCenterX = 970;
         blueCenterY = 0;
 
         redLeftX = 680;
@@ -40,7 +40,7 @@ public class PropFarPipeline extends PropBasePipeline {
         redRightX = 1250;
         redRightY = 10;
 
-        blueThreshold = 1.5;
+        blueThreshold = 1.75;
         redThreshold = 1.75;
 
         redDeltaThreshold = 1.25;

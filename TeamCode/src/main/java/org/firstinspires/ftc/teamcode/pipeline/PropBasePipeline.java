@@ -148,12 +148,16 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
         }
 
         if(allianceColor == AlliancePosition.BLUE){
-            if ( meanSideColor < threshold) {
+            if ( meanSideColor < threshold ||
+                    (meanCenterColor - meanSideColor > blueDeltaThreshold &&
+                            meanSideColor < 5.5 && meanCenterColor < 5.5)) {
                 // left zone has it
                 location = Side.LEFT;
                 Imgproc.rectangle(frame, sideZoneArea, GREEN, 8);
                 Imgproc.rectangle(frame, centerZoneArea, YELLOW, 3);
-            } else if (meanCenterColor < threshold) {
+            } else if (meanCenterColor < threshold ||
+                    (meanSideColor - meanCenterColor > blueDeltaThreshold &&
+                            meanSideColor < 5.5 && meanCenterColor < 5.5)) {
                 // center zone has it
                 location = Side.CENTER;
                 Imgproc.rectangle(frame, centerZoneArea, GREEN, 8);

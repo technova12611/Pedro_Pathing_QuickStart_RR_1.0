@@ -235,12 +235,13 @@ public abstract class FarAutoBase extends AutoBase {
         //-------------------------------------------------------------------------
         sched.addAction(
                 new SequentialAction(
-
                         new ParallelAction(
-
                                 drive.actionBuilder(crossFieldAlignment[SPIKE])
                                         .setReversed(true)
-                                        .strafeToLinearHeading(backdropAlignment[SPIKE].position,backdropAlignment[SPIKE].heading,drive.slowVelConstraint,drive.slowAccelConstraint)
+                                        .strafeToLinearHeading(backdropAlignment[SPIKE].position,
+                                                backdropAlignment[SPIKE].heading,
+                                                drive.slowVelConstraint,
+                                                drive.slowAccelConstraint)
                                         .build(),
                                 new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_alignment_end"),
 
@@ -255,11 +256,16 @@ public abstract class FarAutoBase extends AutoBase {
                         new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_alignment_position"),
 
                         new ParallelAction(
-
-                                drive.actionBuilder(backdropAlignment[SPIKE])
-                                        .setReversed(true)
-                                        .strafeTo(backdrop[SPIKE].position, drive.slowVelConstraint,drive.slowAccelConstraint)
-                                        .build(),
+                                new SequentialAction(
+                                    drive.actionBuilder(backdropAlignment[SPIKE])
+                                            .setReversed(true)
+                                            .strafeToLinearHeading(backdrop[SPIKE].position,
+                                                    backdrop[SPIKE].heading,
+                                                    drive.slowVelConstraint,
+                                                    drive.slowAccelConstraint)
+                                            .build(),
+                                            new MecanumDrive.DrivePoseLoggingAction(drive, "end_backdrop_position")
+                                ),
 
                                 new SequentialAction(
                                         new SleepAction(0.2),
@@ -269,7 +275,7 @@ public abstract class FarAutoBase extends AutoBase {
                                 )
                         ),
 
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_score_position"),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "start_scoring"),
 
                         outtake.prepareToScore(),
                         new SleepAction(0.5),
