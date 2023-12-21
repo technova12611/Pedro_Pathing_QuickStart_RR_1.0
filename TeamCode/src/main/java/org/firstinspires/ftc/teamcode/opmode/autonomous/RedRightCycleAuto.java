@@ -24,8 +24,8 @@ public class RedRightCycleAuto extends NearCycleAutoBase {
         };
 
         this.stackAlignment = new Pose2d(-48.0, -11.0, Math.toRadians(180));
-        this.stackIntake1 = new Pose2d(-54.35, -11.5, Math.toRadians(180));
-        this.stackIntake2 = new Pose2d(-54.85, -10.85, Math.toRadians(180));
+        this.stackIntake1 = new Pose2d(-54.5, -12.0, Math.toRadians(180));
+        this.stackIntake2 = new Pose2d(-55.2, -10.9, Math.toRadians(180));
         this.safeTrussPassStop = new Pose2d(-49.0, -11.0, Math.toRadians(180));
         this.backdropAlignment = new Pose2d(45.0, -11.0, Math.toRadians(180));
 

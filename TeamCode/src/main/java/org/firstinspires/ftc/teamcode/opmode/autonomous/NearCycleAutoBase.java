@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.acmerobotics.roadrunner.Vector2d;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
@@ -110,9 +111,11 @@ public abstract class NearCycleAutoBase extends AutoBase {
     private void cyclePixelFromStack(Pose2d startingPosition) {
         Action extendSlideAction;
         Pose2d stackIntakePosition;
+        Vector2d cycleScorePosition = cycleScore[SPIKE].position;
         if(++cycleCount == 2) {
             extendSlideAction = outtake.extendOuttakeCycleTwo();
             stackIntakePosition = stackIntake2;
+            cycleScorePosition = new Vector2d(cycleScorePosition.x-0.5, cycleScorePosition.y);
         } else {
             extendSlideAction = outtake.extendOuttakeCycleOne();
             stackIntakePosition = stackIntake1;
@@ -183,7 +186,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                 new SequentialAction(
                                     drive.actionBuilder(backdropAlignment)
                                             .setReversed(true)
-                                            .strafeTo(cycleScore[SPIKE].position)
+                                            .strafeToLinearHeading(cycleScorePosition, cycleScore[SPIKE].heading)
                                             .build(),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_position")
                                 ),
@@ -208,8 +211,8 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         new SleepAction(0.3),
                         outtake.latchScore2(),
                         new SleepAction(0.4),
-                        outtake.latchScore0(),
-                        new SleepAction(0.1),
+                        outtake.afterScore(),
+                        new SleepAction(0.2),
                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_end")
                 ));
     }

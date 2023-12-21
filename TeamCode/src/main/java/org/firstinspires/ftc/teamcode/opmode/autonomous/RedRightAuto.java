@@ -21,9 +21,9 @@ public class RedRightAuto extends NearAutoBase {
            new Pose2d(36.5, -27.5, Math.toRadians(180))
    };
    public static Pose2d[] red_backdrop =  {
-           new Pose2d(49.4, -32.25, Math.toRadians(180)), // 29.0 for left
-           new Pose2d(49.4, -38.0, Math.toRadians(180)),  // 35.5 for left
-           new Pose2d(49.4, -44.0, Math.toRadians(180))  // 42 for left
+           new Pose2d(49.5, -32.25, Math.toRadians(180)), // 29.0 for left
+           new Pose2d(49.5, -38.0, Math.toRadians(180)),  // 35.5 for left
+           new Pose2d(49.5, -44.0, Math.toRadians(180))  // 42 for left
    };
    // 0 = left, 1 = middle, 2 = right
    public static Pose2d red_start = new Pose2d(16.0, -62.0, Math.toRadians(90));
@@ -44,7 +44,7 @@ public class RedRightAuto extends NearAutoBase {
 
    @Override
    protected void printDescription() {
-      telemetry.addData("Description", "RED Right Auto");
+      telemetry.addData("Description", "RED Near (Right) Auto");
    }
 
 }

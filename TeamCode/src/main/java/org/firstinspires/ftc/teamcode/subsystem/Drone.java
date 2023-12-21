@@ -15,11 +15,9 @@ public class Drone {
     public static double LATCH_SCORED = 0.55;
     public static double LATCH_CLOSED = 0.32;
 
-    public static double LATCH_LOADING = 0.33;
-
     // Drone Tilt is Axon Mini Servo
     public static double TILT_INIT = 0.3;
-    public static double TILT_LAUNCH = 0.57;
+    public static double TILT_LAUNCH = 0.51;
 
     final Servo latch;
     final Servo tilt;

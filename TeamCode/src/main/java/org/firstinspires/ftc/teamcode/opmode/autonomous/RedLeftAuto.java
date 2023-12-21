@@ -26,9 +26,9 @@ public class RedLeftAuto extends FarAutoBase {
                 new Pose2d(-36.7, -36.25, Math.toRadians(25))
         };
         this.backdrop = new Pose2d[] {
-                new Pose2d(47.8, -29, Math.toRadians(180)),
-                new Pose2d(47.8, -36, Math.toRadians(180)),
-                new Pose2d(47.8, -42, Math.toRadians(180))
+                new Pose2d(47.3, -29, Math.toRadians(180)),
+                new Pose2d(47.3, -36, Math.toRadians(180)),
+                new Pose2d(47.3, -42, Math.toRadians(180))
         };
 
         this.parking = new Pose2d(45.0, -20.0, Math.toRadians(180));
@@ -63,9 +63,9 @@ public class RedLeftAuto extends FarAutoBase {
         };
 
         cycleScore = new Pose2d[] {
-                new Pose2d(47.5, -39.0, Math.toRadians(180)),
-                new Pose2d(47.5, -31.75, Math.toRadians(180)),
-                new Pose2d(47.5, -31.75, Math.toRadians(180))
+                new Pose2d(47.1, -39.0, Math.toRadians(180)),
+                new Pose2d(47.1, -31.75, Math.toRadians(180)),
+                new Pose2d(47.1, -31.75, Math.toRadians(180))
         };
 
         this.moveUp1 =  new Pose2d(-40.0, -54.0, Math.toRadians(90));
@@ -80,7 +80,7 @@ public class RedLeftAuto extends FarAutoBase {
 
     @Override
     protected void printDescription() {
-        telemetry.addData("Description", "RED Left Auto");
+        telemetry.addData("Description", "RED Far (Left) Auto");
     }
 
 }

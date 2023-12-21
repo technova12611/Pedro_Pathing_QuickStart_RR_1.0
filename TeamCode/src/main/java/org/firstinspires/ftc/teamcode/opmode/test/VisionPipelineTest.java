@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.vision.VisionPortal;
 
 @Config
+@Disabled
 @TeleOp(group = "Test")
 public class VisionPipelineTest extends LinearOpMode {
     private PropBasePipeline propPipeline;

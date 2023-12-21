@@ -76,6 +76,6 @@ public class BlueRightAuto extends FarAutoBase {
 
    @Override
    protected void printDescription() {
-      telemetry.addData("Description", "Blue RIGHT Auto");
+      telemetry.addData("Description", "Blue Far (Right) Auto");
    }
 }
