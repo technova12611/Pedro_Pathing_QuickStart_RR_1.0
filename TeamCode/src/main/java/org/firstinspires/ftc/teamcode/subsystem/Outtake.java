@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
 import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 import org.firstinspires.ftc.teamcode.utils.hardware.MotorWithPID;
 import org.firstinspires.ftc.teamcode.utils.control.PIDCoefficients;
+import org.firstinspires.ftc.teamcode.utils.software.MovingArrayList;
 
 @Config
 public class Outtake {
@@ -57,6 +58,9 @@ public class Outtake {
     public static double SLIDE_PIVOT_INIT = 0.438;
     public static double SLIDE_PIVOT_SLIDING = 0.52;
     public static double SLIDE_PIVOT_DUMP = 0.238;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.60;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.54;
+
     public static double SLIDE_PIVOT_DUMP_2 = 0.265;
 
     public static double SLIDE_PIVOT_DUMP_HIGH = 0.10;
@@ -67,9 +71,9 @@ public class Outtake {
 
     public static double OUTTAKE_WIRE_SAFE_DOWN = 0.70;
 
-    public static double OUTTAKE_WIRE_MIDDLE = 0.50;
-    public static double OUTTAKE_WIRE_HIGH = 0.45;
-    public static double OUTTAKE_WIRE_VERY_HIGH = 0.37;
+    public static double OUTTAKE_WIRE_MIDDLE = 0.47;
+    public static double OUTTAKE_WIRE_HIGH = 0.40;
+    public static double OUTTAKE_WIRE_VERY_HIGH = 0.35;
 
     public static double OUTTAKE_WIRE_FOR_HANGING_DOWN = 0.73;
     public static double OUTTAKE_WIRE_FOR_HANGING_UP = 0.38;
@@ -90,6 +94,9 @@ public class Outtake {
     private boolean scoreLevel3 = false;
 
     public boolean isHangingHookUp = false;
+
+    public boolean backdropTouched = false;
+    private MovingArrayList slidePivotVoltages = new MovingArrayList(10);
 
     public Outtake(HardwareMap hardwareMap) {
         if (Memory.outtakeSlide != null) { // Preserve motor zero position
@@ -353,13 +360,32 @@ public class Outtake {
     }
 
     public String getServoPositions() {
-        return "SlidePivot: " + String.format("%.2f", this.slidePivot.getPosition()) +
+
+        double slideServoVoltage = slidePivotVoltage.getVoltage();
+        double slideServoPosition = slidePivot.getPosition();
+
+        slidePivotVoltages.add(slideServoVoltage);
+
+        if(backdropTouched &&
+            slidePivotVoltages.getMean() <= SLIDE_PIVOT_DUMP_VOLTAGE_MIN) {
+            backdropTouched= false;
+        } else if (slideServoPosition > SLIDE_PIVOT_DUMP_HIGH &&
+                slidePivotVoltages.getMean() >= SLIDE_PIVOT_DUMP_VOLTAGE_MAX) {
+            backdropTouched = true;
+        }
+
+        return "SlidePivot: " + String.format("%.2f", slideServoPosition) +
                 " | OuttakePivot: " + String.format("%.2f", this.outtakePivot.getPosition()) +
-                " | Latch: " + String.format("%.2f", this.latch.getPosition());
+                " | Latch: " + String.format("%.2f", this.latch.getPosition()) +
+                " | SlidePivot voltage: " + String.format("%.2f", slidePivotVoltages.getMean());
     }
 
     public void resetSlideEncoder() {
         this.slide.zeroMotorInternals();
+    }
+
+    public boolean hasOuttakeReached() {
+        return backdropTouched;
     }
 
 }

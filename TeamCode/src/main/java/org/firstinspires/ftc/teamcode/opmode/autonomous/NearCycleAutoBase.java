@@ -11,7 +11,7 @@ import com.acmerobotics.roadrunner.Vector2d;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
-import org.firstinspires.ftc.teamcode.roadrunner.PoseMessage;
+import org.firstinspires.ftc.teamcode.roadrunner.messages.PoseMessage;
 
 public abstract class NearCycleAutoBase extends AutoBase {
     // 0 = left, 1 = middle, 2 = right

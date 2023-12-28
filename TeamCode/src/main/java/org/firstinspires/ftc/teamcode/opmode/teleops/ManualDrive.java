@@ -12,13 +12,12 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.VelConstraint;
-import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.roadrunner.PoseMessage;
+import org.firstinspires.ftc.teamcode.roadrunner.messages.PoseMessage;
 import org.firstinspires.ftc.teamcode.subsystem.Hang;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Memory;
@@ -26,7 +25,6 @@ import org.firstinspires.ftc.teamcode.subsystem.Outtake;
 import org.firstinspires.ftc.teamcode.subsystem.Drone;
 import org.firstinspires.ftc.teamcode.utils.software.ActionScheduler;
 import org.firstinspires.ftc.teamcode.utils.hardware.GamePadController;
-import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
 import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 import org.firstinspires.ftc.teamcode.utils.software.SmartGameTimer;
 
@@ -59,6 +57,8 @@ public class ManualDrive extends LinearOpMode {
 
     Long lastTimePixelDetected = null;
     boolean isPixelDetectionEnabled = true;
+
+    Boolean hasBackdropTouched = null;
 
     int prevPixelCount = 0;
 
@@ -138,8 +138,10 @@ public class ManualDrive extends LinearOpMode {
             outtake.update();
             intake.update();
 
+            backdropTouchedDetection();
+
             telemetry.addData("Time left: ", smartGameTimer.formattedString() + " (" + smartGameTimer.status() + ")");
-            telemetry.addLine(intake.getStackServoPositions());
+            //telemetry.addLine(intake.getStackServoPositions());
             telemetry.addLine(outtake.getServoPositions());
             telemetry.addLine("Current Pixel count: " + Intake.pixelsCount + " | Total count: " + Intake.totalPixelCount + " | Prev count: " + prevPixelCount);
             telemetry.addLine("Intake state: " + intake.intakeState);
@@ -149,6 +151,17 @@ public class ManualDrive extends LinearOpMode {
 
         // On termination
         Memory.LAST_POSE = drive.pose;
+    }
+
+    private void backdropTouchedDetection() {
+        if(outtake.hasOuttakeReached()) {
+            if(!hasBackdropTouched) {
+                g1.rumble(500);
+                hasBackdropTouched = true;
+            }
+        } else {
+            hasBackdropTouched = false;
+        }
     }
 
     private void pixelDetection() {

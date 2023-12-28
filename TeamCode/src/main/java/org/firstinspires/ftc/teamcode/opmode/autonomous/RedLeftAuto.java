@@ -26,9 +26,9 @@ public class RedLeftAuto extends FarAutoBase {
                 new Pose2d(-36.7, -36.25, Math.toRadians(25))
         };
         this.backdrop = new Pose2d[] {
-                new Pose2d(47.3, -29, Math.toRadians(180)),
-                new Pose2d(47.3, -36, Math.toRadians(180)),
-                new Pose2d(47.3, -42, Math.toRadians(180))
+                new Pose2d(47.0, -29, Math.toRadians(180)),
+                new Pose2d(47.0, -36, Math.toRadians(180)),
+                new Pose2d(47.0, -42, Math.toRadians(180))
         };
 
         this.parking = new Pose2d(45.0, -20.0, Math.toRadians(180));

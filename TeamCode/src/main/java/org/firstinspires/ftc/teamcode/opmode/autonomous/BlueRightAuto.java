@@ -23,9 +23,9 @@ public class BlueRightAuto extends FarAutoBase {
       };
 
       this.backdrop = new Pose2d[] {
-              new Pose2d(46.2, 41.5, Math.toRadians(-180)),
-              new Pose2d(46.2, 35.5, Math.toRadians(-180)),
-              new Pose2d(46.2, 28.0, Math.toRadians(-180))
+              new Pose2d(46.0, 41.5, Math.toRadians(-180)),
+              new Pose2d(46.0, 35.5, Math.toRadians(-180)),
+              new Pose2d(46.0, 28.0, Math.toRadians(-180))
       };
 
       this.parking = new Pose2d(45.0, 20.0, Math.toRadians(-180));

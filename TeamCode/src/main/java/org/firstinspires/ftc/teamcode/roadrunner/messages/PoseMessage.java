@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.roadrunner;
+package org.firstinspires.ftc.teamcode.roadrunner.messages;
 
 import com.acmerobotics.roadrunner.Pose2d;
 
@@ -12,11 +12,11 @@ public final class PoseMessage {
         this.timestamp = System.nanoTime();
         this.x = pose.position.x;
         this.y = pose.position.y;
-        this.heading = pose.heading.log();
+        this.heading = pose.heading.toDouble();
     }
 
     public String toString() {
-        return String.format("(%2.1f, %2.1f, %3.1f)", this.x, this.y, Math.toDegrees(this.heading));
+        return String.format("(%2.2f, %2.2f, %3.2f)", this.x, this.y, Math.toDegrees(this.heading));
     }
 }
 
