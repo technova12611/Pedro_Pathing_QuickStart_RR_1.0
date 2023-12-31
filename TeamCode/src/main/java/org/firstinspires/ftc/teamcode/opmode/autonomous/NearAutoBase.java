@@ -47,6 +47,7 @@ public abstract class NearAutoBase extends AutoBase {
                           )
                       ),
                       new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_position"),
+                      new MecanumDrive.UpdateDrivePoseAction(drive, this.visionPortal2, this.aprilTag),
                       outtake.prepareToScore(),
                       new SleepAction(0.5),
                       outtake.latchScore2(),

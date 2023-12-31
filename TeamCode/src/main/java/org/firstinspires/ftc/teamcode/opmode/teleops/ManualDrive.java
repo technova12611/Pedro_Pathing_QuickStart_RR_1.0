@@ -206,7 +206,7 @@ public class ManualDrive extends LinearOpMode {
                 }
             }
             // log the count
-            else if (prevPixelCount != Intake.pixelsCount && Intake.pixelsCount >= 2 && intakeReverseStartTime == null) {
+            if(prevPixelCount != Intake.pixelsCount && Intake.pixelsCount >= 2 && intakeReverseStartTime == null) {
                 intakeReverseStartTime = new Long(System.currentTimeMillis());
 
                 g1.runLedEffect(greenEffect);
@@ -224,14 +224,15 @@ public class ManualDrive extends LinearOpMode {
             // intake reverse is on
             if (intakeReverseStartTime != null && intakeSlowdownStartTime == null) {
 
-                if ((System.currentTimeMillis() - intakeReverseStartTime.longValue()) > 500
-                        && (System.currentTimeMillis() - intakeReverseStartTime.longValue() < 600 &&
-                        intake.intakeState.equals(Intake.IntakeState.ON))) {
+                long elapsedTimeMs = System.currentTimeMillis() - intakeReverseStartTime.longValue();
+
+                if (elapsedTimeMs > 500 && elapsedTimeMs < 600 &&
+                        intake.intakeState.equals(Intake.IntakeState.ON)) {
                     sched.queueAction(intake.intakeReverse());
                     Log.d("TeleOps_Pixel_detection", "Pixel count 1 -> 2, reverse started at " + System.currentTimeMillis());
                 }
 
-                if ((System.currentTimeMillis() - intakeReverseStartTime.longValue()) > 1800 &&
+                if (elapsedTimeMs > 1800 &&
                         intake.intakeState.equals(Intake.IntakeState.REVERSING))  {
                     sched.queueAction(intake.intakeOff());
                     intakeReverseStartTime = null;
@@ -242,7 +243,7 @@ public class ManualDrive extends LinearOpMode {
 
             // detect the first pixel in time
             if (Intake.pixelsCount != prevPixelCount) {
-                if (intake.stackIntakeState == Intake.StackIntakeState.UP) {
+                if (intake.stackIntakeState == Intake.StackIntakeState.UP ) {
                     lastTimePixelDetected = new Long(System.currentTimeMillis());
                 }
 

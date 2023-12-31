@@ -513,6 +513,9 @@ public final class MecanumDrive {
     public static class UpdateDrivePoseAction implements Action {
         VisionPortal portal;
         AprilTagProcessor aprilTag;
+
+        MecanumDrive drive;
+
         Vector2d[] aprilTagLocations = {
                 new Vector2d(61.0, 42.0),
                 new Vector2d(61.0, 36.0),
@@ -521,31 +524,54 @@ public final class MecanumDrive {
                 new Vector2d(61.0, -36.0),
                 new Vector2d(61.0, -42.0),
         };
-        public UpdateDrivePoseAction(VisionPortal portal, AprilTagProcessor aprilTag) {
+        public UpdateDrivePoseAction(MecanumDrive drive, VisionPortal portal, AprilTagProcessor aprilTag) {
+            this.drive = drive;
             this.portal = portal;
             this.aprilTag = aprilTag;
         }
 
         @Override
         public boolean run(TelemetryPacket packet) {
-            this.portal.resumeStreaming();
+            if(this.portal != null && this.aprilTag != null) {
+                this.portal.resumeStreaming();
 
-            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-            packet.addLine("# AprilTags Detected: " + currentDetections.size());
+                List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+                packet.addLine("# AprilTags Detected: " + currentDetections.size());
 
-            Vector2d tagPosition = null;
-            Integer tagId = null;
-            // Step through the list of detections and display info for each one.
-            for (AprilTagDetection detection : currentDetections) {
-                if (detection.metadata != null) {
-                    tagId = detection.id;
-                    tagPosition = new Vector2d(detection.ftcPose.y, detection.ftcPose.x);
+                Log.d("AprilTag_Localization", "# AprilTags Detected: " + currentDetections.size());
 
-                    packet.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
-                    packet.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
-                }
-            }   // end for() loop
+                Vector2d tagPosition = null;
+                Integer tagId = null;
+                // Step through the list of detections and display info for each one.
+                for (AprilTagDetection detection : currentDetections) {
+                    if (detection.metadata != null) {
+                        tagId = detection.id;
 
+                        //
+                        //  check this: https://ftc-docs.firstinspires.org/en/latest/apriltag/understanding_apriltag_detection_values/understanding-apriltag-detection-values.html
+                        //
+                        //  https://ftc-docs.firstinspires.org/en/latest/_images/figure2.jpg
+                        //
+                        //  X is left and right, Y is the up and down
+                        // so use X for the RR Y coordinate, use Y for RR coordinate
+                        //
+                        tagPosition = new Vector2d(detection.ftcPose.y, detection.ftcPose.x);
+
+                        String msg1 = String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name);
+                        String msg2 = String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z);
+
+                        packet.addLine(msg1);
+                        packet.addLine(msg2);
+
+                        Log.d("AprilTag_Localization", msg1);
+                        Log.d("AprilTag_Localization", msg2);
+
+                        break;
+                    }
+                }   // end for() loop
+
+                this.portal.stopStreaming();
+            }
 
             return false;
         }

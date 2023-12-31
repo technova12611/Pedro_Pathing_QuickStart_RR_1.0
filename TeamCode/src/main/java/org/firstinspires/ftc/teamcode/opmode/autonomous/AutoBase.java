@@ -7,6 +7,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
@@ -26,6 +27,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Drone;
 import org.firstinspires.ftc.teamcode.utils.hardware.GamePadController;
 import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 @Config
 public abstract class AutoBase extends LinearOpMode {
@@ -46,6 +48,9 @@ public abstract class AutoBase extends LinearOpMode {
     public int farSideAutoWaitTimeInSeconds = 0;
     private int[] waitTimeOptions = {0,5,8};
     private int selectionIdx = 0;
+
+    protected AprilTagProcessor aprilTag;
+    protected VisionPortal visionPortal2;
 
     final public void update() {
         telemetry.addData("Time left", 30 - getRuntime());
@@ -95,6 +100,9 @@ public abstract class AutoBase extends LinearOpMode {
                 .enableLiveView(true)
                 .setAutoStopLiveView(true)
                 .build();
+
+        // init 2nd webcam to detect Backdrop apriltags
+        initAprilTag();
 
         onInit();
 
@@ -194,6 +202,9 @@ public abstract class AutoBase extends LinearOpMode {
         Log.d("Auto_logger", String.format("Auto program ended at %.3f", getRuntime()));
 
         drive.updatePoseEstimate();
+
+        visionPortal2.close();
+
         // end of the auto run
         // keep position and settings in memory for TeleOps
         //--------------------------------------------------
@@ -214,6 +225,16 @@ public abstract class AutoBase extends LinearOpMode {
             }
             idle();
         }
+    }
+    private void initAprilTag() {
+        // Create the AprilTag processor the easy way.
+        aprilTag = AprilTagProcessor.easyCreateWithDefaults();
+
+        // Create the vision portal the easy way.
+        visionPortal2 = VisionPortal.easyCreateWithDefaults(
+                hardwareMap.get(WebcamName.class, "Webcam 2"), aprilTag);
+
+
     }
 
     // the following needs to be implemented by the real auto program

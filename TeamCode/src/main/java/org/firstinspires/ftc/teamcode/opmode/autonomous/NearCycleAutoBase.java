@@ -52,6 +52,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         ),
 
                         new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_position"),
+                        new MecanumDrive.UpdateDrivePoseAction(drive, this.visionPortal2, this.aprilTag),
 
                         outtake.prepareToScore(),
                         new SleepAction(0.30),
@@ -188,7 +189,8 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                             .setReversed(true)
                                             .strafeToLinearHeading(cycleScorePosition, cycleScore[SPIKE].heading)
                                             .build(),
-                                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_position")
+                                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_position"),
+                                        new MecanumDrive.UpdateDrivePoseAction(drive, this.visionPortal2, this.aprilTag)
                                 ),
 
                                 new SequentialAction(
