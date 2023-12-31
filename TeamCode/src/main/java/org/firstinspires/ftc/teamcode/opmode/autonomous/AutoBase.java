@@ -36,21 +36,15 @@ public abstract class AutoBase extends LinearOpMode {
     protected Drone drone;
     protected Hang hang;
     protected AutoActionScheduler sched;
-
     private PropBasePipeline propPipeline;
     private VisionPortal portal;
-
     public static Side side = Side.RIGHT;
     public static int SPIKE = 2;
-
     private GamePadController g1, g2;
-
     // configure a wait time to allow partner time to finish the backdrop
     //----------------------------------------------------------------
     public int farSideAutoWaitTimeInSeconds = 0;
-
     private int[] waitTimeOptions = {0,5,8};
-
     private int selectionIdx = 0;
 
     final public void update() {

@@ -44,6 +44,9 @@ import org.firstinspires.ftc.teamcode.roadrunner.messages.PoseMessage;
 import org.firstinspires.ftc.teamcode.roadrunner.TwoDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.lang.Math;
 import java.text.DecimalFormat;
@@ -503,6 +506,47 @@ public final class MecanumDrive {
             );
 
             MecanumDrive.previousLogTimestamp = System.currentTimeMillis();
+            return false;
+        }
+    }
+
+    public static class UpdateDrivePoseAction implements Action {
+        VisionPortal portal;
+        AprilTagProcessor aprilTag;
+        Vector2d[] aprilTagLocations = {
+                new Vector2d(61.0, 42.0),
+                new Vector2d(61.0, 36.0),
+                new Vector2d(61.0, 30.0),
+                new Vector2d(61.0, -30.0),
+                new Vector2d(61.0, -36.0),
+                new Vector2d(61.0, -42.0),
+        };
+        public UpdateDrivePoseAction(VisionPortal portal, AprilTagProcessor aprilTag) {
+            this.portal = portal;
+            this.aprilTag = aprilTag;
+        }
+
+        @Override
+        public boolean run(TelemetryPacket packet) {
+            this.portal.resumeStreaming();
+
+            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+            packet.addLine("# AprilTags Detected: " + currentDetections.size());
+
+            Vector2d tagPosition = null;
+            Integer tagId = null;
+            // Step through the list of detections and display info for each one.
+            for (AprilTagDetection detection : currentDetections) {
+                if (detection.metadata != null) {
+                    tagId = detection.id;
+                    tagPosition = new Vector2d(detection.ftcPose.y, detection.ftcPose.x);
+
+                    packet.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
+                    packet.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
+                }
+            }   // end for() loop
+
+
             return false;
         }
     }

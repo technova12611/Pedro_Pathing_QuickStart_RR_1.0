@@ -5,27 +5,32 @@
         <LynxModule name="Expansion Hub 3" port="3">
             <goBILDA5202SeriesMotor name="rightBack" port="0" />
             <goBILDA5202SeriesMotor name="rightFront" port="1" />
-            <goBILDA5202SeriesMotor name="intake" port="2" />
+            <goBILDA5202SeriesMotor name="intake_for_perp" port="2" />
+            <goBILDA5202SeriesMotor name="hangMotor" port="3" />
             <Servo name="droneLatch" port="0" />
             <Servo name="stackIntakeLinkage" port="1" />
             <Servo name="droneTilt" port="2" />
-            <Servo name="hangServoRight" port="3" />
-            <Servo name="hangServoLeft" port="4" />
+            <Servo name="hangHookBlocker" port="3" />
             <Servo name="outtakeWireServo" port="5" />
+            <LynxEmbeddedIMU name="imu" port="0" bus="0" />
         </LynxModule>
         <LynxModule name="Control Hub" port="173">
             <goBILDA5202SeriesMotor name="leftFront" port="0" />
             <goBILDA5202SeriesMotor name="outtake" port="1" />
             <goBILDA5202SeriesMotor name="leftBack" port="2" />
+            <goBILDA5202SeriesMotor name="par" port="3" />
             <Servo name="outtakeLatch" port="0" />
             <Servo name="outtakeSlidePivot" port="1" />
             <Servo name="outtakePivot" port="2" />
             <Servo name="stackIntakeServoRight" port="3" />
             <Servo name="stackIntakeServoLeft" port="4" />
             <ContinuousRotationServo name="bottomRollerServo" port="5" />
+            <AnalogInput name="slidePivotVoltage" port="0" />
+            <AnalogInput name="outtakePivotVoltage" port="1" />
+            <AnalogInput name="slidePivotVoltage3" port="3" />
             <DigitalDevice name="beamBreaker1" port="0" />
             <DigitalDevice name="beamBreaker2" port="2" />
-            <ControlHubImuBHI260AP name="imu" port="0" bus="0" />
         </LynxModule>
     </LynxUsbDevice>
+    <Webcam name="Webcam 2" serialNumber="5FE6DE1F" />
 </Robot>

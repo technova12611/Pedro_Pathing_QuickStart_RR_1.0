@@ -58,8 +58,8 @@ public class Outtake {
     public static double SLIDE_PIVOT_INIT = 0.438;
     public static double SLIDE_PIVOT_SLIDING = 0.52;
     public static double SLIDE_PIVOT_DUMP = 0.238;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.60;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.54;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.68;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.58;
 
     public static double SLIDE_PIVOT_DUMP_2 = 0.265;
 
@@ -377,7 +377,8 @@ public class Outtake {
         return "SlidePivot: " + String.format("%.2f", slideServoPosition) +
                 " | OuttakePivot: " + String.format("%.2f", this.outtakePivot.getPosition()) +
                 " | Latch: " + String.format("%.2f", this.latch.getPosition()) +
-                " | SlidePivot voltage: " + String.format("%.2f", slidePivotVoltages.getMean());
+                " | SlidePivot voltage: " + String.format("%.2f", slidePivotVoltages.getMean()) +
+                " | backdropTouched: " + backdropTouched;
     }
 
     public void resetSlideEncoder() {

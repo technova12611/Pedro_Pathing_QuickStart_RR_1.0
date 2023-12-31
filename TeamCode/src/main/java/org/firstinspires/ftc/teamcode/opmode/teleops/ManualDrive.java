@@ -14,6 +14,7 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
@@ -66,7 +67,21 @@ public class ManualDrive extends LinearOpMode {
     AccelConstraint accelConstraintOverride = new ProfileAccelConstraint(-30.0, 30.0);
 
     double slowModeForHanging = 0.5;
+
+    double slowModeForBackdrop = 0.5;
     boolean isHangingActivated = false;
+
+    Gamepad.LedEffect redEffect = new Gamepad.LedEffect.Builder()
+            .addStep(1, 0, 0, 750) // Show red for 250ms
+            .build();
+
+    Gamepad.LedEffect greenEffect = new Gamepad.LedEffect.Builder()
+            .addStep(0, 1, 0, 750) // Show green for 250ms
+            .build();
+
+    Gamepad.LedEffect whiteEffect = new Gamepad.LedEffect.Builder()
+            .addStep(1, 1, 1, 750) // Show white for 250ms
+            .build();
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -168,27 +183,35 @@ public class ManualDrive extends LinearOpMode {
         if (isPixelDetectionEnabled) {
 
             // if the 2nd pixel is too close to the 1st, reverse intake for a moment
-            if (prevPixelCount != Intake.pixelsCount && lastTimePixelDetected != null &&
-                    (System.currentTimeMillis() - lastTimePixelDetected.longValue()) < 600) {
+            if (prevPixelCount != Intake.pixelsCount && lastTimePixelDetected != null ) {
+                long elapsedTime = System.currentTimeMillis() - lastTimePixelDetected.longValue();
+                Log.d("TeleOps_Pixel_detection", prevPixelCount + "->" + Intake.pixelsCount + ", elapsed time (ms) " + elapsedTime);
 
-                if (Intake.pixelsCount == 2) {
-                    Intake.totalPixelCount--;
-                    Intake.pixelsCount = 1;
+                if(elapsedTime < 600) {
+                    if (Intake.pixelsCount > 1) {
+                        Intake.totalPixelCount--;
+                        Intake.pixelsCount = prevPixelCount;
 
-                    Log.d("TeleOps_Pixel_detection", "deduct 1 from the counts. Total: " + Intake.totalPixelCount + " current: " + Intake.pixelsCount);
+                        Log.d("TeleOps_Pixel_detection", "deduct 1 from the counts. Total: " + Intake.totalPixelCount + " current: " + Intake.pixelsCount);
+                    }
+
+                    sched.queueAction(intake.intakeReverse());
+
+                    Log.d("TeleOps_Pixel_detection", "slow down 2nd pixel at " + System.currentTimeMillis());
+
+                    lastTimePixelDetected = null;
+                    intakeSlowdownStartTime = new Long(System.currentTimeMillis());
+
+                    g1.runLedEffect(whiteEffect);
                 }
-                sched.queueAction(intake.intakeReverse());
-
-                Log.d("TeleOps_Pixel_detection", "slow down 2nd pixel at " + System.currentTimeMillis());
-
-                lastTimePixelDetected = null;
-                intakeSlowdownStartTime = new Long(System.currentTimeMillis());
             }
             // log the count
             else if (prevPixelCount != Intake.pixelsCount && Intake.pixelsCount >= 2 && intakeReverseStartTime == null) {
                 intakeReverseStartTime = new Long(System.currentTimeMillis());
 
-                Log.d("TeleOps_Pixel_detection", "Pixel counted changed 1 -> 2, detected at :" + intakeReverseStartTime);
+                g1.runLedEffect(greenEffect);
+
+                Log.d("TeleOps_Pixel_detection", "Pixel counted changed 1 -> 2, detected at " + intakeReverseStartTime);
             }
 
             if (intakeSlowdownStartTime != null) {
@@ -202,12 +225,14 @@ public class ManualDrive extends LinearOpMode {
             if (intakeReverseStartTime != null && intakeSlowdownStartTime == null) {
 
                 if ((System.currentTimeMillis() - intakeReverseStartTime.longValue()) > 500
-                        && (System.currentTimeMillis() - intakeReverseStartTime.longValue() < 600)) {
+                        && (System.currentTimeMillis() - intakeReverseStartTime.longValue() < 600 &&
+                        intake.intakeState.equals(Intake.IntakeState.ON))) {
                     sched.queueAction(intake.intakeReverse());
-                    Log.d("TeleOps_Pixel_detection", "Pixel count 1 -> 2, reverse started at" + System.currentTimeMillis());
+                    Log.d("TeleOps_Pixel_detection", "Pixel count 1 -> 2, reverse started at " + System.currentTimeMillis());
                 }
 
-                if ((System.currentTimeMillis() - intakeReverseStartTime.longValue()) > 1800) {
+                if ((System.currentTimeMillis() - intakeReverseStartTime.longValue()) > 1800 &&
+                        intake.intakeState.equals(Intake.IntakeState.REVERSING))  {
                     sched.queueAction(intake.intakeOff());
                     intakeReverseStartTime = null;
 
@@ -216,11 +241,14 @@ public class ManualDrive extends LinearOpMode {
             }
 
             // detect the first pixel in time
-            if (Intake.pixelsCount == 1 && prevPixelCount == 0) {
-                if (intake.stackIntakeState == Intake.StackIntakeState.UP && lastTimePixelDetected == null) {
+            if (Intake.pixelsCount != prevPixelCount) {
+                if (intake.stackIntakeState == Intake.StackIntakeState.UP) {
                     lastTimePixelDetected = new Long(System.currentTimeMillis());
                 }
-                Log.d("TeleOps_Pixel_detection", "Pixel count changed 0 -> 1. Detected at " + lastTimePixelDetected);
+
+                Log.d("TeleOps_Pixel_detection", "Pixel count changed from " + prevPixelCount + " -> " + Intake.pixelsCount +" | detected at " + lastTimePixelDetected);
+
+                g1.runLedEffect(redEffect);
             }
 
             prevPixelCount = Intake.pixelsCount;
@@ -229,8 +257,24 @@ public class ManualDrive extends LinearOpMode {
 
     private void move() {
         double speed = (1 - Math.abs(g1.right_stick_x)) * (DRIVE_SPEED - SLOW_DRIVE_SPEED) + SLOW_DRIVE_SPEED;
+
+        if(isHangingActivated) {
+            speed = speed*slowModeForHanging;
+        }
+        else if(isSlideOut) {
+            speed = speed*slowModeForBackdrop;
+        }
+
         double input_x = Math.pow(-g1.left_stick_y, 3) * speed;
         double input_y = Math.pow(-g1.left_stick_x, 3) * speed;
+
+        // if outtake has touched the backdrop, don't move further
+        if(outtake.hasOuttakeReached()) {
+            if(input_x < -0.05) {
+                input_x = 0.0;
+                Log.d("Drive_power", String.format("input_x: %3.2f to 0.0", input_x) + String.format(" | input_y: %3.2f", input_y));
+            }
+        }
 
         double input_turn = Math.pow(g1.left_trigger - g1.right_trigger, 3) * TURN_SPEED;
         if (g1.leftBumper()) input_turn += SLOW_TURN_SPEED;
@@ -238,6 +282,8 @@ public class ManualDrive extends LinearOpMode {
 
         Vector2d input = new Vector2d(input_x, input_y);
         drive.setDrivePowers(new PoseVelocity2d(input, input_turn));
+
+        telemetry.addData("drive_power", "input_x: %3.2f | input_y: %3.2f | speed: %3.2f", input_x, input_y, speed);
     }
 
     boolean isSlideOut = false;
@@ -331,11 +377,17 @@ public class ManualDrive extends LinearOpMode {
             autoRunSched = new AutoActionScheduler(this::update);
             Log.d("ManualDrive", "Pose before strafe: " + new PoseMessage(this.drive.pose) + " | target=" + strafeDistance);
             double start_y = drive.pose.position.y;
-            autoRunSched.addAction(drive.actionBuilder(drive.pose)
-                    .strafeTo(new Vector2d(drive.pose.position.x, drive.pose.position.y + strafeDistance),
-                            velConstraintOverride,
-                            accelConstraintOverride)
-                    .build());
+            autoRunSched.addAction(
+                    new SequentialAction(
+                            outtake.afterScore(),
+                            drive.actionBuilder(drive.pose)
+                                    .strafeToConstantHeading(new Vector2d(drive.pose.position.x, drive.pose.position.y + strafeDistance),
+                                            velConstraintOverride,
+                                            accelConstraintOverride)
+                                    .build(),
+                            outtake.prepareToScore())
+
+            );
 
             autoRunSched.run();
 

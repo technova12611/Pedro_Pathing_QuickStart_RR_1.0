@@ -247,4 +247,12 @@ public class GamePadController {
     public Gamepad.RumbleEffect.Builder effectBuilder() {
         return new Gamepad.RumbleEffect.Builder();
     }
+
+    public void runLedEffect(Gamepad.LedEffect ledEffect) {
+        gamepad.runLedEffect(ledEffect);
+    }
+
+    public void setLedColor(double r, double g, double b, int durationMs) {
+        gamepad.setLedColor(r,g,b,durationMs);
+    }
 }
