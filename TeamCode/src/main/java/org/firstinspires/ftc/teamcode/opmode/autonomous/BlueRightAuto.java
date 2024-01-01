@@ -15,58 +15,58 @@ import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 public class BlueRightAuto extends FarAutoBase {
    @Override
    protected void onInit() {
-      this.start = new Pose2d(-40.0, 62.0, Math.toRadians(-90));
+      this.start = new Pose2d(-38.5, 62.0, Math.toRadians(-90));
       this.spike = new Pose2d[] {
-              new Pose2d(-36.5, 38.5, Math.toRadians(-25)),
-              new Pose2d(-42.5, 36.7, Math.toRadians(-90)),
-              new Pose2d(-48.0, 45.0, Math.toRadians(-90))
+              new Pose2d(-35.0, 38.5, Math.toRadians(-25)),
+              new Pose2d(-41.0, 36.7, Math.toRadians(-90)),
+              new Pose2d(-46.5, 45.0, Math.toRadians(-90))
       };
 
       this.backdrop = new Pose2d[] {
-              new Pose2d(46.0, 41.5, Math.toRadians(-180)),
-              new Pose2d(46.0, 35.5, Math.toRadians(-180)),
-              new Pose2d(46.0, 28.0, Math.toRadians(-180))
+              new Pose2d(47.5, 41.5, Math.toRadians(-180)),
+              new Pose2d(47.5, 35.5, Math.toRadians(-180)),
+              new Pose2d(47.5, 28.0, Math.toRadians(-180))
       };
 
-      this.parking = new Pose2d(45.0, 20.0, Math.toRadians(-180));
+      this.parking = new Pose2d(42.0, 20.0, Math.toRadians(-180));
 
       this.cycleScore = new Pose2d[] {
-              new Pose2d(46.2, 32.0, Math.toRadians(-180)),
-              new Pose2d(46.2, 32.0, Math.toRadians(-180)),
-              new Pose2d(46.2, 39.0, Math.toRadians(-180)),
+              new Pose2d(47.7, 32.0, Math.toRadians(-180)),
+              new Pose2d(47.7, 32.0, Math.toRadians(-180)),
+              new Pose2d(47.7, 39.0, Math.toRadians(-180)),
       };
 
       this.backOffFromSpike = new Pose2d[] {
-              new Pose2d(-40, 45, Math.toRadians(-90)),
-              new Pose2d(-40, 43, Math.toRadians(-90)),
-              new Pose2d(-36.7, 46, Math.toRadians(-90))
+              new Pose2d(-38.5, 45, Math.toRadians(-90)),
+              new Pose2d(-38.5, 43, Math.toRadians(-90)),
+              new Pose2d(-35.2, 46, Math.toRadians(-90))
       };
 
       this.stackIntakeAlignment = new Pose2d[] {
-              new Pose2d(-50, 11.5, Math.toRadians(-180)),
-              new Pose2d(-50, 35.5, Math.toRadians(-180)),
-              new Pose2d(-36.7, 11.5, Math.toRadians(-90))
+              new Pose2d(-48.5, 11.5, Math.toRadians(-180)),
+              new Pose2d(-48.5, 35.5, Math.toRadians(-180)),
+              new Pose2d(-35.2, 11.5, Math.toRadians(-90))
       };
 
       this.stackIntake = new Pose2d[] {
-              new Pose2d(-58.8, 11.5, Math.toRadians(-180)),
-              new Pose2d(-58.8, 35.5, Math.toRadians(-180)),
-              new Pose2d(-58.8, 11.5, Math.toRadians(180))
+              new Pose2d(-57.0, 11.5, Math.toRadians(-180)),
+              new Pose2d(-57.0, 35.5, Math.toRadians(-180)),
+              new Pose2d(-57.0, 11.5, Math.toRadians(180))
       };
       this.crossFieldAlignment = new Pose2d[] {
-              new Pose2d(-48, 11.5, Math.toRadians(-180)),
-              new Pose2d(-40, 36.5, Math.toRadians(-180)),
-              new Pose2d(-48, 11.5, Math.toRadians(-180))
+              new Pose2d(-46.5, 11.5, Math.toRadians(-180)),
+              new Pose2d(-38.5, 36.5, Math.toRadians(-180)),
+              new Pose2d(-46.5, 11.5, Math.toRadians(-180))
       };
 
       this.backdropAlignment = new Pose2d[] {
-              new Pose2d(43.0, 11.5, Math.toRadians(-180)),
-                      new Pose2d(43.0, 35.5, Math.toRadians(-180)),
-                              new Pose2d(43.0, 11.5, Math.toRadians(-180))};
+              new Pose2d(42.0, 11.5, Math.toRadians(-180)),
+                      new Pose2d(42.0, 35.5, Math.toRadians(-180)),
+                              new Pose2d(42.0, 11.5, Math.toRadians(-180))};
 
-      this.moveUp1 =  new Pose2d(-40.0, 54.0, Math.toRadians(-90));
+      this.moveUp1 =  new Pose2d(-38.5, 54.0, Math.toRadians(-90));
 
-      this.stackIntakeAlignment2 = new Pose2d(-50, 11.0, Math.toRadians(-180));
+      this.stackIntakeAlignment2 = new Pose2d(-48.5, 11.0, Math.toRadians(-180));
    }
 
    @Override
@@ -76,6 +76,6 @@ public class BlueRightAuto extends FarAutoBase {
 
    @Override
    protected void printDescription() {
-      telemetry.addData("Description", "Blue Far (Right) Auto");
+      telemetry.addData("Description", "Blue Far (Right-Side) Auto");
    }
 }

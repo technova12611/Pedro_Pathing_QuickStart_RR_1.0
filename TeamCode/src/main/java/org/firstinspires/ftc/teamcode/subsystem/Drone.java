@@ -13,10 +13,10 @@ import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
 @Config
 public class Drone {
     public static double LATCH_SCORED = 0.50;
-    public static double LATCH_CLOSED = 0.32;
+    public static double LATCH_CLOSED = 0.33;
 
     // Drone Tilt is Axon Mini Servo
-    public static double TILT_INIT = 0.3;
+    public static double TILT_INIT = 0.32;
     public static double TILT_LAUNCH = 0.515;
 
     final Servo latch;

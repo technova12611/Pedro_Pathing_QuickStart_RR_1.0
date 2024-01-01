@@ -102,7 +102,7 @@ public abstract class AutoBase extends LinearOpMode {
                 .build();
 
         // init 2nd webcam to detect Backdrop apriltags
-        initAprilTag();
+//        initAprilTag();
 
         onInit();
 
@@ -135,8 +135,9 @@ public abstract class AutoBase extends LinearOpMode {
             telemetry.addData(centerStr + " color:", "Mean: %3.2f | Max: %3.2f ", propPipeline.meanCenterColor, propPipeline.maxCenterColor);
             telemetry.addData(sideStr + " color:", "Mean: %3.2f | Max: %3.2f ", propPipeline.meanSideColor, propPipeline.maxSideColor);
             telemetry.addData("Spike Position", side.toString());
+            telemetry.addLine("\n");
 
-            telemetry.addData("Vision init elapsed time: ", propPipeline.elapsedTime + "(ms)");
+            telemetry.addData("Outtake Servo Positions", outtake.getServoPositions());
 
             if(getFieldPosition() == FieldPosition.FAR) {
                 // use dpad to select wait time
@@ -203,7 +204,13 @@ public abstract class AutoBase extends LinearOpMode {
 
         drive.updatePoseEstimate();
 
-        visionPortal2.close();
+//        try {
+//            if (visionPortal2 != null) {
+//                visionPortal2.close();
+//            }
+//        } catch(Exception e) {
+//            //
+//        }
 
         // end of the auto run
         // keep position and settings in memory for TeleOps
@@ -218,7 +225,7 @@ public abstract class AutoBase extends LinearOpMode {
         while(opModeIsActive()) {
             drive.updatePoseEstimate();
             Globals.drivePose = drive.pose;
-            if(getRuntime() - logStartTime > 1.0) {
+            if(getRuntime() - logStartTime > 5.0) {
                 Log.d("Auto_logger","End program drive Estimated Pose: " + new PoseMessage(drive.pose) + "| " +
                         "Heading: " + String.format("%3.2f", drive.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)));
                 logStartTime = getRuntime();
@@ -233,8 +240,6 @@ public abstract class AutoBase extends LinearOpMode {
         // Create the vision portal the easy way.
         visionPortal2 = VisionPortal.easyCreateWithDefaults(
                 hardwareMap.get(WebcamName.class, "Webcam 2"), aprilTag);
-
-
     }
 
     // the following needs to be implemented by the real auto program

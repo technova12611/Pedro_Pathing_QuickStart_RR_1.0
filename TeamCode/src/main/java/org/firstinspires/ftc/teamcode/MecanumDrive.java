@@ -88,11 +88,11 @@ public final class MecanumDrive {
         // path controller gains
         public double axialGain = 7.25; //5.25;
         public double lateralGain = 18.25; //16.5;
-        public double headingGain = 12.25; //7.5; // shared with turn
+        public double headingGain = 8.75; //7.5; // shared with turn
 
         public double axialVelGain = 0.525; //0.25;
         public double lateralVelGain = 0.25; //0.01;
-        public double headingVelGain = 0.025; //0.01; // shared with turn
+        public double headingVelGain = 0.05; //0.01; // shared with turn
     }
 
     public static Params PARAMS = new Params();
@@ -532,45 +532,49 @@ public final class MecanumDrive {
 
         @Override
         public boolean run(TelemetryPacket packet) {
-            if(this.portal != null && this.aprilTag != null) {
-                this.portal.resumeStreaming();
+            try {
+                if (this.portal != null && this.aprilTag != null) {
+                    //this.portal.resumeStreaming();
 
-                List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-                packet.addLine("# AprilTags Detected: " + currentDetections.size());
+                    List<AprilTagDetection> currentDetections = this.aprilTag.getDetections();
+                    packet.addLine("# AprilTags Detected: " + currentDetections.size());
 
-                Log.d("AprilTag_Localization", "# AprilTags Detected: " + currentDetections.size());
+                    Log.d("AprilTag_Localization", "# AprilTags Detected: " + currentDetections.size());
 
-                Vector2d tagPosition = null;
-                Integer tagId = null;
-                // Step through the list of detections and display info for each one.
-                for (AprilTagDetection detection : currentDetections) {
-                    if (detection.metadata != null) {
-                        tagId = detection.id;
+                    Vector2d tagPosition = null;
+                    Integer tagId = null;
+                    // Step through the list of detections and display info for each one.
+                    for (AprilTagDetection detection : currentDetections) {
+                        if (detection.metadata != null) {
+                            tagId = detection.id;
 
-                        //
-                        //  check this: https://ftc-docs.firstinspires.org/en/latest/apriltag/understanding_apriltag_detection_values/understanding-apriltag-detection-values.html
-                        //
-                        //  https://ftc-docs.firstinspires.org/en/latest/_images/figure2.jpg
-                        //
-                        //  X is left and right, Y is the up and down
-                        // so use X for the RR Y coordinate, use Y for RR coordinate
-                        //
-                        tagPosition = new Vector2d(detection.ftcPose.y, detection.ftcPose.x);
+                            //
+                            //  check this: https://ftc-docs.firstinspires.org/en/latest/apriltag/understanding_apriltag_detection_values/understanding-apriltag-detection-values.html
+                            //
+                            //  https://ftc-docs.firstinspires.org/en/latest/_images/figure2.jpg
+                            //
+                            //  X is left and right, Y is the up and down
+                            // so use X for the RR Y coordinate, use Y for RR coordinate
+                            //
+                            tagPosition = new Vector2d(detection.ftcPose.y, detection.ftcPose.x);
 
-                        String msg1 = String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name);
-                        String msg2 = String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z);
+                            String msg1 = String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name);
+                            String msg2 = String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z);
 
-                        packet.addLine(msg1);
-                        packet.addLine(msg2);
+                            packet.addLine(msg1);
+                            packet.addLine(msg2);
 
-                        Log.d("AprilTag_Localization", msg1);
-                        Log.d("AprilTag_Localization", msg2);
+                            Log.d("AprilTag_Localization", msg1);
+                            Log.d("AprilTag_Localization", msg2);
 
-                        break;
-                    }
-                }   // end for() loop
+                            break;
+                        }
+                    }   // end for() loop
 
-                this.portal.stopStreaming();
+                    //this.portal.stopStreaming();
+                }
+            } catch(Exception e) {
+                Log.e("apritag_detection", e.getMessage());
             }
 
             return false;

@@ -18,7 +18,7 @@
             <goBILDA5202SeriesMotor name="leftFront" port="0" />
             <goBILDA5202SeriesMotor name="outtake" port="1" />
             <goBILDA5202SeriesMotor name="leftBack" port="2" />
-            <goBILDA5202SeriesMotor name="par" port="3" />
+            <Motor name="par" port="3" />
             <Servo name="outtakeLatch" port="0" />
             <Servo name="outtakeSlidePivot" port="1" />
             <Servo name="outtakePivot" port="2" />

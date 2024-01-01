@@ -14,19 +14,19 @@ import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 @Autonomous(name = "Blue Near Auto (2+0)", group = "BLUE Auto", preselectTeleOp = "Manual Drive")
 public class BlueLeftAuto extends NearAutoBase {
    public static Pose2d[] blue_spike = {
-           new Pose2d(35.0, 25.5, Math.toRadians(-180)),
-           new Pose2d(28.2, 24.5, Math.toRadians(-180)),
-           new Pose2d(14.3, 34.75, Math.toRadians(-180))
+           new Pose2d(34.0, 26.0, Math.toRadians(-180)),
+           new Pose2d(28.5, 24.5, Math.toRadians(-180)),
+           new Pose2d(13.2, 34.0, Math.toRadians(-180))
    };
 
    public static Pose2d[] blue_backdrop =  {
-           new Pose2d(48.3, 42.5, Math.toRadians(-180)),
-           new Pose2d(48.6, 36, Math.toRadians(-180)),
-           new Pose2d(48.6, 28.5, Math.toRadians(-180))
+           new Pose2d(47.8, 42.0, Math.toRadians(-180)),
+           new Pose2d(47.8, 36.0, Math.toRadians(-180)),
+           new Pose2d(47.8, 29.5, Math.toRadians(-180))
    };
    // 0 = left, 1 = middle, 2 = right
-   public static Pose2d blue_start = new Pose2d(16.0, 62.0, Math.toRadians(-90));
-   public static Pose2d blue_parking = new Pose2d(53.0, 60.0, Math.toRadians(-180));
+   public static Pose2d blue_start = new Pose2d(14.5, 62.0, Math.toRadians(-90));
+   public static Pose2d blue_parking = new Pose2d(52.0, 61.0, Math.toRadians(-180));
 
    @Override
    protected void onInit() {
@@ -41,7 +41,6 @@ public class BlueLeftAuto extends NearAutoBase {
 
    @Override
    protected void printDescription() {
-      telemetry.addData("Description", "BLUE Near (Left) Auto");
+      telemetry.addData("Description", "BLUE Near (Left-Side) Auto");
    }
-
 }

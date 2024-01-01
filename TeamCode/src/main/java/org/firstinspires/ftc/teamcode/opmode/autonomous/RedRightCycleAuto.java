@@ -18,24 +18,24 @@ public class RedRightCycleAuto extends NearCycleAutoBase {
         this.spike = RedRightAuto.red_spike;
 
         this.cycleStart = new Pose2d[]{
-                new Pose2d(spike[0].position.x, -11.5, Math.toRadians(180)),
-                new Pose2d(spike[1].position.x, -11.5, Math.toRadians(180)),
-                new Pose2d(spike[2].position.x, -11.5, Math.toRadians(180))
+                new Pose2d(spike[0].position.x, -11.8, Math.toRadians(180)),
+                new Pose2d(spike[1].position.x, -11.8, Math.toRadians(180)),
+                new Pose2d(spike[2].position.x, -11.8, Math.toRadians(180))
         };
 
-        this.stackAlignment = new Pose2d(-48.0, -11.0, Math.toRadians(180));
-        this.stackIntake1 = new Pose2d(-54.5, -12.0, Math.toRadians(180));
-        this.stackIntake2 = new Pose2d(-55.2, -10.9, Math.toRadians(180));
-        this.safeTrussPassStop = new Pose2d(-49.0, -11.0, Math.toRadians(180));
-        this.backdropAlignment = new Pose2d(45.0, -11.0, Math.toRadians(180));
+        this.stackAlignment = new Pose2d(-49.0, -12.0, Math.toRadians(180));
+        this.stackIntake1 = new Pose2d(-56.5, -12.5, Math.toRadians(180));
+        this.stackIntake2 = new Pose2d(-57.5, -11.25, Math.toRadians(180));
+        this.safeTrussPassStop = new Pose2d(-49.0, -11.5, Math.toRadians(180));
+        this.backdropAlignment = new Pose2d(40.0, -11.5, Math.toRadians(180));
 
         cycleScore = new Pose2d[] {
-                new Pose2d(49.1, -36.0, Math.toRadians(180)),
-                new Pose2d(49.1, -31.75, Math.toRadians(180)),
-                new Pose2d(49.1, -31.75, Math.toRadians(180))
+                new Pose2d(47.1, -37.0, Math.toRadians(180)),
+                new Pose2d(47.1, -32.0, Math.toRadians(180)),
+                new Pose2d(47.1, -32.0, Math.toRadians(180))
         };
 
-        this.parking = new Pose2d(45.0, -20.0, Math.toRadians(180));
+        this.parking = new Pose2d(44.1, -20.0, Math.toRadians(180));
     }
 
     protected AlliancePosition getAlliance() {
@@ -44,6 +44,6 @@ public class RedRightCycleAuto extends NearCycleAutoBase {
 
     @Override
     protected void printDescription() {
-        telemetry.addData("Description", "RED Right Cycle Auto");
+        telemetry.addData("Description", "RED Near (Right-Side) Cycle Auto");
     }
 }

@@ -71,6 +71,8 @@ public class ManualDrive extends LinearOpMode {
     double slowModeForBackdrop = 0.5;
     boolean isHangingActivated = false;
 
+    long startTime = 0L;
+
     Gamepad.LedEffect redEffect = new Gamepad.LedEffect.Builder()
             .addStep(1, 0, 0, 750) // Show red for 250ms
             .build();
@@ -126,6 +128,8 @@ public class ManualDrive extends LinearOpMode {
                 new AngularVelConstraint(Math.PI / 2)));
 
         waitForStart();
+
+        startTime = System.currentTimeMillis();
 
         // Opmode start
         if (opModeIsActive()) {
@@ -190,34 +194,35 @@ public class ManualDrive extends LinearOpMode {
                 if(elapsedTime < 600) {
                     if (Intake.pixelsCount > 1) {
                         Intake.totalPixelCount--;
-                        Intake.pixelsCount = prevPixelCount;
+                        prevPixelCount = Intake.pixelsCount;
 
                         Log.d("TeleOps_Pixel_detection", "deduct 1 from the counts. Total: " + Intake.totalPixelCount + " current: " + Intake.pixelsCount);
                     }
 
                     sched.queueAction(intake.intakeReverse());
 
-                    Log.d("TeleOps_Pixel_detection", "slow down 2nd pixel at " + System.currentTimeMillis());
-
-                    lastTimePixelDetected = null;
                     intakeSlowdownStartTime = new Long(System.currentTimeMillis());
+                    lastTimePixelDetected = null;
+                    Log.d("TeleOps_Pixel_detection", "slow down 2nd pixel at " + (intakeSlowdownStartTime - startTime));
 
                     g1.runLedEffect(whiteEffect);
                 }
             }
             // log the count
-            if(prevPixelCount != Intake.pixelsCount && Intake.pixelsCount >= 2 && intakeReverseStartTime == null) {
+            if(prevPixelCount != Intake.pixelsCount && Intake.pixelsCount >= 2 && intakeReverseStartTime == null ) {
                 intakeReverseStartTime = new Long(System.currentTimeMillis());
 
                 g1.runLedEffect(greenEffect);
 
-                Log.d("TeleOps_Pixel_detection", "Pixel counted changed 1 -> 2, detected at " + intakeReverseStartTime);
+                Log.d("TeleOps_Pixel_detection", "Pixel counted changed to "
+                        +  Intake.pixelsCount + ", detected at " + (intakeReverseStartTime - startTime));
             }
 
             if (intakeSlowdownStartTime != null) {
-                if ((System.currentTimeMillis() - intakeSlowdownStartTime.longValue()) > 300) {
+                if ((System.currentTimeMillis() - intakeSlowdownStartTime.longValue()) > 500) {
                     sched.queueAction(intake.intakeOn());
                     intakeSlowdownStartTime = null;
+                    intakeReverseStartTime = new Long(System.currentTimeMillis());
                 }
             }
 
@@ -229,7 +234,8 @@ public class ManualDrive extends LinearOpMode {
                 if (elapsedTimeMs > 500 && elapsedTimeMs < 600 &&
                         intake.intakeState.equals(Intake.IntakeState.ON)) {
                     sched.queueAction(intake.intakeReverse());
-                    Log.d("TeleOps_Pixel_detection", "Pixel count 1 -> 2, reverse started at " + System.currentTimeMillis());
+                    Log.d("TeleOps_Pixel_detection", "Pixel count changed to "
+                            + Intake.pixelsCount + ", reversing started at " + (intakeReverseStartTime - startTime));
                 }
 
                 if (elapsedTimeMs > 1800 &&
@@ -247,7 +253,7 @@ public class ManualDrive extends LinearOpMode {
                     lastTimePixelDetected = new Long(System.currentTimeMillis());
                 }
 
-                Log.d("TeleOps_Pixel_detection", "Pixel count changed from " + prevPixelCount + " -> " + Intake.pixelsCount +" | detected at " + lastTimePixelDetected);
+                Log.d("TeleOps_Pixel_detection", "Pixel count changed from " + prevPixelCount + " -> " + Intake.pixelsCount +" | detected at " + (lastTimePixelDetected - startTime));
 
                 g1.runLedEffect(redEffect);
             }

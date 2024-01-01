@@ -16,17 +16,17 @@ public class RedRightAuto extends NearAutoBase {
 
    // 0 = left, 1 = middle, 2 = right
    public static Pose2d[] red_spike = {
-           new Pose2d(14.8, -34.5, Math.toRadians(180)),
-           new Pose2d(30.2, -26.2, Math.toRadians(180)),
-           new Pose2d(36.5, -27.5, Math.toRadians(180))
+           new Pose2d(13.0, -34.0, Math.toRadians(180)),
+           new Pose2d(29.0, -25.0, Math.toRadians(180)),
+           new Pose2d(35.0, -27.0, Math.toRadians(180))
    };
    public static Pose2d[] red_backdrop =  {
-           new Pose2d(48.5, -32.0, Math.toRadians(180)), // 29.0 for left
-           new Pose2d(48.5, -38.5, Math.toRadians(180)),  // 35.5 for left
-           new Pose2d(48.5, -44.0, Math.toRadians(180))  // 42 for left
+           new Pose2d(47.25, -32.0, Math.toRadians(180)), // 29.5 for left
+           new Pose2d(47.25, -38.0, Math.toRadians(180)),  // 35.0 for left
+           new Pose2d(47.25, -44.0, Math.toRadians(180))  // 41 for left
    };
    // 0 = left, 1 = middle, 2 = right
-   public static Pose2d red_start = new Pose2d(16.0, -62.0, Math.toRadians(90));
+   public static Pose2d red_start = new Pose2d(14.5, -62.0, Math.toRadians(90));
    public static Pose2d red_parking = new Pose2d(53.0, -61.0, Math.toRadians(180));
 
    @Override
@@ -44,7 +44,7 @@ public class RedRightAuto extends NearAutoBase {
 
    @Override
    protected void printDescription() {
-      telemetry.addData("Description", "RED Near (Right) Auto");
+      telemetry.addData("Description", "RED Near (Right-Side) Auto");
    }
 
 }

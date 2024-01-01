@@ -52,14 +52,15 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         ),
 
                         new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_position"),
-                        new MecanumDrive.UpdateDrivePoseAction(drive, this.visionPortal2, this.aprilTag),
+                        //new MecanumDrive.UpdateDrivePoseAction(drive, this.visionPortal2, this.aprilTag),
 
                         outtake.prepareToScore(),
                         new SleepAction(0.30),
                         outtake.latchScore1(),
-                        new SleepAction(0.50),
+                        new SleepAction(0.60),
                         intake.stackIntakeLinkageDown(),
-                        new SleepAction(0.2),
+                        outtake.afterScore(),
+                        new SleepAction(0.25),
                         new ParallelAction(
                             new SequentialAction(
                                 new SleepAction(0.2),
@@ -68,7 +69,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
 
                             // to score the purple pixel on the spike
                             drive.actionBuilder(backdrop[SPIKE])
-                                    .strafeTo(spike[SPIKE].position, this.drive.highSpeedVelConstraint, this.drive.highSpeedAccelConstraint)
+                                    .strafeToLinearHeading(spike[SPIKE].position, spike[SPIKE].heading, this.drive.highSpeedVelConstraint, this.drive.highSpeedAccelConstraint)
                                     .build()
                         ),
 
@@ -79,34 +80,50 @@ public abstract class NearCycleAutoBase extends AutoBase {
                 )
         );
 
-        // do the first cycle from the spike position
-        cyclePixelFromStack(spike[SPIKE]);
-
-        // do the 2nd cycle from the cycle drop position
-        cyclePixelFromStack(cycleScore[SPIKE]);
-
-        sched.addAction(new ParallelAction(
-                        new SequentialAction(
-                                outtake.retractOuttake(),
-                                new SleepAction(0.5),
-                                new MecanumDrive.DrivePoseLoggingAction(drive, "slides_retracted_completed"),
-                                intake.prepareTeleOpsIntake(),
-                                outtake.prepareToTransfer()
+        sched.addAction(
+                new SequentialAction(
+                new ParallelAction(
+                        outtake.retractOuttake(),
+                        intake.prepareTeleOpsIntake(),
+                        drive.actionBuilder(spike[SPIKE]) //spike[SPIKE]
+                                .strafeToLinearHeading(cycleStart[SPIKE].position, cycleStart[SPIKE].heading, this.drive.highSpeedVelConstraint, this.drive.highSpeedAccelConstraint)
+                                .build()
                         ),
 
-                        new SequentialAction(
-
-                                new MecanumDrive.DrivePoseLoggingAction(drive, "start_of_parking"),
-                                // to score the purple pixel on the spike
-                                drive.actionBuilder(cycleScore[SPIKE])
-                                        .strafeTo(parking.position)
-                                        .build(),
-                                new MecanumDrive.DrivePoseLoggingAction(drive, "end_of_parking")
-                        )
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "start_cycle_position", true)
                 )
         );
+//
+//        // do the first cycle from the spike position
+//        cyclePixelFromStack(spike[SPIKE]);
+//
+//        // do the 2nd cycle from the cycle drop position
+//        cyclePixelFromStack(cycleScore[SPIKE]);
+//
+//        sched.addAction(new ParallelAction(
+//                        new SequentialAction(
+//                                outtake.retractOuttake(),
+//                                new SleepAction(0.5),
+//                                new MecanumDrive.DrivePoseLoggingAction(drive, "slides_retracted_completed"),
+//                                intake.prepareTeleOpsIntake(),
+//                                outtake.prepareToTransfer()
+//                        ),
+//
+//                        new SequentialAction(
+//
+//                                new MecanumDrive.DrivePoseLoggingAction(drive, "start_of_parking"),
+//                                // to score the purple pixel on the spike
+//                                drive.actionBuilder(cycleScore[SPIKE])
+//                                        .strafeTo(parking.position)
+//                                        .build(),
+//                                new MecanumDrive.DrivePoseLoggingAction(drive, "end_of_parking")
+//                        )
+//                )
+//        );
 
-        sched.addAction(new MecanumDrive.DrivePoseLoggingAction(drive, "auto_end_position", true));
+
+//
+//                new MecanumDrive.DrivePoseLoggingAction(drive, "auto_end_position", true));
     }
 
     private void cyclePixelFromStack(Pose2d startingPosition) {
@@ -129,8 +146,8 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                 outtake.retractOuttake(),
                                 intake.prepareTeleOpsIntake(),
                                 drive.actionBuilder(startingPosition) //spike[SPIKE]
-                                        .strafeTo(cycleStart[SPIKE].position, this.drive.highSpeedVelConstraint, this.drive.highSpeedAccelConstraint)
-                                        .strafeTo(stackAlignment.position,
+                                        .strafeToLinearHeading(cycleStart[SPIKE].position, cycleStart[SPIKE].heading, this.drive.highSpeedVelConstraint, this.drive.highSpeedAccelConstraint)
+                                        .strafeToLinearHeading(stackAlignment.position,stackAlignment.heading,
                                                 this.drive.highSpeedVelConstraint, this.drive.highSpeedAccelConstraint)
                                         .build(),
                                 new SequentialAction(
@@ -189,8 +206,8 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                             .setReversed(true)
                                             .strafeToLinearHeading(cycleScorePosition, cycleScore[SPIKE].heading)
                                             .build(),
-                                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_position"),
-                                        new MecanumDrive.UpdateDrivePoseAction(drive, this.visionPortal2, this.aprilTag)
+                                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_position")
+                                        //new MecanumDrive.UpdateDrivePoseAction(drive, this.visionPortal2, this.aprilTag)
                                 ),
 
                                 new SequentialAction(

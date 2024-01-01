@@ -34,7 +34,7 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_MID = 1250;
     public static int OUTTAKE_SLIDE_CYCLES_ONE = 1000;
     public static int OUTTAKE_SLIDE_CYCLES_TWO = 1150;
-    public static int OUTTAKE_SLIDE_LOW = 865;
+    public static int OUTTAKE_SLIDE_LOW = 855;
     public static int OUTTAKE_SLIDE_INIT = 0;
 
     public static int OUTTAKE_SLIDE_INCREMENT= 250;
@@ -44,24 +44,26 @@ public class Outtake {
     public static double LATCH_SCORE_2 = 0.47;
 
     public static double OUTTAKE_PIVOT_REVERSE_DUMP = 0.01;
-    public static double OUTTAKE_PIVOT_INIT = 0.175;
+    public static double OUTTAKE_PIVOT_INIT = 0.18;
     public static double OUTTAKE_PIVOT_SLIDING = 0.23;
-    public static double OUTTAKE_PIVOT_DUMP_LOW = 0.37;
-    public static double OUTTAKE_PIVOT_DUMP_MID = 0.385;
+    public static double OUTTAKE_PIVOT_DUMP_LOW = 0.38;
+    public static double OUTTAKE_PIVOT_DUMP_MID = 0.39;
 
     public static double OUTTAKE_PIVOT_DUMP_HIGH = 0.56;
 
-    public static double OUTTAKE_PIVOT_DUMP_CYCLE = 0.385;
+    public static double OUTTAKE_PIVOT_DUMP_CYCLE = 0.395;
 
     public static double OUTTAKE_PIVOT_DUMP_VERY_HIGH = 0.62;
 
-    public static double SLIDE_PIVOT_INIT = 0.438;
+    public static double SLIDE_PIVOT_INIT = 0.439;
     public static double SLIDE_PIVOT_SLIDING = 0.52;
     public static double SLIDE_PIVOT_DUMP = 0.238;
+
+    public static double SLIDE_PIVOT_DUMP_1 = 0.248;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.68;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.58;
 
-    public static double SLIDE_PIVOT_DUMP_2 = 0.265;
+    public static double SLIDE_PIVOT_DUMP_2 = 0.255;
 
     public static double SLIDE_PIVOT_DUMP_HIGH = 0.10;
 
@@ -161,6 +163,8 @@ public class Outtake {
         if (slidePIDEnabled) {
             slide.update();
         }
+
+ //       getServoPositions();
     }
 
     public Action moveSliderBlocking(double increment) {
@@ -201,7 +205,19 @@ public class Outtake {
     }
 
     public Action latchScore1() {
+        double slideServoVoltage = slidePivotVoltage.getVoltage();
+        double outtakeServoVoltage = outtakePivotVoltage.getVoltage();
+        double slidePivotPosition = SLIDE_PIVOT_DUMP;
+        if(slideServoVoltage > SLIDE_PIVOT_DUMP_VOLTAGE_MAX) {
+            slidePivotPosition = SLIDE_PIVOT_DUMP_1;
+        }
+
+        String servoPositions = "SlidePivot voltage: " + String.format("%.2f", slideServoVoltage) +
+        " | OuttakePivot voltage: " + String.format("%.2f", outtakeServoVoltage);
+        Log.d("SlidePivot_Logger", servoPositions);
+
         return new SequentialAction(
+                new ActionUtil.ServoPositionAction(slidePivot, slidePivotPosition, "slidePivot"),
                 new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_1, "latch"),
                 new Intake.UpdatePixelCountAction(-1),
                 new OuttakeLatchStateAction(OuttakeLatchState.LATCH_1)
@@ -222,7 +238,20 @@ public class Outtake {
     }
 
     public Action latchScore2() {
+        double slideServoVoltage = slidePivotVoltage.getVoltage();
+        double outtakeServoVoltage = outtakePivotVoltage.getVoltage();
+        double slidePivotPosition = SLIDE_PIVOT_DUMP;
+        if(slideServoVoltage > SLIDE_PIVOT_DUMP_VOLTAGE_MAX) {
+            slidePivotPosition = SLIDE_PIVOT_DUMP_1;
+        }
+
+        String servoPositions = "SlidePivot voltage: " + String.format("%.2f", slideServoVoltage) +
+                " | OuttakePivot voltage: " + String.format("%.2f", outtakeServoVoltage);
+
+        Log.d("SlidePivot_Logger", servoPositions);
+
         return new SequentialAction(
+                new ActionUtil.ServoPositionAction(slidePivot, slidePivotPosition, "slidePivot"),
                 new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_2, "latch"),
                 new Intake.UpdatePixelCountAction(-2),
                 new OuttakeLatchStateAction(OuttakeLatchState.LATCH_2)

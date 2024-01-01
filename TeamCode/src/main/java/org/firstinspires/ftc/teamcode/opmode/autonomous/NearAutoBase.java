@@ -47,10 +47,9 @@ public abstract class NearAutoBase extends AutoBase {
                           )
                       ),
                       new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_position"),
-                      new MecanumDrive.UpdateDrivePoseAction(drive, this.visionPortal2, this.aprilTag),
                       outtake.prepareToScore(),
                       new SleepAction(0.5),
-                      outtake.latchScore2(),
+                      outtake.latchScore1(),
                       intake.stackIntakeLinkageDown(),
                       new SleepAction(1.0),
                       outtake.afterScore(),
@@ -64,7 +63,7 @@ public abstract class NearAutoBase extends AutoBase {
 
                               // to score the purple pixel on the spike
                               drive.actionBuilder(backdrop[SPIKE])
-                                      .strafeTo(spike[SPIKE].position, drive.slowVelConstraint,drive.slowAccelConstraint)
+                                      .strafeToLinearHeading(spike[SPIKE].position, spike[SPIKE].heading, drive.slowVelConstraint,drive.slowAccelConstraint)
                                       .build()
                       ),
                       new MecanumDrive.DrivePoseLoggingAction(drive, "spike_position"),
@@ -78,9 +77,12 @@ public abstract class NearAutoBase extends AutoBase {
                               outtake.prepareToTransfer(),
                               drive.actionBuilder(spike[SPIKE])
                                       .setReversed(true)
-                                      .strafeTo(parking.position)
+                                      .strafeToLinearHeading(parking.position, parking.heading)
                                       .build()
                       ),
+
+//                      new SleepAction(1.0),
+//                      new MecanumDrive.UpdateDrivePoseAction(drive, this.visionPortal2, this.aprilTag),
                      new MecanumDrive.DrivePoseLoggingAction(drive, "parking_position")
               )
       );
