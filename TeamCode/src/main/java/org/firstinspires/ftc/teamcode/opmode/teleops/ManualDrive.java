@@ -288,7 +288,7 @@ public class ManualDrive extends LinearOpMode {
         Vector2d input = new Vector2d(input_x, input_y);
         drive.setDrivePowers(new PoseVelocity2d(input, input_turn));
 
-        if (input_x > 0.05 && isSlideOut && Intake.pixelsCount == 0 && pixelScored) {
+        if (input_x > 0.6 && isSlideOut && Intake.pixelsCount == 0 && pixelScored) {
             retractSlide();
         }
 

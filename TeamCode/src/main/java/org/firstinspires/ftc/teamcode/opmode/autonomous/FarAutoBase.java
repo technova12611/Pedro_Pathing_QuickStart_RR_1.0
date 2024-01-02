@@ -93,9 +93,7 @@ public abstract class FarAutoBase extends AutoBase {
                                     .strafeTo(crossFieldAlignment[SPIKE].position,drive.slowVelConstraint,drive.slowAccelConstraint)
                                     .build(),
 
-                            new MecanumDrive.DrivePoseLoggingAction(drive, "crossFieldAlignment", true),
-
-                            intake.prepareTeleOpsIntake()
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "crossFieldAlignment", true)
                     )
             );
 
@@ -146,10 +144,7 @@ public abstract class FarAutoBase extends AutoBase {
                             drive.actionBuilder(stackIntake[SPIKE])
                                     .strafeTo(crossFieldAlignment[SPIKE].position,drive.slowVelConstraint,drive.slowAccelConstraint)
                                     .build(),
-                            new MecanumDrive.DrivePoseLoggingAction(drive, "cross_field_alignment", true),
-
-                            intake.prepareTeleOpsIntake()
-
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "cross_field_alignment", true)
                     )
             );
 
@@ -221,15 +216,18 @@ public abstract class FarAutoBase extends AutoBase {
                                     .strafeToLinearHeading(crossFieldAlignment[SPIKE].position, crossFieldAlignment[SPIKE].heading,drive.slowVelConstraint,drive.slowAccelConstraint)
                                     .build(),
 
-                            new MecanumDrive.DrivePoseLoggingAction(drive, "cross_field_alignment", true),
-
-                            intake.prepareTeleOpsIntake()
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "cross_field_alignment", true)
 
                     )
             );
         }
 
-        sched.addAction(new SleepAction(farSideAutoWaitTimeInSeconds));
+        sched.addAction(
+
+        new SequentialAction(
+                new SleepAction(0.5),
+                intake.prepareTeleOpsIntake(),
+                new SleepAction(farSideAutoWaitTimeInSeconds)));
 
         // Move to the backdrop side, and potentially add a configurable sleep time
         //-------------------------------------------------------------------------
@@ -282,10 +280,10 @@ public abstract class FarAutoBase extends AutoBase {
                         outtake.latchScore1(),
                         new SleepAction(0.75),
                         outtake.afterScore(),
-                        new SleepAction(0.3),
+                        new SleepAction(0.5),
 
                         outtake.prepareToSlide(),
-                        new SleepAction(0.3),
+                        new SleepAction(0.5),
 
                         new MecanumDrive.DrivePoseLoggingAction(drive, "score_yellow_preload"),
                         drive.actionBuilder(backdrop[SPIKE])
@@ -302,9 +300,9 @@ public abstract class FarAutoBase extends AutoBase {
                         new SleepAction(0.75),
 
                         outtake.afterScore(),
-                        new SleepAction(0.25),
+                        new SleepAction(0.5),
                         outtake.prepareToSlide(),
-                        new SleepAction(0.25),
+                        new SleepAction(0.5),
                         new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_score_end")
                 )
         );

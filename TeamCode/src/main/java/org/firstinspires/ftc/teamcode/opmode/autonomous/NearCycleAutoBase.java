@@ -61,16 +61,17 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         intake.stackIntakeLinkageDown(),
                         outtake.afterScore(),
                         new SleepAction(0.25),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "end_of_scoring_position"),
                         new ParallelAction(
-                            new SequentialAction(
-                                new SleepAction(0.2),
-                                outtake.retractOuttake()
-                            ),
+                                new SequentialAction(
+                                        new SleepAction(0.2),
+                                        outtake.retractOuttake()
+                                ),
 
-                            // to score the purple pixel on the spike
-                            drive.actionBuilder(backdrop[SPIKE])
-                                    .strafeToLinearHeading(spike[SPIKE].position, spike[SPIKE].heading, this.drive.highSpeedVelConstraint, this.drive.highSpeedAccelConstraint)
-                                    .build()
+                                // to score the purple pixel on the spike
+                                drive.actionBuilder(backdrop[SPIKE])
+                                        .strafeToLinearHeading(spike[SPIKE].position, spike[SPIKE].heading, this.drive.highSpeedVelConstraint, this.drive.highSpeedAccelConstraint)
+                                        .build()
                         ),
 
                         new MecanumDrive.DrivePoseLoggingAction(drive, "spike_position"),
@@ -80,50 +81,46 @@ public abstract class NearCycleAutoBase extends AutoBase {
                 )
         );
 
-        sched.addAction(
-                new SequentialAction(
-                new ParallelAction(
-                        outtake.retractOuttake(),
-                        intake.prepareTeleOpsIntake(),
-                        drive.actionBuilder(spike[SPIKE]) //spike[SPIKE]
-                                .strafeToLinearHeading(cycleStart[SPIKE].position, cycleStart[SPIKE].heading, this.drive.highSpeedVelConstraint, this.drive.highSpeedAccelConstraint)
-                                .build()
-                        ),
-
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "start_cycle_position", true)
-                )
-        );
-//
-//        // do the first cycle from the spike position
-//        cyclePixelFromStack(spike[SPIKE]);
-//
-//        // do the 2nd cycle from the cycle drop position
-//        cyclePixelFromStack(cycleScore[SPIKE]);
-//
-//        sched.addAction(new ParallelAction(
-//                        new SequentialAction(
-//                                outtake.retractOuttake(),
-//                                new SleepAction(0.5),
-//                                new MecanumDrive.DrivePoseLoggingAction(drive, "slides_retracted_completed"),
-//                                intake.prepareTeleOpsIntake(),
-//                                outtake.prepareToTransfer()
+//        sched.addAction(
+//                new SequentialAction(
+//                new ParallelAction(
+//                        outtake.retractOuttake(),
+//                        intake.prepareTeleOpsIntake(),
+//                        drive.actionBuilder(spike[SPIKE]) //spike[SPIKE]
+//                                .strafeToLinearHeading(cycleStart[SPIKE].position, cycleStart[SPIKE].heading, this.drive.highSpeedVelConstraint, this.drive.highSpeedAccelConstraint)
+//                                .build()
 //                        ),
 //
-//                        new SequentialAction(
-//
-//                                new MecanumDrive.DrivePoseLoggingAction(drive, "start_of_parking"),
-//                                // to score the purple pixel on the spike
-//                                drive.actionBuilder(cycleScore[SPIKE])
-//                                        .strafeTo(parking.position)
-//                                        .build(),
-//                                new MecanumDrive.DrivePoseLoggingAction(drive, "end_of_parking")
-//                        )
+//                        new MecanumDrive.DrivePoseLoggingAction(drive, "start_cycle_position", true)
 //                )
 //        );
-
-
 //
-//                new MecanumDrive.DrivePoseLoggingAction(drive, "auto_end_position", true));
+        // do the first cycle from the spike position
+        cyclePixelFromStack(spike[SPIKE]);
+
+        // do the 2nd cycle from the cycle drop position
+        cyclePixelFromStack(cycleScore[SPIKE]);
+
+        sched.addAction(new ParallelAction(
+                        new SequentialAction(
+                                outtake.retractOuttake(),
+                                new SleepAction(0.5),
+                                new MecanumDrive.DrivePoseLoggingAction(drive, "slides_retracted_completed"),
+                                intake.prepareTeleOpsIntake(),
+                                outtake.prepareToTransfer()
+                        ),
+
+                        new SequentialAction(
+
+                                new MecanumDrive.DrivePoseLoggingAction(drive, "start_of_parking"),
+                                // to score the purple pixel on the spike
+                                drive.actionBuilder(cycleScore[SPIKE])
+                                        .strafeTo(parking.position)
+                                        .build(),
+                                new MecanumDrive.DrivePoseLoggingAction(drive, "end_of_parking")
+                        )
+                )
+        );
     }
 
     private void cyclePixelFromStack(Pose2d startingPosition) {
@@ -151,14 +148,14 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                                 this.drive.highSpeedVelConstraint, this.drive.highSpeedAccelConstraint)
                                         .build(),
                                 new SequentialAction(
-                                        new SleepAction(2.0),
+                                        new SleepAction(1.8),
                                         outtake.prepareToTransfer(),
                                         new SleepAction(1.0),
                                         intake.stackIntakeLinkageDown()
                                 )
                         ),
 
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "stack_alignment"),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "stack_alignment_position"),
 
                         // drive to the stack
                         new ParallelAction(
@@ -168,7 +165,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                 intake.intakeOn()
                         ),
 
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_start"),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_start_position"),
 
                         // intake the pixels from the stack
                         intake.intakeTwoStackedPixels(),
@@ -191,13 +188,13 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                 new SequentialAction(
                                         new SleepAction(0.5),
                                         intake.stackIntakeLinkageUp(),
-                                        new SleepAction(2.0),
+                                        new SleepAction(1.8),
                                         intake.prepareTeleOpsIntake(),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "Intake_off")
                                 )
                         ),
 
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_move_to_score"),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "Before_backdrop_score"),
 
                         // move to backdrop scoring position
                         new ParallelAction(
