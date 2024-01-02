@@ -182,9 +182,9 @@ public class Intake {
     public Action intakeSlowdown() {
         Log.d("Intake_Motor","Intake is slowing down");
         return new SequentialAction(
-                new IntakeStateAction(IntakeState.ON),
-                new ActionUtil.CRServoAction(bottomRollerServo, -1.0),
-                new ActionUtil.DcMotorExPowerAction(intakeMotor, -(INTAKE_SPEED / 1000.0)*0.25)
+                new ActionUtil.DcMotorExPowerAction(intakeMotor, (INTAKE_SPEED / 1000.0)*0.4),
+                new SleepAction(0.4),
+                new ActionUtil.DcMotorExPowerAction(intakeMotor, INTAKE_SPEED / 1000.0)
         );
     }
 

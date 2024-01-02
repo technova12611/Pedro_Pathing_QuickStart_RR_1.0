@@ -73,7 +73,6 @@ public abstract class AutoBase extends LinearOpMode {
         this.drive = new MecanumDrive(hardwareMap, Memory.LAST_POSE);
         this.intake = new Intake(hardwareMap);
         this.outtake = new Outtake(hardwareMap);
-//        this.vision = new Vision(hardwareMap);
         this.drone = new Drone(hardwareMap);
         this.hang = new Hang(hardwareMap);
 
@@ -100,13 +99,11 @@ public abstract class AutoBase extends LinearOpMode {
                 .enableLiveView(true)
                 .setAutoStopLiveView(true)
                 .build();
-
-        // init 2nd webcam to detect Backdrop apriltags
-//        initAprilTag();
-
         onInit();
 
         while (opModeInInit()) {
+            g1.update();
+
             side = propPipeline.getLocation();
 
             SPIKE = side.ordinal();
@@ -204,14 +201,6 @@ public abstract class AutoBase extends LinearOpMode {
 
         drive.updatePoseEstimate();
 
-//        try {
-//            if (visionPortal2 != null) {
-//                visionPortal2.close();
-//            }
-//        } catch(Exception e) {
-//            //
-//        }
-
         // end of the auto run
         // keep position and settings in memory for TeleOps
         //--------------------------------------------------
@@ -232,14 +221,6 @@ public abstract class AutoBase extends LinearOpMode {
             }
             idle();
         }
-    }
-    private void initAprilTag() {
-        // Create the AprilTag processor the easy way.
-        aprilTag = AprilTagProcessor.easyCreateWithDefaults();
-
-        // Create the vision portal the easy way.
-        visionPortal2 = VisionPortal.easyCreateWithDefaults(
-                hardwareMap.get(WebcamName.class, "Webcam 2"), aprilTag);
     }
 
     // the following needs to be implemented by the real auto program
