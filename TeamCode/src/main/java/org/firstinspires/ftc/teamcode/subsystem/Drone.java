@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystem;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -38,6 +39,13 @@ public class Drone {
                 new SleepAction(0.5),
                 new ActionUtil.ServoPositionAction(latch, LATCH_SCORED),
                 new SleepAction(0.6),
+                new ActionUtil.ServoPositionAction(tilt, TILT_INIT),
+                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED)
+        );
+    }
+
+    public Action initDrone() {
+        return new ParallelAction(
                 new ActionUtil.ServoPositionAction(tilt, TILT_INIT),
                 new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED)
         );
