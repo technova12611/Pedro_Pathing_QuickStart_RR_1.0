@@ -40,7 +40,7 @@ public class ManualDrive extends LinearOpMode {
     public static double SLOW_TURN_SPEED = 0.3;
     public static double SLOW_DRIVE_SPEED = 0.3;
 
-    public static double STRAFE_DISTANCE = 5.0;
+    public static double STRAFE_DISTANCE = 3.2;
     private SmartGameTimer smartGameTimer;
     private GamePadController g1, g2;
     private MecanumDrive drive;
@@ -68,6 +68,8 @@ public class ManualDrive extends LinearOpMode {
     boolean pixelScored = false;
 
     private Double start_y = null;
+
+    boolean strafeToAlign = false;
 
     Gamepad.LedEffect redEffect = new Gamepad.LedEffect.Builder()
             .addStep(1, 0, 0, 750) // Show red for 250ms
@@ -295,6 +297,17 @@ public class ManualDrive extends LinearOpMode {
             retractSlide();
         }
 
+        if(isSlideOut) {
+            if(Math.abs(input_y) > 0.0) {
+                sched.queueAction(outtake.strafeToAlign());
+                strafeToAlign = true;
+            }
+            else if(strafeToAlign){
+                sched.queueAction(outtake.prepareToScore());
+                strafeToAlign = false;
+            }
+        }
+
         telemetry.addData("drive_power", "input_x: %3.2f | input_y: %3.2f | speed: %3.2f", input_x, input_y, speed);
     }
 
@@ -399,8 +412,8 @@ public class ManualDrive extends LinearOpMode {
             if(isSlideOut) {
                 autoActionSched.addAction(
                         new SequentialAction(
-                                outtake.afterScore(),
-                                new SleepAction(0.15),
+                                outtake.strafeToAlign(),
+                                new SleepAction(0.2),
                                 drive.actionBuilder(drive.pose)
                                         .strafeToConstantHeading(new Vector2d(drive.pose.position.x, drive.pose.position.y + strafeDistance))
                                         .build(),

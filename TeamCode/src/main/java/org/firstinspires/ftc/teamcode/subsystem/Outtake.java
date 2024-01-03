@@ -60,10 +60,12 @@ public class Outtake {
     public static double SLIDE_PIVOT_DUMP = 0.238;
 
     public static double SLIDE_PIVOT_DUMP_1 = 0.248;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.68;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.65;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.58;
 
-    public static double SLIDE_PIVOT_DUMP_2 = 0.255;
+    public static double SLIDE_PIVOT_DUMP_2 = 0.258;
+
+    public static double SLIDE_PIVOT_STRAFE = 0.30;
 
     public static double SLIDE_PIVOT_DUMP_HIGH = 0.10;
 
@@ -230,6 +232,12 @@ public class Outtake {
         );
     }
 
+    public Action strafeToAlign() {
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_STRAFE, "slidePivot")
+        );
+    }
+
     public Action latchScore0() {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_1, "latch"),
@@ -348,9 +356,6 @@ public class Outtake {
 
         double outtakeDumpPosition = isAuto?OUTTAKE_PIVOT_DUMP_LOW:OUTTAKE_PIVOT_DUMP_MID;
         double slideDumpPosition = SLIDE_PIVOT_DUMP;
-
-        Log.d("Outtake_Pivot_Servo", "Outtake Dump Servo Position: " + String.format("%.2f", outtakeDumpPosition));
-        Log.d("Slide_Pivot_Servo", "Slide Dump Servo Position: " + String.format("%.2f", slideDumpPosition));
 
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
