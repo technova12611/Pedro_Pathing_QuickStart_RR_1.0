@@ -33,7 +33,7 @@ public class Outtake {
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
     public static int OUTTAKE_SLIDE_MID = 1250;
     public static int OUTTAKE_SLIDE_CYCLES_ONE = 1000;
-    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1150;
+    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1170;
     public static int OUTTAKE_SLIDE_LOW = 855;
     public static int OUTTAKE_SLIDE_INIT = 0;
 
@@ -55,7 +55,7 @@ public class Outtake {
 
     public static double OUTTAKE_PIVOT_DUMP_VERY_HIGH = 0.62;
 
-    public static double SLIDE_PIVOT_INIT = 0.439;
+    public static double SLIDE_PIVOT_INIT = 0.43;
     public static double SLIDE_PIVOT_SLIDING = 0.52;
     public static double SLIDE_PIVOT_DUMP = 0.238;
 
@@ -198,7 +198,9 @@ public class Outtake {
                 new ParallelAction(
                     outtakeWireDown(),
                     this.slide.setTargetPositionAction(OUTTAKE_SLIDE_INIT, "outtakeSlide")
-                )
+                ),
+                new SleepAction(0.5),
+                prepareToTransfer()
         );
     }
 

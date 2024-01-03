@@ -12,6 +12,7 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.VelConstraint;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -39,7 +40,7 @@ public class ManualDrive extends LinearOpMode {
     public static double SLOW_TURN_SPEED = 0.3;
     public static double SLOW_DRIVE_SPEED = 0.3;
 
-    public static double STRAFE_DISTANCE = 3.0;
+    public static double STRAFE_DISTANCE = 5.0;
     private SmartGameTimer smartGameTimer;
     private GamePadController g1, g2;
     private MecanumDrive drive;
@@ -65,6 +66,8 @@ public class ManualDrive extends LinearOpMode {
     long startTime = 0L;
 
     boolean pixelScored = false;
+
+    private Double start_y = null;
 
     Gamepad.LedEffect redEffect = new Gamepad.LedEffect.Builder()
             .addStep(1, 0, 0, 750) // Show red for 250ms
@@ -146,9 +149,9 @@ public class ManualDrive extends LinearOpMode {
             pixelDetection();
 
             drive.updatePoseEstimate();
-            sched.update();
             outtake.update();
             intake.update();
+            sched.update();
 
             backdropTouchedDetection();
 
@@ -288,7 +291,7 @@ public class ManualDrive extends LinearOpMode {
         Vector2d input = new Vector2d(input_x, input_y);
         drive.setDrivePowers(new PoseVelocity2d(input, input_turn));
 
-        if (input_x > 0.4 && isSlideOut && Intake.pixelsCount == 0 && pixelScored) {
+        if (input_x > 0.3 && isSlideOut && Intake.pixelsCount == 0 && pixelScored) {
             retractSlide();
         }
 
@@ -376,6 +379,12 @@ public class ManualDrive extends LinearOpMode {
             }
         }
 
+        if(start_y != null) {
+            this.drive.updatePoseEstimate();
+            Log.d("ManualDrive", "Pose after strafe: " + new PoseMessage(this.drive.pose) + " | actual=" + (drive.pose.position.y - start_y));
+            start_y = null;
+        }
+
         // move left and right by one slot
         if (g1.dpadLeftOnce() || g1.dpadRightOnce()) {
 
@@ -383,24 +392,28 @@ public class ManualDrive extends LinearOpMode {
 
             double strafeDistance = (g1.dpadLeftOnce() ? STRAFE_DISTANCE : -STRAFE_DISTANCE) * multiplier;
 
-            autoRunSched = new AutoActionScheduler(this::update);
             Log.d("ManualDrive", "Pose before strafe: " + new PoseMessage(this.drive.pose) + " | target=" + strafeDistance);
-            double start_y = drive.pose.position.y;
-            autoRunSched.addAction(
-                    new SequentialAction(
-                            outtake.afterScore(),
-                            drive.actionBuilder(drive.pose)
-                                    .strafeToConstantHeading(new Vector2d(drive.pose.position.x, drive.pose.position.y + strafeDistance),
-                                            velConstraintOverride,
-                                            accelConstraintOverride)
-                                    .build(),
-                            outtake.prepareToScore())
+            start_y = drive.pose.position.y;
 
-            );
+            AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);
+            if(isSlideOut) {
+                autoActionSched.addAction(
+                        new SequentialAction(
+                                outtake.afterScore(),
+                                new SleepAction(0.15),
+                                drive.actionBuilder(drive.pose)
+                                        .strafeToConstantHeading(new Vector2d(drive.pose.position.x, drive.pose.position.y + strafeDistance))
+                                        .build(),
+                                outtake.prepareToScore())
+                );
+            } else {
+                autoActionSched.addAction(
+                                drive.actionBuilder(drive.pose)
+                                        .strafeToConstantHeading(new Vector2d(drive.pose.position.x, drive.pose.position.y + strafeDistance))
+                                        .build());
+            }
 
-            autoRunSched.run();
-
-            Log.d("ManualDrive", "Pose after strafe: " + new PoseMessage(this.drive.pose) + " | actual=" + (drive.pose.position.y - start_y));
+            autoActionSched.run();
         }
 
         // drone launch
@@ -467,7 +480,6 @@ public class ManualDrive extends LinearOpMode {
     }
 
     final public void update() {
-        this.drive.updatePoseEstimate();
         telemetry.update();
     }
 
