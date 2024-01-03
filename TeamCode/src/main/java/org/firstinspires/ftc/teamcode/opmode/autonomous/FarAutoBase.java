@@ -222,13 +222,6 @@ public abstract class FarAutoBase extends AutoBase {
             );
         }
 
-        sched.addAction(
-
-        new SequentialAction(
-                new SleepAction(0.5),
-                intake.prepareTeleOpsIntake(),
-                new SleepAction(farSideAutoWaitTimeInSeconds)));
-
         // Move to the backdrop side, and potentially add a configurable sleep time
         //-------------------------------------------------------------------------
         sched.addAction(

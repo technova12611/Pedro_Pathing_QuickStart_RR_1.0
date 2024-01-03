@@ -27,7 +27,7 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_ABOVE_LEVEL_2 = 2150;
     public static int OUTTAKE_SLIDE_BELOW_LEVEL_2 = 1850;
     public static int OUTTAKE_SLIDE_ABOVE_LEVEL_1 = 1550;
-    public static int OUTTAKE_SLIDE_BELOW_LEVEL_1 = 1250;
+    public static int OUTTAKE_SLIDE_BELOW_LEVEL_1 = 1100;
 
     public static int OUTTAKE_SLIDE_HIGH = OUTTAKE_SLIDE_ABOVE_LEVEL_2;
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
@@ -163,8 +163,6 @@ public class Outtake {
         if (slidePIDEnabled) {
             slide.update();
         }
-
- //       getServoPositions();
     }
 
     public Action moveSliderBlocking(double increment) {
