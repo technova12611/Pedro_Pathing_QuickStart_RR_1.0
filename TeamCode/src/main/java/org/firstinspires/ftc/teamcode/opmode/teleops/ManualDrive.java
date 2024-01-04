@@ -379,14 +379,23 @@ public class ManualDrive extends LinearOpMode {
             isAprilTagDetected = false;
             final double yaw =  AprilTag.yaw.doubleValue();
             Log.d("AprilTag_Localization", String.format("%3.2f", yaw));
-            ExecutorService executorService = Executors.newSingleThreadExecutor();
+//            ExecutorService executorService = Executors.newSingleThreadExecutor();
+//
+//            executorService.submit( () -> {
+//                Actions.runBlocking(
+//                        drive.actionBuilder(drive.pose)
+//                                .turn(Math.toRadians(yaw))
+//                                .build());
+//            });
 
-            executorService.submit( () -> {
-                Actions.runBlocking(
-                        drive.actionBuilder(drive.pose)
-                                .turn(Math.toRadians(yaw))
-                                .build());
-            });
+            AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);
+            autoActionSched.addAction(drive.actionBuilder(drive.pose)
+                    .turn(Math.toRadians(yaw))
+                    .build());
+
+            autoActionSched.run();
+
+            AprilTag.yaw = null;
         }
 
         if (Math.abs(g1.right_stick_y) > 0.25 && isSlideOut) {
@@ -518,6 +527,7 @@ public class ManualDrive extends LinearOpMode {
     }
 
     final public void update() {
+        outtake.update();
         telemetry.update();
     }
 
