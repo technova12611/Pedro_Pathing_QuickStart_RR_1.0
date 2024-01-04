@@ -20,6 +20,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.messages.PoseMessage;
+import org.firstinspires.ftc.teamcode.subsystem.AprilTag;
 import org.firstinspires.ftc.teamcode.subsystem.Hang;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Memory;
@@ -31,6 +32,8 @@ import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 import org.firstinspires.ftc.teamcode.utils.software.SmartGameTimer;
 
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Config
 @TeleOp(group = "Drive", name = "Manual Drive")
@@ -50,6 +53,8 @@ public class ManualDrive extends LinearOpMode {
     private Outtake outtake;
     private Hang hang;
     private Drone drone;
+
+    private AprilTag aprilTag;
 
     Long intakeReverseStartTime = null;
     Long intakeSlowdownStartTime = null;
@@ -102,6 +107,7 @@ public class ManualDrive extends LinearOpMode {
         outtake = new Outtake(hardwareMap);
         hang = new Hang(hardwareMap);
         drone = new Drone(hardwareMap);
+        aprilTag = new AprilTag(hardwareMap, telemetry);
 
         smartGameTimer = new SmartGameTimer(false);
 
@@ -117,6 +123,7 @@ public class ManualDrive extends LinearOpMode {
         outtake.initialize();
         drone.initialize();
         hang.initialize();
+        aprilTag.initialize();
 
         // Ready!
         telemetry.addLine("Manual Drive is Ready!");
@@ -342,6 +349,7 @@ public class ManualDrive extends LinearOpMode {
     }
 
     boolean isSlideOut = false;
+    boolean isAprilTagDetected = false;
     boolean isStackIntakeOn = false;
 
     private void subsystemControls() {
@@ -392,7 +400,32 @@ public class ManualDrive extends LinearOpMode {
                 sched.queueAction(outtake.extendOuttakeTeleOps());
                 sched.queueAction(new SleepAction(0.5));
                 sched.queueAction(outtake.prepareToScore());
+                sched.queueAction(aprilTag.updatePosition());
+                isAprilTagDetected = true;
             }
+        }
+
+        if(isSlideOut && isAprilTagDetected && AprilTag.yaw != null) {
+            isAprilTagDetected = false;
+            final double yaw =  AprilTag.yaw.doubleValue();
+            Log.d("AprilTag_Localization", String.format("%3.2f", yaw));
+//            ExecutorService executorService = Executors.newSingleThreadExecutor();
+//
+//            executorService.submit( () -> {
+//                Actions.runBlocking(
+//                        drive.actionBuilder(drive.pose)
+//                                .turn(Math.toRadians(yaw))
+//                                .build());
+//            });
+
+            AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);
+            autoActionSched.addAction(drive.actionBuilder(drive.pose)
+                    .turn(Math.toRadians(yaw))
+                    .build());
+
+            autoActionSched.run();
+
+            AprilTag.yaw = null;
         }
 
         if (Math.abs(g1.right_stick_y) > 0.25 && isSlideOut) {
@@ -464,8 +497,9 @@ public class ManualDrive extends LinearOpMode {
             sched.queueAction(intake.stackIntakeLinkageDown());
             sched.queueAction(new SleepAction(0.25));
             sched.queueAction(drone.scoreDrone());
-            sched.queueAction(new SleepAction(0.25));
+            sched.queueAction(new SleepAction(0.6));
             sched.queueAction(intake.stackIntakeLinkageUp());
+            sched.queueAction(drone.initDrone());
         }
 
         // stack intake
