@@ -211,14 +211,16 @@ public class Outtake {
     public Action latchScore1() {
         double slideServoVoltage = slidePivotVoltage.getVoltage();
         double outtakeServoVoltage = outtakePivotVoltage.getVoltage();
-        double slidePivotPosition = SLIDE_PIVOT_DUMP;
-        if(slideServoVoltage > SLIDE_PIVOT_DUMP_VOLTAGE_MAX) {
-            slidePivotPosition = SLIDE_PIVOT_DUMP_1;
+        double slidePivotPosition = slidePivot.getPosition();
+        if(slidePivotPosition > SLIDE_PIVOT_DUMP_HIGH) {
+            if (slideServoVoltage > SLIDE_PIVOT_DUMP_VOLTAGE_MAX ) {
+                slidePivotPosition = SLIDE_PIVOT_DUMP_1;
+            }
         }
 
         String servoPositions = "SlidePivot voltage: " + String.format("%.2f", slideServoVoltage) +
         " | OuttakePivot voltage: " + String.format("%.2f", outtakeServoVoltage);
-        Log.d("SlidePivot_Logger", servoPositions);
+        Log.d("SlidePivot_Dump_Logger", servoPositions);
 
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(slidePivot, slidePivotPosition, "slidePivot"),
@@ -248,17 +250,20 @@ public class Outtake {
     }
 
     public Action latchScore2() {
+
         double slideServoVoltage = slidePivotVoltage.getVoltage();
         double outtakeServoVoltage = outtakePivotVoltage.getVoltage();
-        double slidePivotPosition = SLIDE_PIVOT_DUMP;
-        if(slideServoVoltage > SLIDE_PIVOT_DUMP_VOLTAGE_MAX) {
-            slidePivotPosition = SLIDE_PIVOT_DUMP_1;
+        double slidePivotPosition = slidePivot.getPosition();
+        if(slidePivotPosition > SLIDE_PIVOT_DUMP_HIGH) {
+            if (slideServoVoltage > SLIDE_PIVOT_DUMP_VOLTAGE_MAX ) {
+                slidePivotPosition = SLIDE_PIVOT_DUMP_1;
+            }
         }
 
         String servoPositions = "SlidePivot voltage: " + String.format("%.2f", slideServoVoltage) +
                 " | OuttakePivot voltage: " + String.format("%.2f", outtakeServoVoltage);
 
-        Log.d("SlidePivot_Logger", servoPositions);
+        Log.d("SlidePivot_Dump_Logger", servoPositions);
 
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(slidePivot, slidePivotPosition, "slidePivot"),

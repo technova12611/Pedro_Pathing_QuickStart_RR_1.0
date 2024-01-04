@@ -73,9 +73,7 @@ public class ManualDrive extends LinearOpMode {
     boolean pixelScored = false;
 
     private Double start_y = null;
-
     boolean strafeToAlign = false;
-
     public static boolean logLoopTime = false;
 
     Gamepad.LedEffect redEffect = new Gamepad.LedEffect.Builder()
@@ -93,6 +91,7 @@ public class ManualDrive extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
+        long start_time = System.currentTimeMillis();
         telemetry.addLine("Initializing...");
         telemetry.update();
 
@@ -123,10 +122,14 @@ public class ManualDrive extends LinearOpMode {
         outtake.initialize();
         drone.initialize();
         hang.initialize();
+
+        long current_time = System.currentTimeMillis();
+        telemetry.addLine("Initializing AprilTag: " + (current_time - start_time));
+        telemetry.update();
         aprilTag.initialize();
 
         // Ready!
-        telemetry.addLine("Manual Drive is Ready!");
+        telemetry.addLine("Manual Drive is Ready! Complete in " + (System.currentTimeMillis() - start_time) + " (ms)");
         telemetry.addLine("Drive Pose: " + new PoseMessage(drive.pose));
         telemetry.update();
 
@@ -152,7 +155,7 @@ public class ManualDrive extends LinearOpMode {
 
         // Main loop
         while (opModeIsActive()) {
-            long start_time = System.currentTimeMillis();
+            start_time = System.currentTimeMillis();
 
             g1.update();
             g2.update();
@@ -179,7 +182,7 @@ public class ManualDrive extends LinearOpMode {
 
             intake.update();
             long current_time_5=System.currentTimeMillis();
-            Log.d("Loop_Logger", "intake.update() elapsed time: " + (current_time_5 - current_time_4));
+            logLoopTime( "intake.update() elapsed time: " + (current_time_5 - current_time_4));
 
             sched.update();
             long current_time_6=System.currentTimeMillis();
@@ -198,9 +201,12 @@ public class ManualDrive extends LinearOpMode {
             telemetry.addLine(hang.getCurrentPosition());
             telemetry.addData("Slide current position", outtake.getMotorCurrentPosition());
             telemetry.addData("Slide target position", outtake.getMotorTargetPosition());
+            telemetry.addLine(" --- Loop time: " + (System.currentTimeMillis() - start_time) + " (ms) ---");
             telemetry.update();
 
-            logLoopTime( " --- Loop time: " + (System.currentTimeMillis() - start_time) + " ---");
+            if(System.currentTimeMillis() - start_time > 50) {
+                Log.d("Loop_Logger", " --- Loop time: " + (System.currentTimeMillis() - start_time) + " ---");
+            }
         }
 
         // On termination
@@ -564,7 +570,7 @@ public class ManualDrive extends LinearOpMode {
     private void retractSlide() {
         isSlideOut = false;
         pixelScored = false;
-        sched.queueAction(new SequentialAction(outtake.latchScore0(), new SleepAction(0.2)));
+//        sched.queueAction(new SequentialAction(outtake.latchScore0(), new SleepAction(0.2)));
         sched.queueAction(outtake.retractOuttake());
     }
 
