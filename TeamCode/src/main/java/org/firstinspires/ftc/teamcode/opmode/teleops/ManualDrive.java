@@ -71,6 +71,8 @@ public class ManualDrive extends LinearOpMode {
 
     boolean strafeToAlign = false;
 
+    public static boolean logLoopTime = false;
+
     Gamepad.LedEffect redEffect = new Gamepad.LedEffect.Builder()
             .addStep(1, 0, 0, 750) // Show red for 250ms
             .build();
@@ -143,27 +145,55 @@ public class ManualDrive extends LinearOpMode {
 
         // Main loop
         while (opModeIsActive()) {
+            long start_time = System.currentTimeMillis();
+
             g1.update();
             g2.update();
 
             move();
+            long current_time_0=System.currentTimeMillis();
+            logLoopTime("Move() elapsed time: " + (current_time_0 - start_time));
+
             subsystemControls();
+            long current_time_1=System.currentTimeMillis();
+            logLoopTime( "subsystemControls() elapsed time: " + (current_time_1- current_time_0));
+
             pixelDetection();
+            long current_time_2=System.currentTimeMillis();
+            logLoopTime( "pixelDetection() elapsed time: " + (current_time_2 - current_time_1));
 
             drive.updatePoseEstimate();
+            long current_time_3=System.currentTimeMillis();
+            logLoopTime( "updatePoseEstimate() elapsed time: " + (current_time_3 - current_time_2));
+
             outtake.update();
+            long current_time_4=System.currentTimeMillis();
+            logLoopTime( "outtake.update() elapsed time: " + (current_time_4 - current_time_3));
+
             intake.update();
+            long current_time_5=System.currentTimeMillis();
+            Log.d("Loop_Logger", "intake.update() elapsed time: " + (current_time_5 - current_time_4));
+
             sched.update();
+            long current_time_6=System.currentTimeMillis();
+            logLoopTime( "sched.update() elapsed time: " + (current_time_6 - current_time_5));
 
             backdropTouchedDetection();
+            long current_time_7=System.currentTimeMillis();
+            logLoopTime( "backdropTouchedDetection elapsed time: " + (current_time_7 - current_time_6));
 
             telemetry.addData("Time left: ", smartGameTimer.formattedString() + " (" + smartGameTimer.status() + ")");
             //telemetry.addLine(intake.getStackServoPositions());
+            telemetry.addLine("Current Pixel count: " + Intake.pixelsCount +
+                    " | Total count: " + Intake.totalPixelCount + " | Prev count: " + prevPixelCount);
             telemetry.addLine(outtake.getServoPositions());
-            telemetry.addLine("Current Pixel count: " + Intake.pixelsCount + " | Total count: " + Intake.totalPixelCount + " | Prev count: " + prevPixelCount);
             telemetry.addLine("Intake state: " + intake.intakeState);
             telemetry.addLine(hang.getCurrentPosition());
+            telemetry.addData("Slide current position", outtake.getMotorCurrentPosition());
+            telemetry.addData("Slide target position", outtake.getMotorTargetPosition());
             telemetry.update();
+
+            logLoopTime( " --- Loop time: " + (System.currentTimeMillis() - start_time) + " ---");
         }
 
         // On termination
@@ -297,16 +327,16 @@ public class ManualDrive extends LinearOpMode {
             retractSlide();
         }
 
-        if(isSlideOut) {
-            if(Math.abs(input_y) > 0.0) {
-                sched.queueAction(outtake.strafeToAlign());
-                strafeToAlign = true;
-            }
-            else if(strafeToAlign){
-                sched.queueAction(outtake.prepareToScore());
-                strafeToAlign = false;
-            }
-        }
+//        if(isSlideOut) {
+//            if(Math.abs(input_y) > 0.0 && outtake.backdropTouched) {
+//                sched.queueAction(outtake.strafeToAlign());
+//                strafeToAlign = true;
+//            }
+//            else if(strafeToAlign){
+//                sched.queueAction(outtake.prepareToScore());
+//                strafeToAlign = false;
+//            }
+//        }
 
         telemetry.addData("drive_power", "input_x: %3.2f | input_y: %3.2f | speed: %3.2f", input_x, input_y, speed);
     }
@@ -493,6 +523,7 @@ public class ManualDrive extends LinearOpMode {
     }
 
     final public void update() {
+        outtake.update();
         telemetry.update();
     }
 
@@ -501,6 +532,12 @@ public class ManualDrive extends LinearOpMode {
         pixelScored = false;
         sched.queueAction(new SequentialAction(outtake.latchScore0(), new SleepAction(0.2)));
         sched.queueAction(outtake.retractOuttake());
+    }
+
+    private void logLoopTime(String msg) {
+        if(logLoopTime) {
+            Log.d("Loop_Logger", msg);
+        }
     }
 }
 

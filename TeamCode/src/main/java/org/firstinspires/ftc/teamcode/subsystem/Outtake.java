@@ -60,8 +60,8 @@ public class Outtake {
     public static double SLIDE_PIVOT_DUMP = 0.238;
 
     public static double SLIDE_PIVOT_DUMP_1 = 0.248;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.65;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.58;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.58;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.53;
 
     public static double SLIDE_PIVOT_DUMP_2 = 0.258;
 
@@ -165,6 +165,8 @@ public class Outtake {
         if (slidePIDEnabled) {
             slide.update();
         }
+
+        checkSlidePivotPosition();
     }
 
     public Action moveSliderBlocking(double increment) {
@@ -200,9 +202,9 @@ public class Outtake {
                 new ParallelAction(
                     outtakeWireDown(),
                     this.slide.setTargetPositionAction(OUTTAKE_SLIDE_INIT, "outtakeSlide")
-                ),
-                new SleepAction(0.5),
-                prepareToTransfer()
+                )//,
+//                new SleepAction(0.5),
+//                prepareToTransfer()
         );
     }
 
@@ -395,24 +397,39 @@ public class Outtake {
 
     public String getServoPositions() {
 
+//        double slideServoVoltage = slidePivotVoltage.getVoltage();
+//        double slideServoPosition = slidePivot.getPosition();
+//
+//        slidePivotVoltages.add(slideServoVoltage);
+//
+//        if(backdropTouched &&
+//            slidePivotVoltages.getMean() <= SLIDE_PIVOT_DUMP_VOLTAGE_MIN) {
+//            backdropTouched= false;
+//        } else if (slideServoPosition > SLIDE_PIVOT_DUMP_HIGH &&
+//                slidePivotVoltages.getMean() >= SLIDE_PIVOT_DUMP_VOLTAGE_MAX) {
+//            backdropTouched = true;
+//        }
+
+        return "SlidePivot: " + String.format("%.2f", slidePivot.getPosition()) +
+                " | OuttakePivot: " + String.format("%.2f", this.outtakePivot.getPosition()) +
+                " | Latch: " + String.format("%.2f", this.latch.getPosition()) +
+                " | SlidePivot voltage: " + String.format("%.2f", slidePivotVoltages.getMean()) +
+                " | backdropTouched: " + backdropTouched;
+    }
+
+    public void checkSlidePivotPosition() {
         double slideServoVoltage = slidePivotVoltage.getVoltage();
         double slideServoPosition = slidePivot.getPosition();
 
         slidePivotVoltages.add(slideServoVoltage);
 
         if(backdropTouched &&
-            slidePivotVoltages.getMean() <= SLIDE_PIVOT_DUMP_VOLTAGE_MIN) {
+                slidePivotVoltages.getMean() <= SLIDE_PIVOT_DUMP_VOLTAGE_MIN) {
             backdropTouched= false;
         } else if (slideServoPosition > SLIDE_PIVOT_DUMP_HIGH &&
                 slidePivotVoltages.getMean() >= SLIDE_PIVOT_DUMP_VOLTAGE_MAX) {
             backdropTouched = true;
         }
-
-        return "SlidePivot: " + String.format("%.2f", slideServoPosition) +
-                " | OuttakePivot: " + String.format("%.2f", this.outtakePivot.getPosition()) +
-                " | Latch: " + String.format("%.2f", this.latch.getPosition()) +
-                " | SlidePivot voltage: " + String.format("%.2f", slidePivotVoltages.getMean()) +
-                " | backdropTouched: " + backdropTouched;
     }
 
     public void resetSlideEncoder() {
@@ -423,4 +440,11 @@ public class Outtake {
         return backdropTouched;
     }
 
+    public int getMotorCurrentPosition() {
+        return this.slide.getCurrentPosition();
+    }
+
+    public int getMotorTargetPosition() {
+        return this.slide.getTargetPosition();
+    }
 }
