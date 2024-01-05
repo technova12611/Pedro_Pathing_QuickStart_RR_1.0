@@ -42,18 +42,18 @@ public abstract class NearAutoBase extends AutoBase {
 
                           outtake.prepareToSlide(),
                           new SequentialAction(
-                                  new SleepAction(1.5),
+                                  new SleepAction(1.25),
                               outtake.extendOuttakeLow()
                           )
                       ),
                       new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_position"),
-                      outtake.prepareToScore(),
+                      outtake.prepareToScoreCycle(),
                       new SleepAction(0.5),
                       outtake.latchScore1(),
                       intake.stackIntakeLinkageDown(),
                       new SleepAction(1.0),
                       outtake.afterScore(),
-                      new SleepAction(0.25),
+                      new SleepAction(0.35),
 
                       new ParallelAction(
                           new SequentialAction(

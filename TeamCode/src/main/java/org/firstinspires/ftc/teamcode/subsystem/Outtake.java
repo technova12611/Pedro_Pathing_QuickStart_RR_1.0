@@ -34,7 +34,9 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_MID = 1250;
     public static int OUTTAKE_SLIDE_CYCLES_ONE = 1000;
     public static int OUTTAKE_SLIDE_CYCLES_TWO = 1170;
-    public static int OUTTAKE_SLIDE_LOW = 855;
+
+    public static int OUTTAKE_SLIDE_FAR_LOW = 1070;
+    public static int OUTTAKE_SLIDE_LOW = 865;
     public static int OUTTAKE_SLIDE_INIT = 0;
 
     public static int OUTTAKE_SLIDE_INCREMENT= 250;
@@ -213,6 +215,7 @@ public class Outtake {
         double outtakeServoVoltage = outtakePivotVoltage.getVoltage();
         double slidePivotPosition = slidePivot.getPosition();
         if(slidePivotPosition > SLIDE_PIVOT_DUMP_HIGH) {
+            slidePivotPosition = SLIDE_PIVOT_DUMP;
             if (slideServoVoltage > SLIDE_PIVOT_DUMP_VOLTAGE_MAX ) {
                 slidePivotPosition = SLIDE_PIVOT_DUMP_1;
             }
@@ -255,6 +258,7 @@ public class Outtake {
         double outtakeServoVoltage = outtakePivotVoltage.getVoltage();
         double slidePivotPosition = slidePivot.getPosition();
         if(slidePivotPosition > SLIDE_PIVOT_DUMP_HIGH) {
+            slidePivotPosition = SLIDE_PIVOT_DUMP;
             if (slideServoVoltage > SLIDE_PIVOT_DUMP_VOLTAGE_MAX ) {
                 slidePivotPosition = SLIDE_PIVOT_DUMP_1;
             }
@@ -304,6 +308,13 @@ public class Outtake {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_MIDDLE, "outtakeWireServo"),
                 this.slide.setTargetPositionAction(OUTTAKE_SLIDE_CYCLES_TWO, "outtakeSlide")
+        );
+    }
+
+    public Action extendOuttakeFarLow() {
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_MIDDLE, "outtakeWireServo"),
+                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_FAR_LOW, "outtakeSlide")
         );
     }
 

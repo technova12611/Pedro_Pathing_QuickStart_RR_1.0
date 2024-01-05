@@ -18,12 +18,12 @@ import org.firstinspires.ftc.teamcode.roadrunner.ThreeDeadWheelLocalizer;
 
 public final class StrafeTest extends LinearOpMode {
     public static double distance = 24.0;
-    public static int mode = 0;
+    public static int mode = 2;
     @Override
     public void runOpMode() throws InterruptedException {
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, -Math.PI/2));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, Math.PI/2));
 
         TwoDeadWheelLocalizer localizer = (TwoDeadWheelLocalizer)drive.localizer;
 
@@ -35,10 +35,20 @@ public final class StrafeTest extends LinearOpMode {
 
         waitForStart();
 
-        Actions.runBlocking(
-            drive.actionBuilderSlow(drive.pose)
-                    .strafeTo(new Vector2d(distance,0))
-                    .build());
+        if(mode < 2) {
+            Actions.runBlocking(
+                    drive.actionBuilderSlow(drive.pose)
+                            .strafeTo(new Vector2d(distance, 0))
+                            .build());
+        }
+        else if (mode == 2) {
+            Actions.runBlocking(
+                    new SequentialAction(
+                            new SleepAction(1.0),
+                            drive.actionBuilderSlow(drive.pose)
+                                    .strafeToLinearHeading(new Vector2d(distance,distance), Math.toRadians(180))
+                                    .build()));
+        }
 
         if (mode == 1) {
             Actions.runBlocking(

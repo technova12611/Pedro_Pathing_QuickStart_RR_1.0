@@ -262,13 +262,13 @@ public abstract class FarAutoBase extends AutoBase {
                                         new SleepAction(0.2),
                                         outtake.prepareToSlide(),
                                         new SleepAction(0.5),
-                                        outtake.extendOuttakeLow()
+                                        outtake.extendOuttakeFarLow()
                                 )
                         ),
 
                         new MecanumDrive.DrivePoseLoggingAction(drive, "start_scoring"),
 
-                        outtake.prepareToScore(),
+                        outtake.prepareToScoreCycle(),
                         new SleepAction(0.5),
                         outtake.latchScore1(),
                         new SleepAction(0.75),
