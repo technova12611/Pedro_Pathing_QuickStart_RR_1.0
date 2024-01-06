@@ -44,9 +44,6 @@ import org.firstinspires.ftc.teamcode.roadrunner.messages.PoseMessage;
 import org.firstinspires.ftc.teamcode.roadrunner.TwoDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.lang.Math;
 import java.text.DecimalFormat;
@@ -59,7 +56,7 @@ public final class MecanumDrive {
 
     public static class Params {
         // drive model parameters
-        public double inPerTick = 0.002935; //0.002934; //24.0 / 8163.0;
+        public double inPerTick = 0.002948; //0.002934; //24.0 / 8163.0;
         public double lateralInPerTick = 0.00273;
         public double trackWidthTicks = 4665.3368763274475;//4810.861094343746;//4623.060031773916;//4620.300191769058; //4982.1078188621495; //4691.229665989946;
 

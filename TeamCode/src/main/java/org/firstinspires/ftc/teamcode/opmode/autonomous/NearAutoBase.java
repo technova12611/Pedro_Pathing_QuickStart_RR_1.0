@@ -33,6 +33,8 @@ public abstract class NearAutoBase extends AutoBase {
 
       sched.addAction(
               new SequentialAction(
+                      new MecanumDrive.DrivePoseLoggingAction(drive, "starting_position"),
+                      outtake.prepareToSlide(),
                       // to score yellow pixel on the backdrop
                       new ParallelAction(
                       drive.actionBuilder(drive.pose)
@@ -40,7 +42,7 @@ public abstract class NearAutoBase extends AutoBase {
                                       backdrop[SPIKE].heading, drive.slowVelConstraint,drive.slowAccelConstraint)
                               .build(),
 
-                          outtake.prepareToSlide(),
+
                           new SequentialAction(
                                   new SleepAction(1.25),
                               outtake.extendOuttakeLow()

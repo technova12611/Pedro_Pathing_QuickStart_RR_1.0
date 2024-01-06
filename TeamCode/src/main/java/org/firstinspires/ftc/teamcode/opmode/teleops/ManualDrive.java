@@ -278,14 +278,14 @@ public class ManualDrive extends LinearOpMode {
 
                 long elapsedTimeMs = System.currentTimeMillis() - intakeReverseStartTime.longValue();
 
-                if (elapsedTimeMs > 750 && elapsedTimeMs < 900 &&
+                if (elapsedTimeMs > 1000 && elapsedTimeMs < 1200 &&
                         intake.intakeState.equals(Intake.IntakeState.ON)) {
                     sched.queueAction(intake.intakeReverse());
                     Log.d("TeleOps_Pixel_detection", "Pixel count changed to "
                             + Intake.pixelsCount + ", reversing started at " + (intakeReverseStartTime - startTime));
                 }
 
-                if (elapsedTimeMs > 2500 &&
+                if (elapsedTimeMs > 2200 &&
                         intake.intakeState.equals(Intake.IntakeState.REVERSING)) {
                     sched.queueAction(intake.intakeOff());
                     intakeReverseStartTime = null;

@@ -83,6 +83,10 @@ public abstract class AutoBase extends LinearOpMode {
         drone.initialize();
         hang.initialize();
 
+        if(getFieldPosition() == FieldPosition.NEAR) {
+            outtake.prepareToSlide();
+        }
+
         Globals.COLOR = getAlliance();
 
         if(getFieldPosition() == FieldPosition.NEAR) {

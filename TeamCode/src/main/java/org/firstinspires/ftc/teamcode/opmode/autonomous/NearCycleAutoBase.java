@@ -37,15 +37,15 @@ public abstract class NearCycleAutoBase extends AutoBase {
         sched.addAction(
                 new SequentialAction(
                         new MecanumDrive.DrivePoseLoggingAction(drive, "starting_position"),
+                        outtake.prepareToSlide(),
                         // to score yellow pixel on the backdrop
                         new ParallelAction(
                                 drive.actionBuilder(drive.pose)
                                         .strafeToLinearHeading(backdrop[SPIKE].position, backdrop[SPIKE].heading)
                                         .build(),
 
-                                outtake.prepareToSlide(),
-
                                 new SequentialAction(
+
                                         new SleepAction(1.0),
                                         outtake.extendOuttakeLow()
                                 )
@@ -94,7 +94,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
 //                        new MecanumDrive.DrivePoseLoggingAction(drive, "start_cycle_position", true)
 //                )
 //        );
-//
+
         // do the first cycle from the spike position
         cyclePixelFromStack(spike[SPIKE]);
 

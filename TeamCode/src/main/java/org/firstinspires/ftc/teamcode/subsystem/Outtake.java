@@ -21,7 +21,7 @@ import org.firstinspires.ftc.teamcode.utils.software.MovingArrayList;
 
 @Config
 public class Outtake {
-    public static PIDCoefficients outtakePID = new PIDCoefficients(0.01, 0, 0.0004);
+    public static PIDCoefficients outtakePID = new PIDCoefficients(0.005, 0, 0.0001);
 
     public static int OUTTAKE_SLIDE_MAX = 2200;
     public static int OUTTAKE_SLIDE_ABOVE_LEVEL_2 = 2150;
@@ -47,7 +47,7 @@ public class Outtake {
 
     public static double OUTTAKE_PIVOT_REVERSE_DUMP = 0.01;
     public static double OUTTAKE_PIVOT_INIT = 0.18;
-    public static double OUTTAKE_PIVOT_SLIDING = 0.23;
+    public static double OUTTAKE_PIVOT_SLIDING = 0.22;
     public static double OUTTAKE_PIVOT_DUMP_LOW = 0.38;
     public static double OUTTAKE_PIVOT_DUMP_MID = 0.39;
 
@@ -62,8 +62,8 @@ public class Outtake {
     public static double SLIDE_PIVOT_DUMP = 0.238;
 
     public static double SLIDE_PIVOT_DUMP_1 = 0.248;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.57;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.52;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.59;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.55;
 
     public static double SLIDE_PIVOT_DUMP_2 = 0.258;
 
@@ -157,10 +157,10 @@ public class Outtake {
     public void initialize() {
         this.slide.setCurrentPosition(0);
         this.slide.setTargetPosition(0);
-        this.slidePivot.setPosition(SLIDE_PIVOT_INIT);
-        this.outtakePivot.setPosition(OUTTAKE_PIVOT_INIT);
         this.latch.setPosition(LATCH_CLOSED);
         this.outtakeWireServo.setPosition(OUTTAKE_WIRE_SAFE_DOWN);
+        this.slidePivot.setPosition(SLIDE_PIVOT_INIT);
+        this.outtakePivot.setPosition(OUTTAKE_PIVOT_INIT);
     }
 
     public void update() {
@@ -197,10 +197,16 @@ public class Outtake {
     }
 
     public Action retractOuttake() {
+
+        double sleepTime = 0.5;
+        if(!isAuto) {
+            sleepTime = 0.75;
+        }
+
         return new SequentialAction(
                 prepareToSlide(),
-                new SleepAction(0.3),
-                latchClosed(),
+                new SleepAction(sleepTime),
+ //               latchClosed(),
                 new ParallelAction(
                     outtakeWireDown(),
                     this.slide.setTargetPositionAction(OUTTAKE_SLIDE_INIT, "outtakeSlide")

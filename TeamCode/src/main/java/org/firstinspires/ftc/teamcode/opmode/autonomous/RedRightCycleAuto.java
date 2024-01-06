@@ -24,15 +24,15 @@ public class RedRightCycleAuto extends NearCycleAutoBase {
         };
 
         this.stackAlignment = new Pose2d(-49.0, -11.0, Math.toRadians(180));
-        this.stackIntake1 = new Pose2d(-55.8, -11.5, Math.toRadians(180));
-        this.stackIntake2 = new Pose2d(-56.7, -10.2, Math.toRadians(180));
-        this.safeTrussPassStop = new Pose2d(-49.0, -10.7, Math.toRadians(180));
+        this.stackIntake1 = new Pose2d(-55.3, -12.2, Math.toRadians(180));
+        this.stackIntake2 = new Pose2d(-56.0, -10.8, Math.toRadians(180));
+        this.safeTrussPassStop = new Pose2d(-49.0, -11.0, Math.toRadians(180));
         this.backdropAlignment = new Pose2d(39.0, -11.0, Math.toRadians(180));
 
         cycleScore = new Pose2d[] {
-                new Pose2d(47.9, -37.0, Math.toRadians(180)),
-                new Pose2d(47.9, -32.0, Math.toRadians(180)),
-                new Pose2d(47.9, -32.0, Math.toRadians(180))
+                new Pose2d(47.7, -36.0, Math.toRadians(180)),
+                new Pose2d(47.7, -32.0, Math.toRadians(180)),
+                new Pose2d(47.7, -32.0, Math.toRadians(180))
         };
 
         this.parking = new Pose2d(44.1, -20.0, Math.toRadians(180));

@@ -36,7 +36,7 @@ import org.firstinspires.ftc.teamcode.utils.hardware.MotorWithVelocityPID;
 @TeleOp(group = "Test")
 public class ServoMotorTest extends LinearOpMode {
 
-    public static PIDCoefficients outtakePID = new PIDCoefficients(0.01, 0, 0.0004);
+    public static PIDCoefficients outtakePID = new PIDCoefficients(0.005, 0, 0.0001);
     public static PIDCoefficients intakeMotorPid = new PIDCoefficients(0.0007, 0, 0.1);
 
     Servo stackIntakeServoLeft;

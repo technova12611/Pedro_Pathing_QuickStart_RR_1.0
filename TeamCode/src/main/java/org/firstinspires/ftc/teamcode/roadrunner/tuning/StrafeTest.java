@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.roadrunner.ThreeDeadWheelLocalizer;
 
 public final class StrafeTest extends LinearOpMode {
     public static double distance = 24.0;
-    public static int mode = 2;
+    public static int mode = 3;
     @Override
     public void runOpMode() throws InterruptedException {
 
@@ -43,11 +43,15 @@ public final class StrafeTest extends LinearOpMode {
         }
         else if (mode == 2) {
             Actions.runBlocking(
-                    new SequentialAction(
-                            new SleepAction(1.0),
                             drive.actionBuilderSlow(drive.pose)
                                     .strafeToLinearHeading(new Vector2d(distance,distance), Math.toRadians(180))
-                                    .build()));
+                                    .build());
+        }
+        else if (mode == 3) {
+            Actions.runBlocking(
+                            drive.actionBuilderSlow(drive.pose)
+                                    .strafeToConstantHeading(new Vector2d(distance,distance))
+                                    .build());
         }
 
         if (mode == 1) {
@@ -67,6 +71,8 @@ public final class StrafeTest extends LinearOpMode {
             int end = localizer.perp.getPositionAndVelocity().position;
             telemetry.addData("perp encoder end value: ", end);
             telemetry.addData("perp encoder delta value: ", end-begin);
+            telemetry.addData("perp *inPerTick* : ", String.format("%5.6f",distance/Math.abs(end-begin)));
+            telemetry.addData("perp *position* : ", String.format("%3.2f",Math.abs(end-begin)*MecanumDrive.PARAMS.inPerTick));
             telemetry.addData("par0 encoder end value: ", localizer.par.getPositionAndVelocity().position);
 //            telemetry.addData("par1 encoder end value: ", localizer.par1.getPositionAndVelocity().position);
 
