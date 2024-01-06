@@ -36,7 +36,9 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_CYCLES_TWO = 1170;
 
     public static int OUTTAKE_SLIDE_FAR_LOW = 1070;
-    public static int OUTTAKE_SLIDE_LOW = 865;
+    public static int OUTTAKE_SLIDE_LOW = 875;
+
+    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 950;
     public static int OUTTAKE_SLIDE_INIT = 0;
 
     public static int OUTTAKE_SLIDE_INCREMENT= 250;
@@ -65,7 +67,7 @@ public class Outtake {
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.59;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.55;
 
-    public static double SLIDE_PIVOT_DUMP_2 = 0.258;
+    public static double SLIDE_PIVOT_DUMP_2 = 0.268;
 
     public static double SLIDE_PIVOT_STRAFE = 0.30;
 
@@ -241,7 +243,8 @@ public class Outtake {
 
     public Action afterScore() {
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_DUMP_2, "slidePivot")
+                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_DUMP_2, "slidePivot"),
+                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_AFTER_DUMP_AUTO, "outtakeSlide")
         );
     }
 
