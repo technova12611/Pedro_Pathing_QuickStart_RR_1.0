@@ -6,13 +6,17 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
 import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 import org.firstinspires.ftc.teamcode.utils.hardware.MotorWithPID;
@@ -21,9 +25,9 @@ import org.firstinspires.ftc.teamcode.utils.software.MovingArrayList;
 
 @Config
 public class Outtake {
-    public static PIDCoefficients outtakePID = new PIDCoefficients(0.005, 0, 0.0001);
+    public static PIDCoefficients outtakePID = new PIDCoefficients(0.0065, 0, 0.0001);
 
-    public static int OUTTAKE_SLIDE_MAX = 2200;
+    public static int OUTTAKE_SLIDE_MAX = 2160;
     public static int OUTTAKE_SLIDE_ABOVE_LEVEL_2 = 2150;
     public static int OUTTAKE_SLIDE_BELOW_LEVEL_2 = 1850;
     public static int OUTTAKE_SLIDE_ABOVE_LEVEL_1 = 1550;
@@ -32,16 +36,16 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_HIGH = OUTTAKE_SLIDE_ABOVE_LEVEL_2;
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
     public static int OUTTAKE_SLIDE_MID = 1250;
-    public static int OUTTAKE_SLIDE_CYCLES_ONE = 1000;
-    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1170;
+    public static int OUTTAKE_SLIDE_CYCLES_ONE = 1050;
+    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1210;
 
     public static int OUTTAKE_SLIDE_FAR_LOW = 1070;
     public static int OUTTAKE_SLIDE_LOW = 875;
 
-    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 950;
+    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 1100;
     public static int OUTTAKE_SLIDE_INIT = 0;
 
-    public static int OUTTAKE_SLIDE_INCREMENT= 250;
+    public static int OUTTAKE_SLIDE_INCREMENT= 200;
 
     public static double LATCH_CLOSED = 0.55;
     public static double LATCH_SCORE_1 = 0.415;
@@ -55,7 +59,7 @@ public class Outtake {
 
     public static double OUTTAKE_PIVOT_DUMP_HIGH = 0.56;
 
-    public static double OUTTAKE_PIVOT_DUMP_CYCLE = 0.395;
+    public static double OUTTAKE_PIVOT_DUMP_CYCLE = 0.405;
 
     public static double OUTTAKE_PIVOT_DUMP_VERY_HIGH = 0.62;
 
@@ -64,12 +68,15 @@ public class Outtake {
     public static double SLIDE_PIVOT_DUMP = 0.238;
 
     public static double SLIDE_PIVOT_DUMP_1 = 0.248;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.59;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.55;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.65;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.58;
+
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX = 2.70;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MIN = 2.63;
 
     public static double SLIDE_PIVOT_DUMP_2 = 0.268;
 
-    public static double SLIDE_PIVOT_STRAFE = 0.30;
+    public static double SLIDE_PIVOT_STRAFE = 0.285;
 
     public static double SLIDE_PIVOT_DUMP_HIGH = 0.10;
 
@@ -173,8 +180,15 @@ public class Outtake {
         checkSlidePivotPosition();
     }
 
+    public void setupForSlidingInAuto() {
+        this.slidePivot.setPosition(SLIDE_PIVOT_SLIDING);
+        this.outtakePivot.setPosition(OUTTAKE_PIVOT_SLIDING);
+    }
+
     public Action moveSliderBlocking(double increment) {
         OUTTAKE_TELEOPS = this.slide.getCurrentPosition();
+        Log.d("Outtake_Slide", "Current position:" + OUTTAKE_TELEOPS );
+        Log.d("Outtake_Slide", "slide is busy:" + this.slide.isBusy() );
         if(!this.slide.isBusy()) {
             int multiplier = increment > 0 ? 1 : -1;
 
@@ -202,7 +216,7 @@ public class Outtake {
 
         double sleepTime = 0.5;
         if(!isAuto) {
-            sleepTime = 0.75;
+            sleepTime = 0.60;
         }
 
         return new SequentialAction(
@@ -442,7 +456,7 @@ public class Outtake {
                 " | backdropTouched: " + backdropTouched;
     }
 
-    public void checkSlidePivotPosition() {
+    public boolean checkSlidePivotPosition() {
         double slideServoVoltage = slidePivotVoltage.getVoltage();
         double slideServoPosition = slidePivot.getPosition();
 
@@ -455,6 +469,8 @@ public class Outtake {
                 slidePivotVoltages.getMean() >= SLIDE_PIVOT_DUMP_VOLTAGE_MAX) {
             backdropTouched = true;
         }
+
+        return backdropTouched;
     }
 
     public void resetSlideEncoder() {
@@ -471,5 +487,105 @@ public class Outtake {
 
     public int getMotorTargetPosition() {
         return this.slide.getTargetPosition();
+    }
+
+    public boolean isMotorBusy() {
+        return this.slide.isBusy();
+    }
+
+    private class SlideServoPositionAction implements Action {
+        double targetVoltage;
+        boolean blocking;
+
+        double beginPosition;
+        double beginVoltage;
+
+        Servo slideServo;
+        AnalogInput slidePivotVoltage;
+
+        public SlideServoPositionAction(Servo slideServo, AnalogInput slidePivotVoltage, double targetVoltage, boolean blocking) {
+            this.slideServo = slideServo;
+            this.slidePivotVoltage = slidePivotVoltage;
+            this.targetVoltage = targetVoltage;
+            this.blocking = blocking;
+            this.beginPosition = slideServo.getPosition();
+            this.beginVoltage = slidePivotVoltage.getVoltage();
+        }
+
+        @Override
+        public boolean run(TelemetryPacket packet) {
+
+            double currentPosition = slideServo.getPosition();
+            double currentVoltage = slidePivotVoltage.getVoltage();
+            boolean targetReached = false;
+
+            double targetPosition = currentPosition;
+            if(targetVoltage > currentVoltage) {
+                targetPosition = currentPosition+0.005;
+            } else {
+                targetPosition = currentPosition-0.005;
+            }
+
+            slideServo.setPosition(Range.clip(targetPosition, 0.0, 1.0));
+
+            if( (targetVoltage > beginVoltage && currentVoltage < targetVoltage) ||
+                    (targetVoltage < beginVoltage && currentVoltage > targetVoltage) ||
+                Math.abs(currentVoltage - targetVoltage) < 0.02)
+            {
+                targetReached = true;
+            } else {
+                slideServo.setPosition(currentPosition+0.005);
+            }
+
+            if (blocking) {
+                if(targetReached) {
+                    return false;
+                }
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public boolean checkSlidePivotOverreached() {
+        double slideServoVoltage = slidePivotVoltage.getVoltage();
+        double slideServoPosition = slidePivot.getPosition();
+
+        if(backdropTouched &&
+                slideServoVoltage <= SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MIN) {
+            return false;
+        } else if (slideServoPosition > SLIDE_PIVOT_DUMP_HIGH &&
+                slideServoVoltage >= SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public void resetSlidePivotDumpVoltageLimit() {
+        double servoVoltage = slidePivotVoltage.getVoltage();
+        SLIDE_PIVOT_DUMP_VOLTAGE_MIN = servoVoltage + 0.02;
+        SLIDE_PIVOT_DUMP_VOLTAGE_MAX = servoVoltage + 0.07;
+        SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MIN = servoVoltage + 0.05;
+        SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX = servoVoltage + 0.12;
+
+        Log.d("SlidePivot_Logger", "SLIDE_PIVOT_DUMP_VOLTAGE_MIN=" + String.format("%3.2f", SLIDE_PIVOT_DUMP_VOLTAGE_MIN) +
+                        " | SLIDE_PIVOT_DUMP_VOLTAGE_MAX=" + String.format("%3.2f", SLIDE_PIVOT_DUMP_VOLTAGE_MAX) +
+                        " | SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MIN=" + String.format("%3.2f", SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MIN) +
+                        " | SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX=" + String.format("%3.2f", SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX));
+    }
+
+    public Action resetSlidePivotServoDumpVoltageLimit() {
+        return new SlideServoDumpVoltageLimitAction();
+    }
+
+    private class SlideServoDumpVoltageLimitAction implements Action {
+        public SlideServoDumpVoltageLimitAction() {}
+
+        @Override
+        public boolean run(TelemetryPacket packet) {
+            resetSlidePivotDumpVoltageLimit();
+            return false;
+        }
     }
 }

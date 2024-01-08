@@ -84,7 +84,7 @@ public abstract class AutoBase extends LinearOpMode {
         hang.initialize();
 
         if(getFieldPosition() == FieldPosition.NEAR) {
-            outtake.prepareToSlide();
+            outtake.setupForSlidingInAuto();
         }
 
         Globals.COLOR = getAlliance();

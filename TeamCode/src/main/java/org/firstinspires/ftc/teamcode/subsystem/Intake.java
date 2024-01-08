@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 
 @Config
 public class Intake {
-    public static int INTAKE_SPEED = 880;
+    public static int INTAKE_SPEED = 905;
     final DcMotorEx intakeMotor;
     final Servo stackIntakeLinkage;
     final Servo stackIntakeServoLeft;

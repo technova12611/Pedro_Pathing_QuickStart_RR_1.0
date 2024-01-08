@@ -14,15 +14,15 @@ import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 @Autonomous(name = "Blue Near Auto (2+0)", group = "BLUE Auto", preselectTeleOp = "Manual Drive")
 public class BlueLeftAuto extends NearAutoBase {
    public static Pose2d[] blue_spike = {
-           new Pose2d(34.0, 26.0, Math.toRadians(-180)),
+           new Pose2d(34.8, 26.0, Math.toRadians(-180)),
            new Pose2d(28.5, 24.5, Math.toRadians(-180)),
-           new Pose2d(13.2, 34.0, Math.toRadians(-180))
+           new Pose2d(13.9, 34.0, Math.toRadians(-180))
    };
 
    public static Pose2d[] blue_backdrop =  {
-           new Pose2d(47.8, 42.0, Math.toRadians(-180)),
+           new Pose2d(47.8, 41.6, Math.toRadians(-180)),
            new Pose2d(47.8, 36.0, Math.toRadians(-180)),
-           new Pose2d(47.8, 29.5, Math.toRadians(-180))
+           new Pose2d(47.8, 29.8, Math.toRadians(-180))
    };
    // 0 = left, 1 = middle, 2 = right
    public static Pose2d blue_start = new Pose2d(14.5, 62.0, Math.toRadians(-90));

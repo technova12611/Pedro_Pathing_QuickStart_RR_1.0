@@ -16,7 +16,7 @@ public class RedRightAuto extends NearAutoBase {
 
    // 0 = left, 1 = middle, 2 = right
    public static Pose2d[] red_spike = {
-           new Pose2d(13.5, -34.0, Math.toRadians(180)),
+           new Pose2d(13.8, -34.0, Math.toRadians(180)),
            new Pose2d(29.0, -25.7, Math.toRadians(180)),
            new Pose2d(35.0, -27.0, Math.toRadians(180))
    };

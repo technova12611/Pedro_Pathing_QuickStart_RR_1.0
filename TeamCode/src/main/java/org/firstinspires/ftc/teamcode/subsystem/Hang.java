@@ -23,7 +23,7 @@ public class Hang {
     public static int DROPDOWN_AFTER_HANG_POSITION = 500;
 
     public static double HOOK_BLOCKER_BLOCK = 0.81;
-    public static double  HOOK_BLOCKER_UNBLOCK = 0.6;
+    public static double  HOOK_BLOCKER_UNBLOCK = 0.65;
 
     final DcMotorEx hangMotor;
     final Servo hangHookBlocker;

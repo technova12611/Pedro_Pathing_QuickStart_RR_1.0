@@ -205,13 +205,12 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                 ),
 
                                 new SequentialAction(
-                                        new SleepAction(0.1),
                                         outtake.prepareToSlide(),
                                         new SleepAction(0.4),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_prepare"),
                                         extendSlideAction,
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_extend"),
-                                        new SleepAction(0.8),
+                                        new SleepAction(0.6),
                                         outtake.prepareToScoreCycle(),
                                         new SleepAction(0.2)
                                 )

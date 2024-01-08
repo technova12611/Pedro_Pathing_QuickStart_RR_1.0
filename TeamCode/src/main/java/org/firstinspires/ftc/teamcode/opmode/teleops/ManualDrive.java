@@ -16,6 +16,7 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
@@ -29,6 +30,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Drone;
 import org.firstinspires.ftc.teamcode.utils.software.ActionScheduler;
 import org.firstinspires.ftc.teamcode.utils.hardware.GamePadController;
 import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
+import org.firstinspires.ftc.teamcode.utils.software.DriveWithPID;
 import org.firstinspires.ftc.teamcode.utils.software.SmartGameTimer;
 
 import java.util.Arrays;
@@ -43,7 +45,7 @@ public class ManualDrive extends LinearOpMode {
     public static double SLOW_TURN_SPEED = 0.3;
     public static double SLOW_DRIVE_SPEED = 0.3;
 
-    public static double STRAFE_DISTANCE = 3.2;
+    public static double STRAFE_DISTANCE = 2.85;
     private SmartGameTimer smartGameTimer;
     private GamePadController g1, g2;
     private MecanumDrive drive;
@@ -75,6 +77,12 @@ public class ManualDrive extends LinearOpMode {
     private Double start_y = null;
     boolean strafeToAlign = false;
     public static boolean logLoopTime = false;
+
+    boolean prevBackdropTouched = false;
+
+    Boolean firstTimeSlideOut = null;
+
+    private DriveWithPID pidDrive;
 
     Gamepad.LedEffect redEffect = new Gamepad.LedEffect.Builder()
             .addStep(1, 0, 0, 750) // Show red for 250ms
@@ -127,6 +135,8 @@ public class ManualDrive extends LinearOpMode {
         telemetry.addLine("Initializing AprilTag: " + (current_time - start_time));
         telemetry.update();
         aprilTag.initialize();
+
+        pidDrive = new DriveWithPID(drive, null, DriveWithPID.DriveDirection.STRAFE);
 
         // Ready!
         telemetry.addLine("Manual Drive is Ready! Complete in " + (System.currentTimeMillis() - start_time) + " (ms)");
@@ -192,7 +202,8 @@ public class ManualDrive extends LinearOpMode {
             long current_time_7=System.currentTimeMillis();
             logLoopTime( "backdropTouchedDetection elapsed time: " + (current_time_7 - current_time_6));
 
-            telemetry.addData("Time left: ", smartGameTimer.formattedString() + " (" + smartGameTimer.status() + ")");
+            telemetry.addData("Time left: ", smartGameTimer.formattedString() + " (" + smartGameTimer.status() + ")" + " Loop time: "  +
+                    (System.currentTimeMillis() - start_time) + " (ms)");
             //telemetry.addLine(intake.getStackServoPositions());
             telemetry.addLine("Current Pixel count: " + Intake.pixelsCount +
                     " | Total count: " + Intake.totalPixelCount + " | Prev count: " + prevPixelCount);
@@ -201,7 +212,7 @@ public class ManualDrive extends LinearOpMode {
             telemetry.addLine(hang.getCurrentPosition());
             telemetry.addData("Slide current position", outtake.getMotorCurrentPosition());
             telemetry.addData("Slide target position", outtake.getMotorTargetPosition());
-            telemetry.addLine(" --- Loop time: " + (System.currentTimeMillis() - start_time) + " (ms) ---");
+            telemetry.addData("Slide motor busy", outtake.isMotorBusy());
             telemetry.update();
 
             if(System.currentTimeMillis() - start_time > 50) {
@@ -314,20 +325,28 @@ public class ManualDrive extends LinearOpMode {
 
         if (isHangingActivated) {
             speed = speed * slowModeForHanging;
-        } else if (isSlideOut) {
-            speed = speed * slowModeForBackdrop;
         }
 
         double input_x = Math.pow(-g1.left_stick_y, 3) * speed;
         double input_y = Math.pow(-g1.left_stick_x, 3) * speed;
 
+        if (isSlideOut && input_x < -0.05) {
+            input_x = Range.clip(input_x, -0.35, -0.05);
+        }
+
         // if outtake has touched the backdrop, don't move further
         if (outtake.hasOuttakeReached()) {
-            if (input_x < -0.05) {
+            if (input_x < -0.1) {
                 input_x = 0.0;
                 Log.d("Drive_power", String.format("input_x: %3.2f to 0.0", input_x) + String.format(" | input_y: %3.2f", input_y));
             }
+
+            if(outtake.checkSlidePivotOverreached()) {
+                input_x = 0.05;
+            }
         }
+
+        prevBackdropTouched = outtake.hasOuttakeReached();
 
         double input_turn = Math.pow(g1.left_trigger - g1.right_trigger, 3) * TURN_SPEED;
         if (g1.leftBumper()) input_turn += SLOW_TURN_SPEED;
@@ -407,6 +426,13 @@ public class ManualDrive extends LinearOpMode {
                 sched.queueAction(new SleepAction(0.5));
                 sched.queueAction(outtake.prepareToScore());
                 sched.queueAction(aprilTag.updatePosition());
+
+                if(firstTimeSlideOut == null) {
+                    sched.queueAction(new SleepAction(0.5));
+                    sched.queueAction(outtake.resetSlidePivotServoDumpVoltageLimit());
+
+                    firstTimeSlideOut = false;
+                }
                 isAprilTagDetected = true;
             }
         }
@@ -468,13 +494,13 @@ public class ManualDrive extends LinearOpMode {
         }
 
         // move left and right by one slot
-        if (g1.dpadLeftOnce() || g1.dpadRightOnce()) {
+        if ((g1.dpadLeftOnce() || g1.dpadRightOnce()) && !pidDrive.isBusy()) {
 
             int multiplier = (Globals.RUN_AUTO) ? 1 : -1;
 
             double strafeDistance = (g1.dpadLeftOnce() ? STRAFE_DISTANCE : -STRAFE_DISTANCE) * multiplier;
 
-            Log.d("ManualDrive", "Pose before strafe: " + new PoseMessage(this.drive.pose) + " | target=" + strafeDistance);
+            Log.d("DriveWithPID_Logger_0_Teleops", "Pose before strafe: " + new PoseMessage(this.drive.pose) + " | target=" + strafeDistance);
             start_y = drive.pose.position.y;
 
             AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);
@@ -483,16 +509,19 @@ public class ManualDrive extends LinearOpMode {
                         new SequentialAction(
                                 outtake.strafeToAlign(),
                                 new SleepAction(0.2),
-                                drive.actionBuilder(drive.pose)
-                                        .strafeToConstantHeading(new Vector2d(drive.pose.position.x, drive.pose.position.y + strafeDistance))
-                                        .build(),
+                                pidDrive.setTargetPositionActionBlocking((int)(strafeDistance/MecanumDrive.PARAMS.inPerTick)),
+//                                drive.actionBuilder(drive.pose)
+//                                        .strafeToConstantHeading(new Vector2d(drive.pose.position.x, drive.pose.position.y + strafeDistance))
+//                                        .build(),
                                 outtake.prepareToScore())
                 );
             } else {
                 autoActionSched.addAction(
-                                drive.actionBuilder(drive.pose)
-                                        .strafeToConstantHeading(new Vector2d(drive.pose.position.x, drive.pose.position.y + strafeDistance))
-                                        .build());
+//                                drive.actionBuilder(drive.pose)
+//                                        .strafeToConstantHeading(new Vector2d(drive.pose.position.x, drive.pose.position.y + strafeDistance))
+//                                        .build()
+                        pidDrive.setTargetPositionActionBlocking((int)(strafeDistance/MecanumDrive.PARAMS.inPerTick))
+                );
             }
 
             autoActionSched.run();
