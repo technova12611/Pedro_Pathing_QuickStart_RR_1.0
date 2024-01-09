@@ -173,11 +173,14 @@ public class Outtake {
     }
 
     public void update() {
-        if (slidePIDEnabled) {
-            slide.update();
-        }
-
+        slide.update();
         checkSlidePivotPosition();
+
+        if (!this.slide.isBusy()) {
+            if (this.slide.getCurrentPosition() < -20) {
+                resetSlideEncoder();
+            }
+        }
     }
 
     public void setupForSlidingInAuto() {

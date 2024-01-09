@@ -559,7 +559,7 @@ public class ManualDrive extends LinearOpMode {
         }
 
         if (g1.start() && g1.guide()) {
-            outtake.resetSlideEncoder();
+            sched.queueAction(outtake.moveSliderBlocking(-1.0));
         } else if (g1.guideOnce()) {
 
             if (isHangingActivated) {
