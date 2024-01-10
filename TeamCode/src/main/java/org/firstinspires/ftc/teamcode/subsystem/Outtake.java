@@ -23,6 +23,9 @@ import org.firstinspires.ftc.teamcode.utils.hardware.MotorWithPID;
 import org.firstinspires.ftc.teamcode.utils.control.PIDCoefficients;
 import org.firstinspires.ftc.teamcode.utils.software.MovingArrayList;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Config
 public class Outtake {
     public static PIDCoefficients outtakePID = new PIDCoefficients(0.0065, 0, 0.0001);
@@ -93,12 +96,23 @@ public class Outtake {
     public static double OUTTAKE_WIRE_FOR_HANGING_DOWN = 0.73;
     public static double OUTTAKE_WIRE_FOR_HANGING_UP = 0.38;
 
+    public static double OUTTAKE_FIXER_INIT = 0.77;
+    public static double OUTTAKE_FIXER_LEVEL_1 = 0.09;
+    public static double OUTTAKE_FIXER_LEVEL_2 = 0.13;
+    public static double OUTTAKE_FIXER_LEVEL_3 = 0.17;
+    public static double OUTTAKE_FIXER_LEVEL_4 = 0.21;
+
+    public static double OUTTAKE_FIXER_LEVEL_1_5 = 0.11;
+    public static double OUTTAKE_FIXER_LEVEL_2_5 = 0.15;
+    public static double OUTTAKE_FIXER_LEVEL_3_5 = 0.19;
+
     final MotorWithPID slide;
     public boolean slidePIDEnabled = true;
     final Servo latch;
     final Servo slidePivot;
     final Servo outtakePivot;
 
+    final Servo outtakeFixerServo;
     final Servo outtakeWireServo;
 
     final AnalogInput slidePivotVoltage;
@@ -111,6 +125,8 @@ public class Outtake {
     public boolean isHangingHookUp = false;
 
     public boolean backdropTouched = false;
+
+    public FixerServoPosition fixerServoPosition = FixerServoPosition.LEVEL_0;
     private MovingArrayList slidePivotVoltages = new MovingArrayList(10);
 
     public Outtake(HardwareMap hardwareMap) {
@@ -127,6 +143,7 @@ public class Outtake {
         this.slidePivot = HardwareCreator.createServo(hardwareMap, "outtakeSlidePivot");
         this.outtakePivot = HardwareCreator.createServo(hardwareMap, "outtakePivot");
         this.outtakeWireServo = HardwareCreator.createServo(hardwareMap, "outtakeWireServo");
+        this.outtakeFixerServo = HardwareCreator.createServo(hardwareMap, "outtakeFixerServo");
 
         this.slidePivotVoltage = hardwareMap.get(AnalogInput.class, "slidePivotVoltage");
         this.outtakePivotVoltage = hardwareMap.get(AnalogInput.class, "outtakePivotVoltage");
@@ -156,7 +173,7 @@ public class Outtake {
     }
 
     public void prepTeleop() {
-        this.slide.getMotor().setPower(-0.3);
+        this.slide.getMotor().setPower(-0.2);
     }
 
     public void finishPrepTeleop() {
@@ -170,17 +187,19 @@ public class Outtake {
         this.outtakeWireServo.setPosition(OUTTAKE_WIRE_SAFE_DOWN);
         this.slidePivot.setPosition(SLIDE_PIVOT_INIT);
         this.outtakePivot.setPosition(OUTTAKE_PIVOT_INIT);
+        this.outtakeFixerServo.setPosition(OUTTAKE_FIXER_INIT);
     }
 
     public void update() {
         slide.update();
         checkSlidePivotPosition();
 
-        if (!this.slide.isBusy()) {
-            if (this.slide.getCurrentPosition() < -20) {
-                resetSlideEncoder();
-            }
-        }
+//        if (!this.slide.isBusy()) {
+//            if (this.slide.getCurrentPosition() < -20) {
+//                Log.d("Outtake_Logger", "Slider motor current position: " + this.slide.getCurrentPosition());
+//                resetSlideEncoder();
+//            }
+//        }
     }
 
     public void setupForSlidingInAuto() {
@@ -213,6 +232,13 @@ public class Outtake {
             return extendOuttakeTeleOps();
         }
         return new OuttakeLatchStateAction(OuttakeLatchState.CLOSED);
+    }
+
+    public Action resetSliderPosition() {
+        return new SequentialAction(
+                this.slide.setTargetPositionAction(-150),
+                new SleepAction(0.5),
+                this.slide.zeroMotorInternalsAction("OuttakeSlideMotor"));
     }
 
     public Action retractOuttake() {
@@ -478,6 +504,11 @@ public class Outtake {
 
     public void resetSlideEncoder() {
         this.slide.zeroMotorInternals();
+        this.slide.setTargetPosition(0);
+    }
+
+    public Action resetSlideEncoderAction() {
+        return this.slide.zeroMotorInternalsAction("SlideMotor");
     }
 
     public boolean hasOuttakeReached() {
@@ -591,4 +622,79 @@ public class Outtake {
             return false;
         }
     }
+
+    public Action moveUpOuttakeFixerServo() {
+        int fixerPosition = fixerServoPosition.level;
+        fixerPosition = fixerPosition + 5;
+
+        fixerServoPosition = FixerServoPosition.getPosition(fixerPosition);
+
+        if(fixerServoPosition == null) {
+            fixerServoPosition = FixerServoPosition.LEVEL_0;
+        }
+
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(outtakeFixerServo,
+                        fixerServoPosition.position,
+                        "outtakeFixerServo")
+        );
+    }
+
+    public Action moveDownOuttakeFixerServo() {
+
+        int fixerPosition = fixerServoPosition.level;
+        fixerPosition = fixerPosition -5;
+
+        fixerServoPosition = FixerServoPosition.getPosition(fixerPosition);
+
+        if(fixerServoPosition == null) {
+            fixerServoPosition = FixerServoPosition.LEVEL_0;
+        }
+
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(outtakeFixerServo,
+                        fixerServoPosition.position,
+                        "outtakeFixerServo")
+        );
+    }
+
+    public enum FixerServoPosition {
+        LEVEL_0 (5, OUTTAKE_FIXER_INIT),
+        LEVEL_1 (10, OUTTAKE_FIXER_LEVEL_1),
+        LEVEL_2 (20, OUTTAKE_FIXER_LEVEL_2),
+        LEVEL_3 (30, OUTTAKE_FIXER_LEVEL_3),
+        LEVEL_4 (40, OUTTAKE_FIXER_LEVEL_4),
+        LEVEL_1_5 (15, OUTTAKE_FIXER_LEVEL_1_5),
+        LEVEL_2_5 (25, OUTTAKE_FIXER_LEVEL_2_5),
+        LEVEL_3_5 (35, OUTTAKE_FIXER_LEVEL_3_5);
+
+        private static final Map<Integer, FixerServoPosition> BY_NUMBER = new HashMap<>();
+
+        static {
+            for (FixerServoPosition e : values()) {
+                BY_NUMBER.put(Integer.valueOf(e.level), e);
+            }
+        }
+
+        public final int level;
+        public final double position;
+
+        private FixerServoPosition(int level, double position) {
+            this.level = level;
+            this.position = position;
+        }
+
+        public static FixerServoPosition getPosition(int level) {
+            int temp = level;
+            if(level > 40) {
+                temp = 10;
+            }
+
+            if(level < 5) {
+                temp = 5;
+            }
+            return BY_NUMBER.get(Integer.valueOf(level));
+        }
+    }
+
 }

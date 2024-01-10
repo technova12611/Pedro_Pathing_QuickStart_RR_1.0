@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Outtake;
 import org.firstinspires.ftc.teamcode.utils.software.DriveWithPID;
 
 @Config
+@Disabled
 @TeleOp(group = "Test")
 public final class PIDStrafeTest extends LinearOpMode {
     public static double distance = 3.0;

@@ -147,21 +147,20 @@ public class ManualDrive extends LinearOpMode {
                 this.drive.kinematics.new WheelVelConstraint(45.0),
                 new AngularVelConstraint(Math.PI / 2)));
 
-        waitForStart();
+        long aTimer = System.currentTimeMillis();
+        while(opModeInInit() && !isStopRequested()) {
+            if(System.currentTimeMillis() - aTimer > 1000) {
+                outtake.finishPrepTeleop();
+                outtake.resetSlideEncoder();
+            }
+            idle();
+        }
 
         startTime = System.currentTimeMillis();
 
-        // Opmode start
-        if (opModeIsActive()) {
-            resetRuntime();
-            g1.reset();
-            g2.reset();
-
-            // Finish pulling in slides
-            if (!smartGameTimer.isNominal()) {
-                outtake.finishPrepTeleop();
-            }
-        }
+        resetRuntime();
+        g1.reset();
+        g2.reset();
 
         // Main loop
         while (opModeIsActive()) {
@@ -465,7 +464,7 @@ public class ManualDrive extends LinearOpMode {
         }
 
         // Hang arms up/down
-        if (g1.dpadUpOnce()) {
+        if (g1.start() & g1.dpadUpOnce()) {
             sched.queueAction(hang.unblockHook());
             sched.queueAction(new SleepAction(0.35));
             sched.queueAction(outtake.outtakeWireForHanging());
@@ -475,6 +474,8 @@ public class ManualDrive extends LinearOpMode {
             } else {
                 isHangingActivated = false;
             }
+        } else if (g1.dpadUpOnce()) {
+            sched.queueAction(outtake.moveUpOuttakeFixerServo());
         }
 
         if (g1.dpadDownLong()) {
@@ -484,6 +485,8 @@ public class ManualDrive extends LinearOpMode {
         } else if (g1.dpadDownOnce()) {
             if (isHangingActivated) {
                 sched.queueAction(hang.hangSlowly());
+            } else {
+                sched.queueAction(outtake.moveDownOuttakeFixerServo());
             }
         }
 
@@ -559,7 +562,7 @@ public class ManualDrive extends LinearOpMode {
         }
 
         if (g1.start() && g1.guide()) {
-            sched.queueAction(outtake.moveSliderBlocking(-1.0));
+            sched.queueAction(outtake.resetSliderPosition());
         } else if (g1.guideOnce()) {
 
             if (isHangingActivated) {

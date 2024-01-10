@@ -23,7 +23,13 @@ public class MotorWithPID {
     private int targetPosition = 0;
     private int internalOffset = 0;
     private int tolerance = 50;
+
+    private int maxElapsedTime = 2000;
+
+    private int maxElapsedTimeZeroPosition = 750;
     private double maxPower = 0;
+
+    private long startTime = System.currentTimeMillis();
 
     public MotorWithPID(DcMotorEx motor, PIDCoefficients pid) {
         this(motor, pid, (x, v) -> 0.0);
@@ -33,8 +39,7 @@ public class MotorWithPID {
         this.motor = motor;
         this.pid = pid;
         this.pidfController = new PIDFController(pid, 0, 0, 0, f);
-
-        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        zeroMotorInternals();
     }
 
     public DcMotorEx getMotor() {
@@ -46,8 +51,14 @@ public class MotorWithPID {
      */
     public void update() {
         double newPower = Range.clip(this.pidfController.update(motor.getCurrentPosition(), motor.getVelocity()), -maxPower, maxPower);
+        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        Log.d("MotorWithPID", "newPower " + newPower + ", lastError " + pidfController.getLastError());
-        motor.setPower(newPower);
+
+        if(getTargetPosition() == 0 && !isBusy()) {
+            motor.setPower(0.0);
+        } else {
+            motor.setPower(newPower);
+        }
     }
 
     /**
@@ -57,6 +68,7 @@ public class MotorWithPID {
     public void update(double currentVoltage, double targetVoltage) {
         double newPower = Range.clip(this.pidfController.update(motor.getCurrentPosition(), motor.getVelocity()) * targetVoltage / currentVoltage, -maxPower, maxPower);
 //        Log.d("MotorWithPID", "newPower " + newPower + ", lastError " + pidfController.getLastError());
+        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motor.setPower(newPower);
     }
 
@@ -81,6 +93,7 @@ public class MotorWithPID {
      * @param position the desired encoder target position
      */
     public void setTargetPosition(int position) {
+        startTime = System.currentTimeMillis();
         this.targetPosition = position;
         this.pidfController.setTargetPosition(position - internalOffset); // TODO: Verify sign
     }
@@ -115,6 +128,20 @@ public class MotorWithPID {
             if (blocking) {
                 return isBusy();
             }
+            return false;
+        }
+    }
+
+    private class ResetEncoderAction implements Action {
+        String motorName;
+
+        public ResetEncoderAction(String motorName) {
+            this.motorName = motorName;
+        }
+        @Override
+        public boolean run(TelemetryPacket packet) {
+            Log.d("MotorWithPID_Logger", "Reset motor encoder: " + motorName);
+            zeroMotorInternals();
             return false;
         }
     }
@@ -156,7 +183,14 @@ public class MotorWithPID {
 
     public void zeroMotorInternals() {
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        setCurrentPosition(0);
+        setTargetPosition(0);
+
+        Log.d("MotorWithPID_Logger","internalOffset: " + internalOffset);
+    }
+
+    public Action zeroMotorInternalsAction(String motorName) {
+        return new ResetEncoderAction(motorName);
     }
 
     public void resetIntegralGain() {
@@ -168,7 +202,9 @@ public class MotorWithPID {
      * @return true if the motor is currently advancing or retreating to a target position.
      */
     public boolean isBusy() {
-        return Math.abs(pidfController.getLastError()) > tolerance || Math.abs(pidfController.getTargetVelocity()) > tolerance;
+        int limit = getTargetPosition() == 0? maxElapsedTimeZeroPosition:maxElapsedTime;
+        return (Math.abs(pidfController.getLastError()) > tolerance ||
+                Math.abs(pidfController.getTargetVelocity()) > tolerance) && (System.currentTimeMillis()-startTime < limit);
     }
 
     /**

@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder;
 import com.acmerobotics.roadrunner.ftc.RawEncoder;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -32,7 +33,6 @@ import org.firstinspires.ftc.teamcode.utils.hardware.MotorWithPID;
 import org.firstinspires.ftc.teamcode.utils.hardware.MotorWithVelocityPID;
 
 @Config
-//@Disabled
 @TeleOp(group = "Test")
 public class ServoMotorTest extends LinearOpMode {
 
@@ -49,6 +49,8 @@ public class ServoMotorTest extends LinearOpMode {
     Servo droneLatch;
     Servo droneTilt;
     Servo outtakeWireServo;
+
+    Servo outtakeFixerServo;
 
     MotorWithPID slide;
     MotorWithVelocityPID intakeMotor;
@@ -81,6 +83,8 @@ public class ServoMotorTest extends LinearOpMode {
     public static int INTAKE_MOTOR_VELOCITY = 0;
 
     public static double INTAKE_MOTOR_POWER = 0;
+
+    public static double OUTTAKE_FIXER_SERVO_POSITION = Outtake.OUTTAKE_FIXER_INIT;
 
     double prevIntakeMotorPower = 0.0;
 
@@ -123,6 +127,7 @@ public class ServoMotorTest extends LinearOpMode {
         this.droneLatch = HardwareCreator.createServo(hardwareMap, "droneLatch");
         this.droneTilt = HardwareCreator.createServo(hardwareMap, "droneTilt");
         this.outtakeWireServo = HardwareCreator.createServo(hardwareMap, "outtakeWireServo");
+        this.outtakeFixerServo = HardwareCreator.createServo(hardwareMap, "outtakeFixerServo");
 
 //        this.slide = new MotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtake"), outtakePID);
 
@@ -366,6 +371,8 @@ public class ServoMotorTest extends LinearOpMode {
             //
             outtakeWireServo.setPosition(OUTTAKE_WIRE_SERVO_VALUE);
 
+            outtakeFixerServo.setPosition(OUTTAKE_FIXER_SERVO_POSITION);
+
             if (INTAKE_MOTOR_VELOCITY != 0) {
                 this.intakeMotor.setTargetVelocity(INTAKE_MOTOR_VELOCITY);
                 this.intakeMotor.update();
@@ -411,6 +418,7 @@ public class ServoMotorTest extends LinearOpMode {
             telemetry.addData("droneLatch: ", "%3.2f", droneLatch.getPosition());
             telemetry.addData("tilt: ", "%3.2f", droneTilt.getPosition());
             telemetry.addData("outtakeWireServo: ", "%3.2f", outtakeWireServo.getPosition());
+            telemetry.addData("outtakeFixerServo: ", "%3.2f", outtakeFixerServo.getPosition());
 
             telemetry.addData("bottomRollerServo: ", "%3.2f", bottomRollerServo.getPower());
 
