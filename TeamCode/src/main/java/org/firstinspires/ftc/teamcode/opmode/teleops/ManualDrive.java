@@ -282,7 +282,7 @@ public class ManualDrive extends LinearOpMode {
                 g1.runLedEffect(greenEffect);
 
                 Log.d("TeleOps_Pixel_detection", "Pixel counted changed to "
-                        + Intake.pixelsCount + ", detected at " + (intakeReverseStartTime - startTime));
+                        + Intake.pixelsCount + ", need to reverse after intake, detected at " + (intakeReverseStartTime - startTime));
             }
 
             if (intakeSlowdownStartTime != null) {
@@ -298,7 +298,12 @@ public class ManualDrive extends LinearOpMode {
 
                 long elapsedTimeMs = System.currentTimeMillis() - intakeReverseStartTime.longValue();
 
-                if (elapsedTimeMs > 1000 && elapsedTimeMs < 1200 &&
+                if(Intake.pixelsCount >2 && intake.intakeState.equals(Intake.IntakeState.ON)) {
+                    sched.queueAction(intake.intakeReverse());
+                    Log.d("TeleOps_Pixel_detection", "Pixel count changed to "
+                            + Intake.pixelsCount + ", reversing right away at " + (intakeReverseStartTime - startTime));
+                }
+                else if (elapsedTimeMs > 800 && elapsedTimeMs < 1000 &&
                         intake.intakeState.equals(Intake.IntakeState.ON)) {
                     sched.queueAction(intake.intakeReverse());
                     Log.d("TeleOps_Pixel_detection", "Pixel count changed to "
@@ -350,9 +355,9 @@ public class ManualDrive extends LinearOpMode {
                 Log.d("Drive_power", String.format("input_x: %3.2f to 0.0", input_x) + String.format(" | input_y: %3.2f", input_y));
             }
 
-            if (outtake.checkSlidePivotOverreached()) {
-                input_x = 0.05;
-            }
+//            if (outtake.checkSlidePivotOverreached()) {
+//                input_x = 0.05;
+//            }
         }
 
         prevBackdropTouched = outtake.hasOuttakeReached();
