@@ -3,9 +3,12 @@ package org.firstinspires.ftc.teamcode.opmode.teleops;
 import android.util.Log;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.AccelConstraint;
+import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.AngularVelConstraint;
 import com.acmerobotics.roadrunner.MinVelConstraint;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.SequentialAction;
@@ -15,7 +18,9 @@ import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.Globals;
@@ -82,6 +87,8 @@ public class ManualDrive extends LinearOpMode {
 
     Boolean firstTimeSlideOut = null;
 
+    Boolean isFixerServoOut = Boolean.FALSE;
+
     private DriveWithPID pidDrive;
 
     Gamepad.LedEffect redEffect = new Gamepad.LedEffect.Builder()
@@ -147,11 +154,12 @@ public class ManualDrive extends LinearOpMode {
                 this.drive.kinematics.new WheelVelConstraint(45.0),
                 new AngularVelConstraint(Math.PI / 2)));
 
-        long aTimer = System.currentTimeMillis();
-        while(opModeInInit() && !isStopRequested()) {
-            if(System.currentTimeMillis() - aTimer > 1000) {
+        Long aTimer = System.currentTimeMillis();
+        while (opModeInInit() && !isStopRequested()) {
+            if (aTimer != null && (System.currentTimeMillis() - aTimer > 1000)) {
                 outtake.finishPrepTeleop();
                 outtake.resetSlideEncoder();
+                aTimer = null;
             }
             idle();
         }
@@ -163,45 +171,45 @@ public class ManualDrive extends LinearOpMode {
         g2.reset();
 
         // Main loop
-        while (opModeIsActive()) {
+        while (!isStopRequested() && opModeIsActive()) {
             start_time = System.currentTimeMillis();
 
             g1.update();
             g2.update();
 
             move();
-            long current_time_0=System.currentTimeMillis();
+            long current_time_0 = System.currentTimeMillis();
             logLoopTime("Move() elapsed time: " + (current_time_0 - start_time));
 
             subsystemControls();
-            long current_time_1=System.currentTimeMillis();
-            logLoopTime( "subsystemControls() elapsed time: " + (current_time_1- current_time_0));
+            long current_time_1 = System.currentTimeMillis();
+            logLoopTime("subsystemControls() elapsed time: " + (current_time_1 - current_time_0));
 
             pixelDetection();
-            long current_time_2=System.currentTimeMillis();
-            logLoopTime( "pixelDetection() elapsed time: " + (current_time_2 - current_time_1));
+            long current_time_2 = System.currentTimeMillis();
+            logLoopTime("pixelDetection() elapsed time: " + (current_time_2 - current_time_1));
 
             drive.updatePoseEstimate();
-            long current_time_3=System.currentTimeMillis();
-            logLoopTime( "updatePoseEstimate() elapsed time: " + (current_time_3 - current_time_2));
+            long current_time_3 = System.currentTimeMillis();
+            logLoopTime("updatePoseEstimate() elapsed time: " + (current_time_3 - current_time_2));
 
             outtake.update();
-            long current_time_4=System.currentTimeMillis();
-            logLoopTime( "outtake.update() elapsed time: " + (current_time_4 - current_time_3));
+            long current_time_4 = System.currentTimeMillis();
+            logLoopTime("outtake.update() elapsed time: " + (current_time_4 - current_time_3));
 
             intake.update();
-            long current_time_5=System.currentTimeMillis();
-            logLoopTime( "intake.update() elapsed time: " + (current_time_5 - current_time_4));
+            long current_time_5 = System.currentTimeMillis();
+            logLoopTime("intake.update() elapsed time: " + (current_time_5 - current_time_4));
 
             sched.update();
-            long current_time_6=System.currentTimeMillis();
-            logLoopTime( "sched.update() elapsed time: " + (current_time_6 - current_time_5));
+            long current_time_6 = System.currentTimeMillis();
+            logLoopTime("sched.update() elapsed time: " + (current_time_6 - current_time_5));
 
             backdropTouchedDetection();
-            long current_time_7=System.currentTimeMillis();
-            logLoopTime( "backdropTouchedDetection elapsed time: " + (current_time_7 - current_time_6));
+            long current_time_7 = System.currentTimeMillis();
+            logLoopTime("backdropTouchedDetection elapsed time: " + (current_time_7 - current_time_6));
 
-            telemetry.addData("Time left: ", smartGameTimer.formattedString() + " (" + smartGameTimer.status() + ")" + " Loop time: "  +
+            telemetry.addData("Time left: ", smartGameTimer.formattedString() + " (" + smartGameTimer.status() + ")" + " Loop time: " +
                     (System.currentTimeMillis() - start_time) + " (ms)");
             //telemetry.addLine(intake.getStackServoPositions());
             telemetry.addLine("Current Pixel count: " + Intake.pixelsCount +
@@ -214,10 +222,12 @@ public class ManualDrive extends LinearOpMode {
             telemetry.addData("Slide motor busy", outtake.isMotorBusy());
             telemetry.update();
 
-            if(System.currentTimeMillis() - start_time > 50) {
+            if (System.currentTimeMillis() - start_time > 50) {
                 Log.d("Loop_Logger", " --- Loop time: " + (System.currentTimeMillis() - start_time) + " ---");
             }
         }
+
+        Log.d("ManualDrive_Logger", " --- Program ended at " + System.currentTimeMillis() + " ---");
 
         // On termination
         Memory.LAST_POSE = drive.pose;
@@ -261,7 +271,7 @@ public class ManualDrive extends LinearOpMode {
 
                 // if 0-->1, slowdown a bit to avoid collision
                 // the 2nd pixel could push the 1st, potentially it could mess up the transfer
-                if(prevPixelCount == 0) {
+                if (prevPixelCount == 0) {
                     sched.queueAction(intake.intakeSlowdown());
                 }
             }
@@ -340,7 +350,7 @@ public class ManualDrive extends LinearOpMode {
                 Log.d("Drive_power", String.format("input_x: %3.2f to 0.0", input_x) + String.format(" | input_y: %3.2f", input_y));
             }
 
-            if(outtake.checkSlidePivotOverreached()) {
+            if (outtake.checkSlidePivotOverreached()) {
                 input_x = 0.05;
             }
         }
@@ -354,20 +364,14 @@ public class ManualDrive extends LinearOpMode {
         Vector2d input = new Vector2d(input_x, input_y);
         drive.setDrivePowers(new PoseVelocity2d(input, input_turn));
 
-        if (input_x > 0.3 && isSlideOut && Intake.pixelsCount == 0 && pixelScored) {
-            retractSlide();
+        if (input_x > 0.3) {
+            if (isSlideOut && Intake.pixelsCount == 0 && pixelScored) {
+                retractSlide();
+            } else if (isFixerServoOut) {
+                isFixerServoOut = false;
+                sched.queueAction(outtake.resetOuttakeFixerServo());
+            }
         }
-
-//        if(isSlideOut) {
-//            if(Math.abs(input_y) > 0.0 && outtake.backdropTouched) {
-//                sched.queueAction(outtake.strafeToAlign());
-//                strafeToAlign = true;
-//            }
-//            else if(strafeToAlign){
-//                sched.queueAction(outtake.prepareToScore());
-//                strafeToAlign = false;
-//            }
-//        }
 
         telemetry.addData("drive_power", "input_x: %3.2f | input_y: %3.2f | speed: %3.2f", input_x, input_y, speed);
     }
@@ -419,6 +423,10 @@ public class ManualDrive extends LinearOpMode {
                 }
             } else {
                 isSlideOut = true;
+                if (isFixerServoOut) {
+                    sched.queueAction(outtake.resetOuttakeFixerServo());
+                    isFixerServoOut = false;
+                }
                 sched.queueAction(intake.intakeOff());
                 sched.queueAction(outtake.prepareToSlide());
                 sched.queueAction(outtake.extendOuttakeTeleOps());
@@ -426,7 +434,7 @@ public class ManualDrive extends LinearOpMode {
                 sched.queueAction(outtake.prepareToScore());
                 sched.queueAction(aprilTag.updatePosition());
 
-                if(firstTimeSlideOut == null) {
+                if (firstTimeSlideOut == null) {
                     sched.queueAction(new SleepAction(0.5));
                     sched.queueAction(outtake.resetSlidePivotServoDumpVoltageLimit());
 
@@ -436,9 +444,9 @@ public class ManualDrive extends LinearOpMode {
             }
         }
 
-        if(isSlideOut && isAprilTagDetected && AprilTag.yaw != null) {
+        if (isSlideOut && isAprilTagDetected && AprilTag.yaw != null) {
             isAprilTagDetected = false;
-            final double yaw =  AprilTag.yaw.doubleValue();
+            final double yaw = AprilTag.yaw.doubleValue();
             Log.d("AprilTag_Localization", String.format("%3.2f", yaw));
 //            ExecutorService executorService = Executors.newSingleThreadExecutor();
 //
@@ -474,8 +482,24 @@ public class ManualDrive extends LinearOpMode {
             } else {
                 isHangingActivated = false;
             }
-        } else if (g1.dpadUpOnce()) {
+        }
+        else if (g1.dpadUpOnce()) {
+            isFixerServoOut = true;
             sched.queueAction(outtake.moveUpOuttakeFixerServo());
+//            if(outtake.getFixerServoLevel() == Outtake.FixerServoPosition.LEVEL_1 ||
+//                    outtake.getFixerServoLevel() == Outtake.FixerServoPosition.LEVEL_1_5 ||
+//                    outtake.getFixerServoLevel() == Outtake.FixerServoPosition.LEVEL_2 ||
+//                    outtake.getFixerServoLevel() == Outtake.FixerServoPosition.LEVEL_2_5 ) {
+//                AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);
+//                autoActionSched.addAction(new ParallelAction(
+//                        new AutoDriveStraightAction(drive, -0.2, 500),
+//                        new SequentialAction(
+//                                new SleepAction(0.2),
+//                                outtake.moveUpOuttakeFixerServo())));
+//                autoActionSched.run();
+//            } else{
+//                sched.queueAction(outtake.moveUpOuttakeFixerServo());
+//            }
         }
 
         if (g1.dpadDownLong()) {
@@ -490,7 +514,7 @@ public class ManualDrive extends LinearOpMode {
             }
         }
 
-        if(start_y != null) {
+        if (start_y != null) {
             this.drive.updatePoseEstimate();
             Log.d("ManualDrive", "Pose after strafe: " + new PoseMessage(this.drive.pose) + " | actual=" + (drive.pose.position.y - start_y));
             start_y = null;
@@ -507,12 +531,12 @@ public class ManualDrive extends LinearOpMode {
             start_y = drive.pose.position.y;
 
             AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);
-            if(isSlideOut) {
+            if (isSlideOut) {
                 autoActionSched.addAction(
                         new SequentialAction(
                                 outtake.strafeToAlign(),
                                 new SleepAction(0.2),
-                                pidDrive.setTargetPositionActionBlocking((int)(strafeDistance/MecanumDrive.PARAMS.inPerTick)),
+                                pidDrive.setTargetPositionActionBlocking((int) (strafeDistance / MecanumDrive.PARAMS.inPerTick)),
 //                                drive.actionBuilder(drive.pose)
 //                                        .strafeToConstantHeading(new Vector2d(drive.pose.position.x, drive.pose.position.y + strafeDistance))
 //                                        .build(),
@@ -523,7 +547,7 @@ public class ManualDrive extends LinearOpMode {
 //                                drive.actionBuilder(drive.pose)
 //                                        .strafeToConstantHeading(new Vector2d(drive.pose.position.x, drive.pose.position.y + strafeDistance))
 //                                        .build()
-                        pidDrive.setTargetPositionActionBlocking((int)(strafeDistance/MecanumDrive.PARAMS.inPerTick))
+                        pidDrive.setTargetPositionActionBlocking((int) (strafeDistance / MecanumDrive.PARAMS.inPerTick))
                 );
             }
 
@@ -607,9 +631,42 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void logLoopTime(String msg) {
-        if(logLoopTime) {
+        if (logLoopTime) {
             Log.d("Loop_Logger", msg);
         }
     }
+    private class AutoDriveStraightAction implements Action {
+
+        MecanumDrive drive;
+        double power;
+        long elapsedTime;
+        Long startTime = null;
+
+        public AutoDriveStraightAction(MecanumDrive drive, double power, long elapsedTime) {
+            this.drive = drive;
+            this.power = power;
+            this.elapsedTime = elapsedTime;
+        }
+
+        @Override
+        public boolean run(TelemetryPacket packet) {
+
+            if(startTime == null) {
+                startTime = System.currentTimeMillis();
+                Log.d("AutoDriveStraight_Logger", "Start time: " + startTime + ", power: " + String.format("%3.2f", power));
+            }
+
+            Vector2d input = new Vector2d(power, 0.0);
+            drive.setDrivePowers(new PoseVelocity2d(input, 0.0));
+
+            if(System.currentTimeMillis() - startTime > elapsedTime) {
+                Log.d("AutoDriveStraight_Logger", "End time: " + System.currentTimeMillis()  + ", power: " + String.format("%3.2f", power));
+                drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0.0, 0.0), 0.0));
+                return false;
+            }
+            return true;
+        }
+    }
+
 }
 

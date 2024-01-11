@@ -186,7 +186,7 @@ public class MotorWithPID {
         setCurrentPosition(0);
         setTargetPosition(0);
 
-        Log.d("MotorWithPID_Logger","internalOffset: " + internalOffset);
+//        Log.d("MotorWithPID_Logger","internalOffset: " + internalOffset);
     }
 
     public Action zeroMotorInternalsAction(String motorName) {

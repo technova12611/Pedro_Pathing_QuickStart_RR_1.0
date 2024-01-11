@@ -98,13 +98,13 @@ public class Outtake {
 
     public static double OUTTAKE_FIXER_INIT = 0.77;
     public static double OUTTAKE_FIXER_LEVEL_1 = 0.09;
-    public static double OUTTAKE_FIXER_LEVEL_2 = 0.13;
-    public static double OUTTAKE_FIXER_LEVEL_3 = 0.17;
-    public static double OUTTAKE_FIXER_LEVEL_4 = 0.21;
+    public static double OUTTAKE_FIXER_LEVEL_2 = 0.18;
+    public static double OUTTAKE_FIXER_LEVEL_3 = 0.26;
+    public static double OUTTAKE_FIXER_LEVEL_4 = 0.31;
 
-    public static double OUTTAKE_FIXER_LEVEL_1_5 = 0.11;
-    public static double OUTTAKE_FIXER_LEVEL_2_5 = 0.15;
-    public static double OUTTAKE_FIXER_LEVEL_3_5 = 0.19;
+    public static double OUTTAKE_FIXER_LEVEL_1_5 = 0.14;
+    public static double OUTTAKE_FIXER_LEVEL_2_5 = 0.22;
+    public static double OUTTAKE_FIXER_LEVEL_3_5 = 0.28;
 
     final MotorWithPID slide;
     public boolean slidePIDEnabled = true;
@@ -658,6 +658,16 @@ public class Outtake {
         );
     }
 
+    public Action resetOuttakeFixerServo() {
+        fixerServoPosition  = FixerServoPosition.LEVEL_0;
+
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(outtakeFixerServo,
+                        fixerServoPosition.position,
+                        "outtakeFixerServo")
+        );
+    }
+
     public enum FixerServoPosition {
         LEVEL_0 (5, OUTTAKE_FIXER_INIT),
         LEVEL_1 (10, OUTTAKE_FIXER_LEVEL_1),
@@ -695,6 +705,10 @@ public class Outtake {
             }
             return BY_NUMBER.get(Integer.valueOf(level));
         }
+    }
+
+    public FixerServoPosition getFixerServoLevel() {
+        return this.fixerServoPosition;
     }
 
 }
