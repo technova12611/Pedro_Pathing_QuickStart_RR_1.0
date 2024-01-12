@@ -108,7 +108,6 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         ),
 
                         new SequentialAction(
-
                                 new MecanumDrive.DrivePoseLoggingAction(drive, "start_of_parking"),
                                 // to score the purple pixel on the spike
                                 drive.actionBuilder(cycleScore[SPIKE])
@@ -206,11 +205,11 @@ public abstract class NearCycleAutoBase extends AutoBase {
 
                                 new SequentialAction(
                                         outtake.prepareToSlide(),
-                                        new SleepAction(0.4),
+                                        new SleepAction(0.3),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_prepare"),
                                         extendSlideAction,
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_extend"),
-                                        new SleepAction(0.6),
+                                        new SleepAction(0.3),
                                         outtake.prepareToScoreCycle(),
                                         new SleepAction(0.2)
                                 )
