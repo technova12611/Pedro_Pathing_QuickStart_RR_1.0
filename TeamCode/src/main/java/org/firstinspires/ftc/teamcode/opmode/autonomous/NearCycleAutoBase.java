@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmode.autonomous;
 import android.util.Log;
 
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.NullAction;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
@@ -27,6 +28,11 @@ public abstract class NearCycleAutoBase extends AutoBase {
     public Pose2d[] cycleScore;
     public Pose2d parking;
     private int cycleCount = 0;
+
+    protected void onInit() {
+        // this is the default
+        this.stackPosition = stackIntake1;
+    }
 
     @Override
     protected void onRun() {
@@ -60,7 +66,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         new SleepAction(0.60),
                         intake.stackIntakeLinkageDown(),
                         outtake.afterScore(),
-                        new SleepAction(0.35),
+                        new SleepAction(0.2),
                         new MecanumDrive.DrivePoseLoggingAction(drive, "end_of_scoring_position"),
                         new ParallelAction(
                                 outtake.retractOuttake(),
@@ -102,9 +108,9 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         new SequentialAction(
                                 outtake.retractOuttake(),
                                 new SleepAction(0.5),
-                                new MecanumDrive.DrivePoseLoggingAction(drive, "slides_retracted_completed"),
                                 intake.prepareTeleOpsIntake(),
-                                outtake.prepareToTransfer()
+                                outtake.prepareToTransfer(),
+                                new MecanumDrive.DrivePoseLoggingAction(drive, "slides_retracted_completed")
                         ),
 
                         new SequentialAction(
@@ -156,7 +162,9 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         // drive to the stack
                         new ParallelAction(
                                 drive.actionBuilder(stackAlignment)
-                                        .strafeToLinearHeading(stackIntakePosition.position, stackIntakePosition.heading)
+                                        .strafeToLinearHeading(stackIntakePosition.position, stackIntakePosition.heading,
+                                                this.drive.slowVelConstraint,
+                                                this.drive.slowAccelConstraint)
                                         .build(),
                                 intake.intakeOn()
                         ),
@@ -192,6 +200,8 @@ public abstract class NearCycleAutoBase extends AutoBase {
 
                         new MecanumDrive.DrivePoseLoggingAction(drive, "Before_backdrop_score"),
 
+                        new MecanumDrive.AutoPositionCheckAction(drive, backdropAlignment),
+
                         // move to backdrop scoring position
                         new ParallelAction(
                                 new SequentialAction(
@@ -217,11 +227,12 @@ public abstract class NearCycleAutoBase extends AutoBase {
 
                         // score pixels
                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_open_latch_start"),
-                        new SleepAction(0.1),
-                        outtake.latchScore1(),
-                        new SleepAction(0.3),
+//                        outtake.latchScore1(),
+//                        new SleepAction(0.3),
+//                        outtake.latchScore2(),
+//                        new SleepAction(0.4),
                         outtake.latchScore2(),
-                        new SleepAction(0.4),
+                        new SleepAction(0.5),
                         outtake.afterScore(),
                         new SleepAction(0.2),
                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_end")
@@ -236,6 +247,17 @@ public abstract class NearCycleAutoBase extends AutoBase {
     @Override
     protected Pose2d getStartPose() {
         return this.start;
+    }
+
+    public Action driveToStack() {
+        return new ParallelAction(
+                drive.actionBuilder(stackAlignment)
+                        .strafeToLinearHeading(getStackPosition().position, getStackPosition().heading,
+                                this.drive.slowVelConstraint,
+                                this.drive.slowAccelConstraint)
+                        .build(),
+                intake.intakeOn()
+        );
     }
 
 }

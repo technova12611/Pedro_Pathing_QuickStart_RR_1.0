@@ -506,4 +506,32 @@ public final class MecanumDrive {
             return false;
         }
     }
+
+    public static class AutoPositionCheckAction implements Action {
+        MecanumDrive drive;
+        Pose2d target;
+        Boolean firstTime = null;
+
+        public AutoPositionCheckAction(MecanumDrive drive, Pose2d position) {
+            this.drive = drive;
+            this.target = position;
+        }
+
+        @Override
+        public boolean run(TelemetryPacket packet) {
+
+            if(firstTime == null) {
+                firstTime = true;
+                Log.d("PositionCheck_Logger", "Estimated Pose: " + new PoseMessage(drive.pose)
+                        + " | Target Pose: " + new PoseMessage(target)
+                );
+            }
+            if(Math.abs(drive.pose.position.x - target.position.x) > 5.0 ||
+                    Math.abs(drive.pose.position.y - target.position.y) > 5.0) {
+                return true;
+            }
+
+            return false;
+        }
+    }
 }

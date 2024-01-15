@@ -28,7 +28,7 @@ import java.util.Map;
 
 @Config
 public class Outtake {
-    public static PIDCoefficients outtakePID = new PIDCoefficients(0.0065, 0, 0.0001);
+    public static PIDCoefficients outtakePID = new PIDCoefficients(0.00675, 0, 0.0001);
 
     public static int OUTTAKE_SLIDE_MAX = 2160;
     public static int OUTTAKE_SLIDE_ABOVE_LEVEL_2 = 2150;
@@ -39,8 +39,8 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_HIGH = OUTTAKE_SLIDE_ABOVE_LEVEL_2;
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
     public static int OUTTAKE_SLIDE_MID = 1250;
-    public static int OUTTAKE_SLIDE_CYCLES_ONE = 1050;
-    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1210;
+    public static int OUTTAKE_SLIDE_CYCLES_ONE = 1000;
+    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1180;
 
     public static int OUTTAKE_SLIDE_FAR_LOW = 1070;
     public static int OUTTAKE_SLIDE_LOW = 850;
@@ -55,7 +55,7 @@ public class Outtake {
     public static double LATCH_SCORE_2 = 0.47;
 
     public static double OUTTAKE_PIVOT_REVERSE_DUMP = 0.01;
-    public static double OUTTAKE_PIVOT_INIT = 0.18;
+    public static double OUTTAKE_PIVOT_INIT = 0.19;
     public static double OUTTAKE_PIVOT_SLIDING = 0.22;
     public static double OUTTAKE_PIVOT_DUMP_LOW = 0.38;
     public static double OUTTAKE_PIVOT_DUMP_MID = 0.39;
@@ -97,14 +97,13 @@ public class Outtake {
     public static double OUTTAKE_WIRE_FOR_HANGING_UP = 0.38;
 
     public static double OUTTAKE_FIXER_INIT = 0.77;
-    public static double OUTTAKE_FIXER_LEVEL_1 = 0.09;
-    public static double OUTTAKE_FIXER_LEVEL_2 = 0.18;
-    public static double OUTTAKE_FIXER_LEVEL_3 = 0.26;
-    public static double OUTTAKE_FIXER_LEVEL_4 = 0.31;
-
-    public static double OUTTAKE_FIXER_LEVEL_1_5 = 0.14;
-    public static double OUTTAKE_FIXER_LEVEL_2_5 = 0.22;
-    public static double OUTTAKE_FIXER_LEVEL_3_5 = 0.28;
+    public static double OUTTAKE_FIXER_LEVEL_1 = 0.08;
+    public static double OUTTAKE_FIXER_LEVEL_1_5 = 0.10;
+    public static double OUTTAKE_FIXER_LEVEL_2 = 0.13;
+    public static double OUTTAKE_FIXER_LEVEL_2_5 = 0.15;
+    public static double OUTTAKE_FIXER_LEVEL_3 = 0.18;
+    public static double OUTTAKE_FIXER_LEVEL_3_5 = 0.21;
+    public static double OUTTAKE_FIXER_LEVEL_4 = 0.25;
 
     final MotorWithPID slide;
     public boolean slidePIDEnabled = true;
@@ -679,6 +678,7 @@ public class Outtake {
         LEVEL_3_5 (35, OUTTAKE_FIXER_LEVEL_3_5);
 
         private static final Map<Integer, FixerServoPosition> BY_NUMBER = new HashMap<>();
+        public static int MAX_FIXER_LEVEL = 40;
 
         static {
             for (FixerServoPosition e : values()) {
@@ -696,7 +696,7 @@ public class Outtake {
 
         public static FixerServoPosition getPosition(int level) {
             int temp = level;
-            if(level > 40) {
+            if(level > MAX_FIXER_LEVEL) {
                 temp = 10;
             }
 
@@ -709,6 +709,14 @@ public class Outtake {
 
     public FixerServoPosition getFixerServoLevel() {
         return this.fixerServoPosition;
+    }
+
+    public double getFixerServoPositionByLevel(int level) {
+        return FixerServoPosition.getPosition(level).position;
+    }
+
+    public Servo getOuttakeFixerServo() {
+        return this.outtakeFixerServo;
     }
 
 }

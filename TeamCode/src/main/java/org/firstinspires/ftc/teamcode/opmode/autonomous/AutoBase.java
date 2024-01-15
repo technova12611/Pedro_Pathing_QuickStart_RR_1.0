@@ -4,13 +4,18 @@ import android.util.Log;
 import android.util.Size;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.NullAction;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
+import org.apache.commons.math3.stat.StatUtils;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
+import org.firstinspires.ftc.teamcode.pipeline.ContourDetectionPipeline2;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 import org.firstinspires.ftc.teamcode.pipeline.PropBasePipeline;
 import org.firstinspires.ftc.teamcode.pipeline.PropFarPipeline;
@@ -29,8 +34,10 @@ import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
+import java.util.ArrayList;
+
 @Config
-public abstract class AutoBase extends LinearOpMode {
+public abstract class AutoBase extends LinearOpMode implements StackPositionCallback {
     protected MecanumDrive drive;
     protected Outtake outtake;
     protected Intake intake;
@@ -39,6 +46,9 @@ public abstract class AutoBase extends LinearOpMode {
     protected Hang hang;
     protected AutoActionScheduler sched;
     private PropBasePipeline propPipeline;
+
+    private ContourDetectionPipeline2 stackPipeline;
+
     private VisionPortal portal;
     public static Side side = Side.RIGHT;
     public static int SPIKE = 2;
@@ -51,6 +61,8 @@ public abstract class AutoBase extends LinearOpMode {
 
     protected AprilTagProcessor aprilTag;
     protected VisionPortal visionPortal2;
+
+    protected static Pose2d stackPosition;
 
     final public void update() {
         telemetry.addData("Time left", 30 - getRuntime());
@@ -95,14 +107,24 @@ public abstract class AutoBase extends LinearOpMode {
             propPipeline = new PropFarPipeline();
         }
 
+        stackPipeline = new ContourDetectionPipeline2();
+
         portal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, Globals.FRONT_WEBCAM_NAME))
                 .setCameraResolution(new Size(1920, 1080))
                 .addProcessor(propPipeline)
+                .addProcessor(stackPipeline)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .enableLiveView(true)
                 .setAutoStopLiveView(true)
                 .build();
+
+        while(!portal.getCameraState().equals(VisionPortal.CameraState.STREAMING)) {
+            telemetry.addLine(" Please wait, Webcam is streaming ... ");
+            telemetry.update();
+            idle();
+        }
+
         onInit();
 
         while (opModeInInit()) {
@@ -256,5 +278,101 @@ public abstract class AutoBase extends LinearOpMode {
     // these are needed to know where the robot located
     protected abstract AlliancePosition getAlliance();
     protected abstract FieldPosition getFieldPosition();
+
+
+    public static class StackIntakePositionAction implements Action {
+        MecanumDrive drive;
+        Pose2d stackPose;
+        Boolean firstTime = null;
+
+        ContourDetectionPipeline2 pipeline;
+        VisionPortal portal;
+
+        int counter = 0;
+        long startTime = 0;
+
+        ArrayList<Vector2d> positions = new ArrayList<>();
+
+        public StackIntakePositionAction(MecanumDrive drive, VisionPortal portal, ContourDetectionPipeline2 pipeline, Pose2d stackPose) {
+            this.drive = drive;
+            this.stackPose = stackPose;
+            this.pipeline = pipeline;
+            this.portal = portal;
+        }
+
+        @Override
+        public boolean run(TelemetryPacket packet) {
+
+            if(counter == 0) {
+                startTime = System.currentTimeMillis();
+                portal.setProcessorEnabled(this.pipeline, true);
+            }
+
+            if(counter++ > 3) {
+                portal.setProcessorEnabled(this.pipeline, false);
+
+                double avg_x = positions.stream()
+                        .mapToDouble(obj ->obj.x).average().orElse(0.0);
+                double avg_y = positions.stream()
+                        .mapToDouble(obj ->obj.y).average().orElse(0.0);
+
+                Log.d("StackIntakePosition_Logger", "Estimated Pose: " + new PoseMessage(drive.pose)
+                        + " | Target Pose: " + new PoseMessage(stackPose) + " | count: " + counter
+                        + " | avg_stack_position (x,y): (" + avg_x + "," + avg_y + ")"
+                );
+
+                Pose2d proposedPose = stackPose;
+
+                if( avg_x > 1300 && avg_x < 1400 ) {
+                    if(Globals.COLOR == AlliancePosition.RED) {
+                        proposedPose = new Pose2d (drive.pose.position.x - 1.0, stackPose.position.y, stackPose.heading.toDouble());
+                    } else {
+                        proposedPose = new Pose2d (drive.pose.position.x + 1.0, stackPose.position.y, stackPose.heading.toDouble());
+                    }
+                } else if( avg_x > 1400 || avg_x < 1000 ) {
+                    if(Globals.COLOR == AlliancePosition.RED) {
+                        proposedPose = new Pose2d (drive.pose.position.x - 2.5, stackPose.position.y, stackPose.heading.toDouble());
+                    } else {
+                        proposedPose = new Pose2d (drive.pose.position.x + 2.5, stackPose.position.y, stackPose.heading.toDouble());
+                    }
+                }
+
+                Log.d("StackIntakePosition_Logger", "Proposed Pose: " + new PoseMessage(proposedPose));
+
+                AutoBase.setStackPositionStatic(stackPose);
+
+                return false;
+            }
+
+            int stack_position_x = pipeline.getRectX();
+            int stack_position_y = pipeline.getRectX();
+
+            positions.add(new Vector2d(stack_position_x, stack_position_y));
+
+            Log.d("StackIntakePosition_Logger", "Estimated Pose: " + new PoseMessage(drive.pose)
+                    + " | Target Pose: " + new PoseMessage(stackPose) + " | count: " + counter
+                    + " | stack_position (x,y): (" + stack_position_x + "," + stack_position_y + ")"
+                    + " | Elapsed time: " + (System.currentTimeMillis() - startTime)
+            );
+
+            return true;
+        }
+    }
+
+    public Pose2d getStackPosition() {
+        return this.stackPosition;
+    }
+
+    public void setStackPosition(Pose2d stackPosition) {
+        AutoBase.stackPosition = stackPosition;
+    }
+
+    public final static void setStackPositionStatic(Pose2d stackPosition) {
+        AutoBase.stackPosition = stackPosition;
+    }
+
+    public Action driveToStack() {
+        return new NullAction();
+    }
 }
 

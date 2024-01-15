@@ -19,7 +19,7 @@ public class MovingArrayList {
         this.arrayList = new ArrayList<>(size);
     }
 
-    public void add(double value) {
+    public synchronized void add(double value) {
         if (arrayList.size() == size) {
             arrayList.remove(0); // Remove the oldest element if the size exceeds the limit
         }
@@ -30,7 +30,7 @@ public class MovingArrayList {
         return new ArrayList<>(arrayList); // Return a copy to prevent external modifications
     }
 
-    public double getMean() {
+    public synchronized double getMean() {
         if(size > 5 && arrayList.size() > (size -5)) {
             removeMinMax();
         }

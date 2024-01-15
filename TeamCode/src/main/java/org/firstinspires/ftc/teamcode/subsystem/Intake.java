@@ -166,7 +166,9 @@ public class Intake {
                 new IntakeStateAction(IntakeState.REVERSING),
                 new ActionUtil.CRServoAction(bottomRollerServo, -1.0),
                 new ActionUtil.ServoPositionAction(stackIntakeLinkage, STACK_INTAKE_LINKAGE_UP, "stackIntakeLinkage"),
-                new ActionUtil.DcMotorExPowerAction(intakeMotor, -INTAKE_SPEED / 1000.0)
+                new ActionUtil.DcMotorExPowerAction(intakeMotor, -INTAKE_SPEED / 1000.0),
+                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_INIT, "stackIntakeServoLeft"),
+                new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_INIT, "stackIntakeServoRight")
         );
     }
 

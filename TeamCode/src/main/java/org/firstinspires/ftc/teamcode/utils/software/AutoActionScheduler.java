@@ -9,6 +9,8 @@ import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.opmode.autonomous.AutoBase;
+import org.firstinspires.ftc.teamcode.opmode.autonomous.StackPositionCallback;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -23,12 +25,18 @@ public class AutoActionScheduler {
 
    int actionOrder = 0;
 
+   private StackPositionCallback stackCallback;
+
    public AutoActionScheduler(Runnable pidUpdate) {
       this.pidUpdate = pidUpdate;
    }
 
    public void addAction(Action action) {
       actions.add(action);
+   }
+
+   public void setStackCallback(StackPositionCallback stackCallback) {
+      this.stackCallback = stackCallback;
    }
 
    public void run() {
@@ -50,6 +58,11 @@ public class AutoActionScheduler {
 
          if (!running) {
             actions.remove();
+            if(a instanceof AutoBase.StackIntakePositionAction) {
+               if(stackCallback != null) {
+                  ((LinkedList) actions).addLast(stackCallback.driveToStack());
+               }
+            }
             Log.d("AutoActionScheduler:", "Action " + (++actionOrder) + " finished at " + (System.currentTimeMillis()-startTime + "(ms)"));
          }
       }
