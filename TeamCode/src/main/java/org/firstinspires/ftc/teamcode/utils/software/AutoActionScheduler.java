@@ -6,9 +6,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.qualcomm.robotcore.util.RobotLog;
 
-import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.opmode.autonomous.AutoBase;
 import org.firstinspires.ftc.teamcode.opmode.autonomous.StackPositionCallback;
 
@@ -35,7 +33,7 @@ public class AutoActionScheduler {
       actions.add(action);
    }
 
-   public void setStackCallback(StackPositionCallback stackCallback) {
+   public void setStackAlignmentCallback(StackPositionCallback stackCallback) {
       this.stackCallback = stackCallback;
    }
 

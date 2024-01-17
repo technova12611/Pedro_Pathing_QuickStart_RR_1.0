@@ -32,6 +32,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
     protected void onInit() {
         // this is the default
         this.stackPosition = stackIntake1;
+        this.sched.setStackAlignmentCallback(this);
     }
 
     @Override
@@ -251,6 +252,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
         return this.start;
     }
 
+    @Override
     public Action driveToStack() {
         return new ParallelAction(
                 drive.actionBuilder(stackAlignment)
@@ -261,5 +263,4 @@ public abstract class NearCycleAutoBase extends AutoBase {
                 intake.intakeOn()
         );
     }
-
 }

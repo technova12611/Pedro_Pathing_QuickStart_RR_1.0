@@ -506,7 +506,7 @@ public class ManualDrive extends LinearOpMode {
                 double nextLevelPosition = outtake.getFixerServoPositionByLevel(nextLevel);
                 Log.d("AutoDrive_Logger", "nextLevel:" + nextLevel + " nextLevelPosition: " + String.format("%3.2f", nextLevelPosition));
                 autoActionSched.addAction(
-                        new AutoDriveStraightAction(drive, -0.35, outtake.getOuttakeFixerServo(), 0.001, nextLevelPosition, 300)
+                        new AutoDriveStraightAction(drive, -0.35, outtake.getOuttakeFixerServo(), 0.001, nextLevelPosition, 400)
                     );
 
                 autoActionSched.run();
