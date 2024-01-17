@@ -12,27 +12,28 @@ public class RedRightCycleAuto extends NearCycleAutoBase {
 
     @Override
     protected void onInit() {
+        super.onInit();
         // 0 = left, 1 = middle, 2 = right
         this.start = RedRightAuto.red_start;
         this.backdrop = RedRightAuto.red_backdrop;
         this.spike = RedRightAuto.red_spike;
 
         this.cycleStart = new Pose2d[]{
-                new Pose2d(spike[0].position.x, -11.2, Math.toRadians(180)),
-                new Pose2d(spike[1].position.x, -11.2, Math.toRadians(180)),
-                new Pose2d(spike[2].position.x, -11.2, Math.toRadians(180))
+                new Pose2d(spike[0].position.x, -11.0, Math.toRadians(180)),
+                new Pose2d(spike[1].position.x, -11.0, Math.toRadians(180)),
+                new Pose2d(spike[2].position.x, -11.0, Math.toRadians(180))
         };
 
-        this.stackAlignment = new Pose2d(-49.0, -11.2, Math.toRadians(180));
-        this.stackIntake1 = new Pose2d(-55.8, -12.2, Math.toRadians(180));
-        this.stackIntake2 = new Pose2d(-56.5, -10.8, Math.toRadians(180));
-        this.safeTrussPassStop = new Pose2d(-49.0, -11.2, Math.toRadians(180));
-        this.backdropAlignment = new Pose2d(38.0, -11.2, Math.toRadians(180));
+        this.stackAlignment = new Pose2d(-48.0, -11.0, Math.toRadians(180));
+        this.stackIntake1 = new Pose2d(-55.8, -12.0, Math.toRadians(180));
+        this.stackIntake2 = new Pose2d(-56.5, -11.0, Math.toRadians(180));
+        this.safeTrussPassStop = new Pose2d(-49.0, -11.0, Math.toRadians(180));
+        this.backdropAlignment = new Pose2d(38.0, -11.0, Math.toRadians(180));
 
         cycleScore = new Pose2d[] {
-                new Pose2d(47.9, -35.0, Math.toRadians(180)),
-                new Pose2d(47.9, -32.0, Math.toRadians(180)),
-                new Pose2d(47.9, -32.0, Math.toRadians(180))
+                new Pose2d(48.5, -35.0, Math.toRadians(180)),
+                new Pose2d(48.5, -31.0, Math.toRadians(180)),
+                new Pose2d(48.5, -31.0, Math.toRadians(180))
         };
 
         this.parking = new Pose2d(44.1, -20.0, Math.toRadians(180));

@@ -63,7 +63,7 @@ public class ContourDetectionPipeline2 implements VisionProcessor, CameraStreamS
     private final Mat mat = new Mat();
     private final Mat processed = new Mat();
 
-    private Rect maxRect = new Rect(600,1,1,1);
+    private Rect maxRect = new Rect(500,1,1,1);
 
     public double maxArea = 0;
     private boolean first = false;
@@ -124,7 +124,7 @@ public class ContourDetectionPipeline2 implements VisionProcessor, CameraStreamS
             // Lock this up to prevent errors when outside threads access the max rect property.
             synchronized (sync) {
                 double tempMaxArea = 0.0;
-                Rect tempMaxRect = new Rect(100,100,10,10);
+                Rect tempMaxRect = new Rect(100,1,10,10);
                 // Loop Through Contours
                 for (MatOfPoint contour : contours) {
                     Point[] contourArray = contour.toArray();
@@ -153,7 +153,7 @@ public class ContourDetectionPipeline2 implements VisionProcessor, CameraStreamS
                 maxRect = tempMaxRect;
 
                 if (contours.isEmpty()) {
-                    maxRect = new Rect(100,100,10,10);
+                    maxRect = new Rect(500,50,10,10);
                 }
             }
             // Draw Rectangles If Area Is At Least 500

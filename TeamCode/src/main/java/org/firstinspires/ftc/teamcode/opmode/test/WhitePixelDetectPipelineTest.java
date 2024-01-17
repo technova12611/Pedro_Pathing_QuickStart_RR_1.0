@@ -20,7 +20,6 @@ import org.firstinspires.ftc.teamcode.utils.hardware.GamePadController;
 import org.firstinspires.ftc.vision.VisionPortal;
 
 @Config
-@Disabled
 @TeleOp(group = "Test")
 public class WhitePixelDetectPipelineTest extends LinearOpMode {
     private ContourDetectionPipeline2 pixelPipeline;
@@ -55,7 +54,8 @@ public class WhitePixelDetectPipelineTest extends LinearOpMode {
 
         Log.d("Pipeline_logger", "Webcam init time (ms): " + (System.currentTimeMillis() - startTime));
 
-        portal.setProcessorEnabled(pixelPipeline, false);
+        portal.setProcessorEnabled(pixelPipeline, true);
+        portal.setProcessorEnabled(propPipeline, false);
 
         Side side = Side.RIGHT;
         GamePadController g1 = new GamePadController(gamepad1);

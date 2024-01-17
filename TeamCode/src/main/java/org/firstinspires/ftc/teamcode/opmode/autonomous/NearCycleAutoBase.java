@@ -31,6 +31,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
 
     protected void onInit() {
         // this is the default
+        super.onInit();
         this.stackPosition = stackIntake1;
         this.sched.setStackAlignmentCallback(this);
     }
@@ -158,21 +159,30 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                 )
                         ),
 
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "stack_alignment_position"),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "stack_alignment_position")
+                ));
 
-                        // drive to the stack
-                        new ParallelAction(
-                                drive.actionBuilder(stackAlignment)
-                                        .strafeToLinearHeading(stackIntakePosition.position, stackIntakePosition.heading,
-                                                this.drive.slowVelConstraint,
-                                                this.drive.slowAccelConstraint)
-                                        .build(),
-                                intake.intakeOn()
-                        ),
+        sched.addAction(
+                new SleepAction(0.15)
+        );
+
+        sched.addAction(
+                new AutoBase.StackIntakePositionAction(drive,intake,portal,stackPipeline, stackIntakePosition)
+        );
+
+        sched.addAction(
+                new SequentialAction(
+//                        // drive to the stack
+//                        new ParallelAction(
+//                                drive.actionBuilder(stackAlignment)
+//                                        .strafeToLinearHeading(stackIntakePosition.position, stackIntakePosition.heading,
+//                                                this.drive.slowVelConstraint,
+//                                                this.drive.slowAccelConstraint)
+//                                        .build(),
+//                                intake.intakeOn()
+//                        ),
 
                         new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_start_position"),
-
-                        new AutoBase.StackIntakePositionAction(drive,intake,portal,stackPipeline, stackIntake1),
 
                         // intake the pixels from the stack
                         intake.intakeTwoStackedPixels(),
@@ -193,7 +203,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                 ),
 
                                 new SequentialAction(
-                                        new SleepAction(0.5),
+                                        new SleepAction(0.8),
                                         intake.stackIntakeLinkageUp(),
                                         new SleepAction(1.8),
                                         intake.prepareTeleOpsIntake(),
@@ -213,7 +223,6 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                             .strafeToLinearHeading(cycleScorePosition, cycleScore[SPIKE].heading)
                                             .build(),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_position")
-                                        //new MecanumDrive.UpdateDrivePoseAction(drive, this.visionPortal2, this.aprilTag)
                                 ),
 
                                 new SequentialAction(
@@ -230,14 +239,14 @@ public abstract class NearCycleAutoBase extends AutoBase {
 
                         // score pixels
                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_open_latch_start"),
-//                        outtake.latchScore1(),
-//                        new SleepAction(0.3),
-//                        outtake.latchScore2(),
-//                        new SleepAction(0.4),
+                        outtake.latchScore1(),
+                        new SleepAction(0.3),
                         outtake.latchScore2(),
-                        new SleepAction(0.5),
-                        outtake.afterScore(),
-                        new SleepAction(0.2),
+                        new SleepAction(0.4),
+//                        outtake.latchScore2(),
+//                        new SleepAction(0.5),
+//                        outtake.afterScore(),
+//                        new SleepAction(0.2),
                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_end")
                 ));
     }
@@ -255,10 +264,9 @@ public abstract class NearCycleAutoBase extends AutoBase {
     @Override
     public Action driveToStack() {
         return new ParallelAction(
+                new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_auto_alignment_start"),
                 drive.actionBuilder(stackAlignment)
-                        .strafeToLinearHeading(getStackPosition().position, getStackPosition().heading,
-                                this.drive.slowVelConstraint,
-                                this.drive.slowAccelConstraint)
+                        .strafeToLinearHeading(getStackPosition().position, getStackPosition().heading)
                         .build(),
                 intake.intakeOn()
         );

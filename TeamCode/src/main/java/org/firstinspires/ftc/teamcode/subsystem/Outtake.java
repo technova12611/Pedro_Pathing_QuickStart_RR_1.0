@@ -40,16 +40,13 @@ public class Outtake {
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
     public static int OUTTAKE_SLIDE_MID = 1250;
     public static int OUTTAKE_SLIDE_CYCLES_ONE = 1000;
-    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1180;
+    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1150;
 
     public static int OUTTAKE_SLIDE_FAR_LOW = 1070;
-    public static int OUTTAKE_SLIDE_LOW = 850;
-
+    public static int OUTTAKE_SLIDE_LOW = 830;
     public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 1100;
     public static int OUTTAKE_SLIDE_INIT = 0;
-
     public static int OUTTAKE_SLIDE_INCREMENT= 200;
-
     public static double LATCH_CLOSED = 0.55;
     public static double LATCH_SCORE_1 = 0.415;
     public static double LATCH_SCORE_2 = 0.47;

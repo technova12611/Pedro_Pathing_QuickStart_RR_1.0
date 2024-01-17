@@ -42,6 +42,7 @@ public class AutoActionScheduler {
       long startTime = System.currentTimeMillis();
 
       Log.d("AutoActionScheduler:","Action scheduler started ... | " + startTime);
+
       while (actions.peek() != null && !Thread.currentThread().isInterrupted()) {
          TelemetryPacket packet = new TelemetryPacket();
          packet.fieldOverlay().getOperations().addAll(canvas.getOperations());
@@ -57,11 +58,16 @@ public class AutoActionScheduler {
          if (!running) {
             actions.remove();
             if(a instanceof AutoBase.StackIntakePositionAction) {
+               Log.d("AutoActionScheduler:", "StackIntakePositionAction finished: " + stackCallback);
+
                if(stackCallback != null) {
-                  ((LinkedList) actions).addLast(stackCallback.driveToStack());
+                  Log.d("AutoActionScheduler:", "** Adding a new StackDriveAction " + " started at " + (System.currentTimeMillis()-startTime + "(ms)"));
+                  ((LinkedList) actions).addFirst(stackCallback.driveToStack());
+                  Log.d("AutoActionScheduler:", "** Added a new StackDriveAction " + " completed at " + (System.currentTimeMillis()-startTime + "(ms)"));
                }
             }
-            Log.d("AutoActionScheduler:", "Action " + (++actionOrder) + " finished at " + (System.currentTimeMillis()-startTime + "(ms)"));
+
+            Log.d("AutoActionScheduler:", "Action: " + a + " - " + (++actionOrder) + " finished at " + (System.currentTimeMillis()-startTime + "(ms)"));
          }
       }
 
