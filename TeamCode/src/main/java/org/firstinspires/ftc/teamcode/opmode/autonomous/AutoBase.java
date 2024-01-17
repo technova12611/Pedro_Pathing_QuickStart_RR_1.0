@@ -10,6 +10,7 @@ import com.acmerobotics.roadrunner.NullAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.apache.commons.math3.stat.StatUtils;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -45,11 +46,11 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
     protected Drone drone;
     protected Hang hang;
     protected AutoActionScheduler sched;
-    private PropBasePipeline propPipeline;
+    protected PropBasePipeline propPipeline;
 
-    private ContourDetectionPipeline2 stackPipeline;
+    protected ContourDetectionPipeline2 stackPipeline;
 
-    private VisionPortal portal;
+    protected VisionPortal portal;
     public static Side side = Side.RIGHT;
     public static int SPIKE = 2;
     private GamePadController g1, g2;
@@ -59,10 +60,10 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
     private int[] waitTimeOptions = {0,5,8};
     private int selectionIdx = 0;
 
-    protected AprilTagProcessor aprilTag;
-    protected VisionPortal visionPortal2;
+    public static boolean displayDistanceSensor = true;
 
     protected static Pose2d stackPosition;
+    ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
     final public void update() {
         telemetry.addData("Time left", 30 - getRuntime());
@@ -119,15 +120,25 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 .setAutoStopLiveView(true)
                 .build();
 
+        loopTimer.reset();
         while(!portal.getCameraState().equals(VisionPortal.CameraState.STREAMING)) {
             telemetry.addLine(" Please wait, Webcam is streaming ... ");
             telemetry.update();
             idle();
         }
 
+        double webCamReadyTime = loopTimer.milliseconds();
+
+        portal.setProcessorEnabled(propPipeline, true);
+        portal.setProcessorEnabled(stackPipeline, false);
         onInit();
 
+        double maxLoopTime = 0.0;
+        double minLoopTime = 100.0;
+        loopTimer.reset();
+
         while (opModeInInit()) {
+            double loopTimeBegin = loopTimer.milliseconds();
             g1.update();
 
             side = propPipeline.getLocation();
@@ -138,6 +149,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             telemetry.addLine(" <----- Team Prop Vision Detection -----> ");
             telemetry.addLine(" Wait a few seconds to capture the Maximum color value ");
             telemetry.addLine(" before placing the team prop on the field ");
+
+            double loopTimeForProp = loopTimer.milliseconds();
 
             String sideStr = "Left";
             String centerStr = "Center";
@@ -160,8 +173,6 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             telemetry.addData("Spike Position", side.toString());
             telemetry.addLine("\n");
 
-            telemetry.addData("Outtake Servo Positions", outtake.getServoPositions());
-
             if(getFieldPosition() == FieldPosition.FAR) {
                 // use dpad to select wait time
                 if (g1.dpadUpOnce()) {
@@ -182,9 +193,35 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 telemetry.addLine("   ");
                 telemetry.addLine("<------- FAR side Wait Time Selection ------->");
                 telemetry.addLine("  Use DPAD Up/Down button to select wait time ");
-                telemetry.addData(   "    Wait Time to Score Yellow: ", farSideAutoWaitTimeInSeconds + " (seconds)");
+                telemetry.addLine(   "    Wait Time to Score Yellow: " + farSideAutoWaitTimeInSeconds + " (seconds)");
             }
 
+            double loopTimeForAfterProp = loopTimer.milliseconds();
+
+            if(displayDistanceSensor) {
+                telemetry.addLine(" Stack Distance sensor (in): " + String.format("%3.2f", intake.getStackDistance()));
+            }
+
+            double loopTimeForDistance = loopTimer.milliseconds();
+
+            double loopTimeInMili = loopTimer.milliseconds();
+
+            if(loopTimeInMili < minLoopTime) {
+                minLoopTime = loopTimeInMili;
+            } else if(loopTimeInMili > maxLoopTime) {
+                maxLoopTime = loopTimeInMili;
+            }
+
+            telemetry.addLine(" Loop time: " + String.format("%.1f", loopTimeInMili)
+                    + " | Min Loop: " + String.format("%.1f", minLoopTime) + " | Max Loop: " + String.format("%.1f", maxLoopTime) );
+
+            telemetry.addLine(" Elapsed time, loop begin: " + String.format("%.1f", loopTimeBegin)+ " | For Prop: " + String.format("%.1f", loopTimeForProp)
+                    + " | After Prop: " + String.format("%.1f", loopTimeForAfterProp) + " | For Distance: " + String.format("%.1f", loopTimeForDistance) );
+
+            telemetry.addLine("Outtake Servo Positions: "+ outtake.getServoPositions());
+            telemetry.addLine("Webcam ready time (ms):" + webCamReadyTime);
+
+            loopTimer.reset();
             telemetry.update();
             idle();
         }
@@ -195,7 +232,9 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         MecanumDrive.autoStartTimestamp = System.currentTimeMillis();
 
         try {
-            portal.close();
+            portal.setProcessorEnabled(propPipeline, false);
+            portal.setProcessorEnabled(stackPipeline, false);
+            //portal.close();
         }catch(Exception e) {
             // ignore
         }
@@ -224,6 +263,12 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         sched.run();
 
         Log.d("Auto_logger", String.format("Auto program ended at %.3f", getRuntime()));
+
+        try {
+            portal.close();
+        }catch(Exception e) {
+            // ignore
+        }
 
         drive.updatePoseEstimate();
 
@@ -282,6 +327,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
     public static class StackIntakePositionAction implements Action {
         MecanumDrive drive;
+        Intake intake;
         Pose2d stackPose;
         Boolean firstTime = null;
 
@@ -291,10 +337,11 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         int counter = 0;
         long startTime = 0;
 
-        ArrayList<Vector2d> positions = new ArrayList<>();
+        ArrayList<Pose2d> positions = new ArrayList<>();
 
-        public StackIntakePositionAction(MecanumDrive drive, VisionPortal portal, ContourDetectionPipeline2 pipeline, Pose2d stackPose) {
+        public StackIntakePositionAction(MecanumDrive drive, Intake intake, VisionPortal portal, ContourDetectionPipeline2 pipeline, Pose2d stackPose) {
             this.drive = drive;
+            this.intake = intake;
             this.stackPose = stackPose;
             this.pipeline = pipeline;
             this.portal = portal;
@@ -312,30 +359,56 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 portal.setProcessorEnabled(this.pipeline, false);
 
                 double avg_x = positions.stream()
-                        .mapToDouble(obj ->obj.x).average().orElse(0.0);
+                        .mapToDouble(obj ->obj.position.x).average().orElse(0.0);
                 double avg_y = positions.stream()
-                        .mapToDouble(obj ->obj.y).average().orElse(0.0);
+                        .mapToDouble(obj ->obj.position.y).average().orElse(0.0);
+                double avg_y_adj = positions.stream()
+                        .mapToDouble(obj ->obj.heading.toDouble()).average().orElse(0.0);
 
                 Log.d("StackIntakePosition_Logger", "Estimated Pose: " + new PoseMessage(drive.pose)
                         + " | Target Pose: " + new PoseMessage(stackPose) + " | count: " + counter
-                        + " | avg_stack_position (x,y): (" + avg_x + "," + avg_y + ")"
+                        + " | avg_stack_position (x,y, adj_y): (" + avg_x + "," + avg_y + "," + avg_y_adj + ")"
                 );
 
                 Pose2d proposedPose = stackPose;
+                boolean isRed = (Globals.COLOR == AlliancePosition.RED);
 
-                if( avg_x > 1300 && avg_x < 1400 ) {
-                    if(Globals.COLOR == AlliancePosition.RED) {
-                        proposedPose = new Pose2d (drive.pose.position.x - 1.0, stackPose.position.y, stackPose.heading.toDouble());
-                    } else {
-                        proposedPose = new Pose2d (drive.pose.position.x + 1.0, stackPose.position.y, stackPose.heading.toDouble());
-                    }
-                } else if( avg_x > 1400 || avg_x < 1000 ) {
-                    if(Globals.COLOR == AlliancePosition.RED) {
-                        proposedPose = new Pose2d (drive.pose.position.x - 2.5, stackPose.position.y, stackPose.heading.toDouble());
-                    } else {
-                        proposedPose = new Pose2d (drive.pose.position.x + 2.5, stackPose.position.y, stackPose.heading.toDouble());
+                double adjustment_y = 0.0;
+                double adjustment_x = 0.0;
+                if(avg_y > 100) {
+
+                    if (avg_x > 1300 && avg_x < 1400) {
+                        if (isRed) {
+                            adjustment_y = -1.0;
+                        } else {
+                            adjustment_y = 1.0;
+                        }
+                    } else if (avg_x > 1400 || (avg_x < 1000 && avg_x > 800)) {
+                        if (isRed) {
+                            adjustment_y = -2.5;
+                        } else {
+                            adjustment_y = 2.5;
+                        }
+                    } else if (avg_x < 1180 && avg_x > 1080) {
+                        if (isRed) {
+                            adjustment_y = 1.0;
+                        } else {
+                            adjustment_y = -1.0;
+                        }
+                    } else if (avg_x < 1080) {
+                        if (isRed) {
+                            adjustment_y = 2.5;
+                        } else {
+                            adjustment_y = -2.5;
+                        }
                     }
                 }
+
+                if(avg_y_adj > 12.0 && avg_y_adj < 20.0) {
+                    adjustment_x = avg_y_adj - 3.2;
+                }
+
+                proposedPose = new Pose2d(drive.pose.position.x - adjustment_x, stackPose.position.y + adjustment_y , stackPose.heading.toDouble());
 
                 Log.d("StackIntakePosition_Logger", "Proposed Pose: " + new PoseMessage(proposedPose));
 
@@ -344,14 +417,22 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 return false;
             }
 
-            int stack_position_x = pipeline.getRectX();
-            int stack_position_y = pipeline.getRectX();
+            double stack_position_x = pipeline.getRectX()*1.0;
+            double stack_position_y = pipeline.getRectX()*1.0;
+            double stackDistanceY = intake.getStackDistance();
 
-            positions.add(new Vector2d(stack_position_x, stack_position_y));
+            if(stackDistanceY < 12.0 && stackDistanceY > 20.0) {
+                stackDistanceY = 0.0;
+            }
+
+            // this x,y are different than the field coordinates, will convert when the measurements are done
+            // we take measurement 3 times, than use the average
+            positions.add(new Pose2d(stack_position_x, stack_position_y, stackDistanceY));
 
             Log.d("StackIntakePosition_Logger", "Estimated Pose: " + new PoseMessage(drive.pose)
                     + " | Target Pose: " + new PoseMessage(stackPose) + " | count: " + counter
                     + " | stack_position (x,y): (" + stack_position_x + "," + stack_position_y + ")"
+                    + " | stackDistance (x,y): (" + stack_position_x + "," + stack_position_y + ")"
                     + " | Elapsed time: " + (System.currentTimeMillis() - startTime)
             );
 

@@ -26,7 +26,9 @@ public class BlueLeftAuto extends NearAutoBase {
    };
    // 0 = left, 1 = middle, 2 = right
    public static Pose2d blue_start = new Pose2d(14.5, 62.0, Math.toRadians(-90));
-   public static Pose2d blue_parking = new Pose2d(52.0, 61.0, Math.toRadians(-180));
+   public static Pose2d blue_parking = new Pose2d(51.0, 61.5, Math.toRadians(-180));
+
+   public static Pose2d blue_parking_2 = new Pose2d(57.0, 61.5, Math.toRadians(-180));
 
    @Override
    protected void onInit() {
@@ -34,6 +36,7 @@ public class BlueLeftAuto extends NearAutoBase {
       this.spike = blue_spike;
       this.backdrop =  blue_backdrop;
       this.parking = blue_parking;
+      this.parking_2 = blue_parking_2;
    }
    protected AlliancePosition getAlliance() {
       return AlliancePosition.BLUE;

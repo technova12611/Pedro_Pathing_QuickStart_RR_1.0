@@ -171,6 +171,8 @@ public abstract class NearCycleAutoBase extends AutoBase {
 
                         new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_start_position"),
 
+                        new AutoBase.StackIntakePositionAction(drive,intake,portal,stackPipeline, stackIntake1),
+
                         // intake the pixels from the stack
                         intake.intakeTwoStackedPixels(),
 

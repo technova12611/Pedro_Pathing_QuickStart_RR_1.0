@@ -26,7 +26,7 @@ public class DriveWithPID {
     private PIDFController turn_pidfController = new PIDFController(turn_pid, 0.0, 0.0);
     private int targetPosition = 0;
     private int internalOffset = 0;
-    private int tolerance = 50;
+    private int tolerance = 25;
     private long maxElapsedTime = 500;
     private double maxPower = 0.6;
     private DriveDirection direction;

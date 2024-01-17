@@ -222,7 +222,7 @@ public class ManualDrive extends LinearOpMode {
             telemetry.addData("Slide motor busy", outtake.isMotorBusy());
             telemetry.update();
 
-            if (System.currentTimeMillis() - start_time > 50) {
+            if (System.currentTimeMillis() - start_time > 80) {
                 Log.d("Loop_Logger", " --- Loop time: " + (System.currentTimeMillis() - start_time) + " ---");
             }
         }
@@ -288,6 +288,10 @@ public class ManualDrive extends LinearOpMode {
             if (intakeSlowdownStartTime != null) {
                 if ((System.currentTimeMillis() - intakeSlowdownStartTime.longValue()) > 500) {
                     sched.queueAction(intake.intakeOn());
+                    // let's retake the pixel
+                    // hope the pixel is moving down enough, so we recount
+                    Intake.pixelsCount--;
+                    prevPixelCount=Intake.pixelsCount;
                     intakeSlowdownStartTime = null;
                     intakeReverseStartTime = new Long(System.currentTimeMillis());
                 }
@@ -310,7 +314,7 @@ public class ManualDrive extends LinearOpMode {
                             + Intake.pixelsCount + ", reversing started at " + (intakeReverseStartTime - startTime));
                 }
 
-                if (elapsedTimeMs > 2200 &&
+                if (elapsedTimeMs > 2500 &&
                         intake.intakeState.equals(Intake.IntakeState.REVERSING)) {
                     sched.queueAction(intake.intakeOff());
                     intakeReverseStartTime = null;

@@ -18,6 +18,7 @@ public abstract class NearAutoBase extends AutoBase {
    // 0 = left, 1 = middle, 2 = right
    public Pose2d start;
    public Pose2d parking;
+   public Pose2d parking_2;
 
    protected AlliancePosition getAlliance() {
       return AlliancePosition.RED;
@@ -80,6 +81,7 @@ public abstract class NearAutoBase extends AutoBase {
                               drive.actionBuilder(spike[SPIKE])
                                       .setReversed(true)
                                       .strafeToLinearHeading(parking.position, parking.heading)
+                                      .strafeToLinearHeading(parking_2.position, parking_2.heading)
                                       .build()
                       ),
 

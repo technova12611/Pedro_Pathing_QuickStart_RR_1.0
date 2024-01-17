@@ -7,13 +7,16 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
 import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 
@@ -46,6 +49,8 @@ public class Intake {
     private final DigitalChannel beamBreakerActive;
     private final DigitalChannel beamBreakerPassive;
 
+    private Rev2mDistanceSensor stackDistance;
+
     private boolean prevBeamBreakerState = true;
     private boolean curBeamBreakerState = true;
 
@@ -67,6 +72,7 @@ public class Intake {
 
         beamBreakerActive = hardwareMap.get(DigitalChannel.class, "beamBreaker1");
         beamBreakerPassive = hardwareMap.get(DigitalChannel.class, "beamBreaker2");
+        stackDistance = (Rev2mDistanceSensor)hardwareMap.get(DistanceSensor.class, "stackDistance");
     }
 
     public void initialize(boolean isAuto) {
@@ -278,5 +284,9 @@ public class Intake {
     public String getStackServoPositions() {
         return String.format("Left stack servo: %.3f | Right stack servo: %.3f ",
                 this.stackIntakeServoLeft.getPosition(), this.stackIntakeServoRight.getPosition());
+    }
+    public double getStackDistance() {
+        if(stackDistance == null) return 0.0;
+        return stackDistance.getDistance(DistanceUnit.INCH);
     }
 }
