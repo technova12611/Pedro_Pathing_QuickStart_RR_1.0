@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.opmode.autonomous;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.acmerobotics.roadrunner.Vector2d;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
@@ -14,9 +16,10 @@ import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 
 public abstract class FarAutoBase extends AutoBase {
     // 0 = left, 1 = middle, 2 = right
-    public Pose2d start, parking, moveUp1, stackIntakeAlignment2;
+    public Pose2d start, parking, moveUp1, stackIntakeAlignment2, stackAlignment, stackIntake1, safeTrussPassStop, backdropAlignmentCycle;
     public Pose2d[] spike, backdrop, cycleScore, backOffFromSpike, backdropAlignment,
-            stackIntakeAlignment, stackIntake, crossFieldAlignment;
+            stackIntakeAlignment, stackIntake, crossFieldAlignment, cycleStart;
+
     @Override
     protected Pose2d getStartPose() {
         return start;
@@ -90,7 +93,7 @@ public abstract class FarAutoBase extends AutoBase {
                             new MecanumDrive.DrivePoseLoggingAction(drive, "intake_one_white"),
                             // move to stack intake position
                             drive.actionBuilder(stackIntake[SPIKE])
-                                    .strafeTo(crossFieldAlignment[SPIKE].position,drive.slowVelConstraint,drive.slowAccelConstraint)
+                                    .strafeTo(crossFieldAlignment[SPIKE].position)
                                     .build(),
 
                             new MecanumDrive.DrivePoseLoggingAction(drive, "crossFieldAlignment", true)
@@ -105,12 +108,13 @@ public abstract class FarAutoBase extends AutoBase {
             sched.addAction(
                     new SequentialAction(
                             new MecanumDrive.DrivePoseLoggingAction(drive, "start"),
+                            intake.stackIntakeLinkageDown(),
                             drive.actionBuilder(drive.pose)
                                     .strafeTo(spike[SPIKE].position,drive.slowVelConstraint,drive.slowAccelConstraint)
                                     .build(),
                             // drop the purple pixel
-                            intake.stackIntakeLinkageDown(),
-                            new SleepAction(0.75),
+//                            intake.stackIntakeLinkageDown(),
+//                            new SleepAction(0.75),
                             intake.scorePurplePreload(),
                             new SleepAction(0.25),
 
@@ -142,7 +146,7 @@ public abstract class FarAutoBase extends AutoBase {
                             new MecanumDrive.DrivePoseLoggingAction(drive, "intake_one_white", true),
                             // move to stack intake position
                             drive.actionBuilder(stackIntake[SPIKE])
-                                    .strafeTo(crossFieldAlignment[SPIKE].position,drive.slowVelConstraint,drive.slowAccelConstraint)
+                                    .strafeTo(crossFieldAlignment[SPIKE].position)
                                     .build(),
                             new MecanumDrive.DrivePoseLoggingAction(drive, "cross_field_alignment", true)
                     )
@@ -213,7 +217,7 @@ public abstract class FarAutoBase extends AutoBase {
                             new MecanumDrive.DrivePoseLoggingAction(drive, "intake_one_white", true),
                             // move to stack intake position
                             drive.actionBuilder(stackIntake[SPIKE])
-                                    .strafeToLinearHeading(crossFieldAlignment[SPIKE].position, crossFieldAlignment[SPIKE].heading,drive.slowVelConstraint,drive.slowAccelConstraint)
+                                    .strafeToLinearHeading(crossFieldAlignment[SPIKE].position, crossFieldAlignment[SPIKE].heading)
                                     .build(),
 
                             new MecanumDrive.DrivePoseLoggingAction(drive, "cross_field_alignment", true)
@@ -231,8 +235,8 @@ public abstract class FarAutoBase extends AutoBase {
                                         .setReversed(true)
                                         .strafeToLinearHeading(backdropAlignment[SPIKE].position,
                                                 backdropAlignment[SPIKE].heading,
-                                                drive.slowVelConstraint,
-                                                drive.slowAccelConstraint)
+                                                drive.highSpeedVelConstraint,
+                                                drive.highSpeedAccelConstraint)
                                         .build(),
                                 new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_alignment_end"),
 
@@ -281,24 +285,28 @@ public abstract class FarAutoBase extends AutoBase {
                         new MecanumDrive.DrivePoseLoggingAction(drive, "score_yellow_preload"),
                         drive.actionBuilder(backdrop[SPIKE])
                                 .setReversed(true)
-                                .strafeTo(cycleScore[SPIKE].position, drive.slowVelConstraint,drive.slowAccelConstraint)
+                                .strafeTo(cycleScore[SPIKE].position)
                                 .build(),
 
                         new MecanumDrive.DrivePoseLoggingAction(drive, "strafe_to_score_white"),
 
                         outtake.extendOuttakeCycleOne(),
                         outtake.prepareToScoreCycle(),
-                        new SleepAction(0.75),
+                        new SleepAction(0.5),
                         outtake.latchScore2(),
-                        new SleepAction(0.75),
+                        new SleepAction(0.5),
 
                         outtake.afterScore(),
-                        new SleepAction(0.5),
+                        new SleepAction(0.4),
                         outtake.prepareToSlide(),
-                        new SleepAction(0.5),
+                        new SleepAction(0.3),
                         new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_score_end")
                 )
         );
+
+        if(doCycle()) {
+            cyclePixelFromStack(cycleScore[SPIKE]);
+        }
 
         // prepare for teleops and parking if time
         //-------------------------------------------------
@@ -321,11 +329,139 @@ public abstract class FarAutoBase extends AutoBase {
                         )
                 )
         );
+
+    }
+
+    private void cyclePixelFromStack(Pose2d startingPosition) {
+        int cycleCount = 1;
+        Action extendSlideAction;
+        Pose2d stackIntakePosition;
+        Vector2d cycleScorePosition = cycleScore[SPIKE].position;
+
+        extendSlideAction = outtake.extendOuttakeCycleOne();
+        stackIntakePosition = stackIntake1;
+
+        sched.addAction(
+                new SequentialAction(
+                        // to strafe to cycle start teleops
+                        new ParallelAction(
+                                outtake.retractOuttake(),
+                                intake.prepareTeleOpsIntake(),
+                                drive.actionBuilder(startingPosition) //spike[SPIKE]
+                                        .strafeToLinearHeading(cycleStart[SPIKE].position, cycleStart[SPIKE].heading, this.drive.highSpeedVelConstraint, this.drive.highSpeedAccelConstraint)
+                                        .strafeToLinearHeading(stackAlignment.position,stackAlignment.heading,
+                                                this.drive.highSpeedVelConstraint, this.drive.highSpeedAccelConstraint)
+                                        .build(),
+                                new SequentialAction(
+                                        new SleepAction(1.8),
+                                        outtake.prepareToTransfer(),
+                                        new SleepAction(0.8),
+                                        intake.stackIntakeLinkageDown()
+                                )
+                        ),
+
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "stack_alignment_position")
+                ));
+
+        sched.addAction(
+                new AutoBase.StackIntakePositionAction(drive,intake,stackIntakePosition)
+        );
+
+        sched.addAction(
+                new SequentialAction(
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_start_position"),
+
+                        // intake the pixels from the stack
+                        intake.intakeTwoStackedPixels(),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_end", true),
+                        // move back to the backdrop
+                        new ParallelAction(
+                                new SequentialAction(
+                                        drive.actionBuilder(stackIntakePosition)
+                                                .setReversed(true)
+                                                .strafeToLinearHeading(safeTrussPassStop.position, safeTrussPassStop.heading)
+                                                .strafeToLinearHeading(backdropAlignmentCycle.position,backdropAlignmentCycle.heading,
+                                                        this.drive.highSpeedVelConstraint,
+                                                        this.drive.highSpeedAccelConstraint)
+                                                .build(),
+                                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_alignment_end")
+                                ),
+
+                                new SequentialAction(
+                                        new SleepAction(0.5),
+                                        intake.intakeTwoStackedPixels2(),
+                                        new SleepAction(0.5),
+                                        intake.stackIntakeLinkageUp(),
+                                        new SleepAction(1.2),
+                                        intake.prepareTeleOpsIntake(),
+                                        new MecanumDrive.DrivePoseLoggingAction(drive, "Intake_off")
+                                )
+                        ),
+
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "Before_backdrop_score"),
+                        new MecanumDrive.AutoPositionCheckAction(drive, backdropAlignmentCycle),
+
+                        // move to backdrop scoring position
+                        new ParallelAction(
+                                new SequentialAction(
+                                        drive.actionBuilder(backdropAlignmentCycle)
+                                                .setReversed(true)
+                                                .strafeToLinearHeading(cycleScorePosition, cycleScore[SPIKE].heading)
+                                                .build(),
+                                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_position")
+                                ),
+
+                                new SequentialAction(
+                                        outtake.prepareToSlide(),
+                                        new SleepAction(0.3),
+                                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_prepare"),
+                                        extendSlideAction,
+                                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_extend"),
+                                        new SleepAction(0.3),
+                                        outtake.prepareToScoreCycle(),
+                                        new SleepAction(0.2)
+                                )
+                        )
+                ));
+        sched.addAction(
+                new SequentialAction(
+                        // score pixels
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_open_latch_start"),
+                        outtake.latchScore1(),
+                        new SleepAction(0.30),
+                        outtake.latchScore2(),
+                        new SleepAction(0.25)
+                )
+        );
+
+        if(cycleCount == 1) {
+            sched.addAction(
+                    new SequentialAction(
+                            outtake.afterScore(),
+                            new SleepAction(0.2)
+                    )
+            );
+        } else {
+            sched.addAction(
+                    new SequentialAction(
+                            outtake.afterScore2(),
+                            new SleepAction(0.3)
+                    )
+            );
+        }
+
+        sched.addAction(
+                new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_end")
+        );
     }
 
     @Override
     public FieldPosition getFieldPosition() {
         return FieldPosition.FAR;
+    }
+
+    protected boolean doCycle() {
+        return false;
     }
 
 }

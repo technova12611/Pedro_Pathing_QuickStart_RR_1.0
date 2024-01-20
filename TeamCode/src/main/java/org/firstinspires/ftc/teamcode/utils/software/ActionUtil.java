@@ -72,7 +72,7 @@ public class ActionUtil {
          servo.setPosition(position);
          String message = "Servo " + this.servoName + " set to position: " + position;
 //         packet.addLine(message);
-         Log.d("ActionUtil.ServoAction", message);
+         Log.d("ActionUtil_servoAction_debug", message);
          return false;
       }
    }

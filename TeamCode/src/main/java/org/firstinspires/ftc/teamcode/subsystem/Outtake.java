@@ -39,12 +39,12 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_HIGH = OUTTAKE_SLIDE_ABOVE_LEVEL_2;
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
     public static int OUTTAKE_SLIDE_MID = 1250;
-    public static int OUTTAKE_SLIDE_CYCLES_ONE = 950;
-    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1020;
+    public static int OUTTAKE_SLIDE_CYCLES_ONE = 980;
+    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1070;
     public static int OUTTAKE_SLIDE_FAR_LOW = 1070;
     public static int OUTTAKE_SLIDE_LOW = 843;
-    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 1020;
-    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO_2 = 1100;
+    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 1030;
+    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO_2 = 1150;
     public static int OUTTAKE_SLIDE_INIT = 0;
     public static int OUTTAKE_SLIDE_INCREMENT= 200;
     public static double LATCH_CLOSED = 0.55;
@@ -273,7 +273,7 @@ public class Outtake {
         Log.d("SlidePivot_Dump_Logger", servoPositions);
 
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(slidePivot, slidePivotPosition, "slidePivot"),
+//                new ActionUtil.ServoPositionAction(slidePivot, slidePivotPosition, "slidePivot"),
                 new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_1, "latch"),
                 new Intake.UpdatePixelCountAction(-1),
                 new OuttakeLatchStateAction(OuttakeLatchState.LATCH_1)
@@ -325,7 +325,7 @@ public class Outtake {
         Log.d("SlidePivot_Dump_Logger", servoPositions);
 
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(slidePivot, slidePivotPosition, "slidePivot"),
+//                new ActionUtil.ServoPositionAction(slidePivot, slidePivotPosition, "slidePivot"),
                 new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_2, "latch"),
                 new Intake.UpdatePixelCountAction(-2),
                 new OuttakeLatchStateAction(OuttakeLatchState.LATCH_2)
@@ -500,6 +500,18 @@ public class Outtake {
         } else if (slideServoPosition > SLIDE_PIVOT_DUMP_HIGH &&
                 slidePivotVoltages.getMean() >= SLIDE_PIVOT_DUMP_VOLTAGE_MAX) {
             backdropTouched = true;
+        }
+
+        if(backdropTouched) {
+            // make sure the outtake is pushed too hard on backdrop
+            if (slideServoPosition > SLIDE_PIVOT_DUMP - 0.01 && slideServoPosition < SLIDE_PIVOT_DUMP_1) {
+                if (slidePivotVoltages.getMean() > SLIDE_PIVOT_DUMP_VOLTAGE_MIN) {
+                    double new_position = slideServoPosition + 0.006;
+                    slidePivot.setPosition(new_position);
+
+                    Log.d("Slide_Pivot_Logger", "slidePivot new_position:" + new_position + " | slideServoVoltage: " + slidePivotVoltages.getMean());
+                }
+            }
         }
 
         return backdropTouched;

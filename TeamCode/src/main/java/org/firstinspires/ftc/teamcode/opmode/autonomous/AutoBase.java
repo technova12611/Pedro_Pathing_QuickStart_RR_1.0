@@ -49,9 +49,6 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
     protected Hang hang;
     protected AutoActionScheduler sched;
     protected PropBasePipeline propPipeline;
-
-    protected ContourDetectionPipeline2 stackPipeline;
-
     protected VisionPortal portal;
     public static Side side = Side.RIGHT;
     public static int SPIKE = 2;
@@ -110,13 +107,10 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             propPipeline = new PropFarPipeline();
         }
 
-        stackPipeline = new ContourDetectionPipeline2();
-
         portal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, Globals.FRONT_WEBCAM_NAME))
                 .setCameraResolution(new Size(1920, 1080))
                 .addProcessor(propPipeline)
-                .addProcessor(stackPipeline)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .enableLiveView(true)
                 .setAutoStopLiveView(true)
@@ -132,7 +126,6 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         double webCamReadyTime = loopTimer.milliseconds();
 
         portal.setProcessorEnabled(propPipeline, true);
-        portal.setProcessorEnabled(stackPipeline, false);
         onInit();
 
         double maxLoopTime = 0.0;
@@ -234,9 +227,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         MecanumDrive.autoStartTimestamp = System.currentTimeMillis();
 
         try {
-            portal.setProcessorEnabled(propPipeline, false);
-            portal.setProcessorEnabled(stackPipeline, false);
-            //portal.close();
+            portal.close();
         } catch(Exception e) {
             // ignore
         }
@@ -265,12 +256,6 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         sched.run();
 
         Log.d("Auto_logger", String.format("Auto program ended at %.3f", getRuntime()));
-
-        try {
-            portal.close();
-        }catch(Exception e) {
-            // ignore
-        }
 
         drive.updatePoseEstimate();
 
@@ -331,39 +316,27 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         Pose2d stackPose;
         Boolean firstTime = null;
 
-        ContourDetectionPipeline2 pipeline;
-        VisionPortal portal;
 
         int counter = 0;
         long startTime = 0;
 
-        MovingArrayList x_positions = new MovingArrayList(10);
-        MovingArrayList y_positions = new MovingArrayList(10);
-
         MovingArrayList sensorDistancesLeftList = new MovingArrayList(10);
         MovingArrayList sensorDistancesRightList = new MovingArrayList(10);
 
-        public StackIntakePositionAction(MecanumDrive drive, Intake intake, VisionPortal portal, ContourDetectionPipeline2 pipeline, Pose2d stackPose) {
+        public StackIntakePositionAction(MecanumDrive drive, Intake intake, Pose2d stackPose) {
             this.drive = drive;
             this.intake = intake;
             this.stackPose = stackPose;
-            this.pipeline = pipeline;
-            this.portal = portal;
         }
 
         @Override
         public boolean run(TelemetryPacket packet) {
-
             if(counter++ == 0) {
                 startTime = System.currentTimeMillis();
-                portal.setProcessorEnabled(this.pipeline, true);
             }
 
-            if(counter > 6) {
-                portal.setProcessorEnabled(this.pipeline, false);
-
+            if(counter > 5) {
                 drive.updatePoseEstimate();
-
                 double delta;
                 if(drive.pose.heading.toDouble() > 0) {
                     delta = 5.0 * Math.tan(drive.pose.heading.toDouble() - Math.toRadians(180));
@@ -371,18 +344,21 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                     delta = 5.0 * Math.tan(Math.toRadians(180) + drive.pose.heading.toDouble());
                 }
 
-                double avg_x = x_positions.getAvg();
-                double avg_y = y_positions.getAvg();
-                double avg_y_adj_left = sensorDistancesLeftList.getAvg();
-                double avg_y_adj_right = sensorDistancesRightList.getAvg() + delta;
+                double avg_y_adj_left = sensorDistancesLeftList.getAvg()*1.0;
+                double avg_y_adj_right = sensorDistancesRightList.getAvg()*1.0 + delta;
 
-                Log.d("StackIntakePosition_Logger", "Current Drive Pose: " + new PoseMessage(drive.pose)
-                        + " | Stack Target Pose: " + new PoseMessage(stackPose) + " | count: " + counter
-                        + " | avg_stack_position vision: (" + avg_x + "," + avg_y + ")"
-                        + " | avg_stack_position (adj_y_left, adj_y_right, delta): "
-                        + String.format("(%3.2f,%3.2f,%3.2f)",avg_y_adj_left,avg_y_adj_right, (avg_y_adj_left-avg_y_adj_right) +
-                         " | angle adjustment: " + delta)
-                );
+                try {
+                    Log.d("StackIntakePosition_Logger", "Current Drive Pose: " + new PoseMessage(drive.pose)
+                            + " | Stack Target Pose: " + new PoseMessage(stackPose) + " | count: " + counter
+                            + " | avg_stack_position (adj_y_left, adj_y_right, delta): "
+                            + String.format("%3.2f", avg_y_adj_left ) + ","
+                            + String.format("%3.2f", avg_y_adj_right) + ","
+                            + String.format("%3.2f",(avg_y_adj_left - avg_y_adj_right))
+                            + " | angle adjustment: " + String.format("%3.2f",delta)
+                    );
+                } catch(Exception e ) {
+                    Log.d("StackIntakePosition_Logger", "Exception 2:  " + e.getMessage());
+                }
 
                 double adjustment_y = 0.0;
                 double adjustment_x = 0.0;
@@ -390,29 +366,34 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 double delta_stack_position = avg_y_adj_left - avg_y_adj_right;
                 double current_pose_adjustment_y = 0.0;
 
+                double y_offset = 1.0;
                 if(Math.abs(delta_stack_position) < 0.3 && avg_y_adj_left > 5.0 &&  avg_y_adj_right > 5.0) {
                     adjustment_x = (avg_y_adj_left + avg_y_adj_right)/2 - 0.5;
                 } else if(delta_stack_position < -1.5) {
-                    adjustment_y = -2.25;
-                    adjustment_x = avg_y_adj_right -0.5;
+                    adjustment_y = -2.0;
+                    adjustment_x = avg_y_adj_right -y_offset;
                     current_pose_adjustment_y = -adjustment_y/2.0;
                 } else if(delta_stack_position < -0.9) {
-                    adjustment_y = -1.25;
-                    adjustment_x = avg_y_adj_right -0.5;
+                    adjustment_y = -1.0;
+                    adjustment_x = avg_y_adj_right -y_offset;
                 } else if(delta_stack_position < -0.5) {
                     adjustment_y = -0.5;
-                    adjustment_x = avg_y_adj_right -0.5;
+                    adjustment_x = avg_y_adj_right -y_offset;
                 }
                 else if(delta_stack_position > 1.5) {
-                    adjustment_y = 2.25;
-                    adjustment_x = avg_y_adj_left -0.5;
+                    adjustment_y = 2.0;
+                    adjustment_x = avg_y_adj_left -y_offset;
                     current_pose_adjustment_y = -adjustment_y/2.0;
                 } else if(delta_stack_position > 0.9) {
-                    adjustment_y = 1.25;
-                    adjustment_x = avg_y_adj_left -0.5;
+                    adjustment_y = 1.0;
+                    adjustment_x = avg_y_adj_left -y_offset;
                 } else if(delta_stack_position > 0.5) {
                     adjustment_y = 0.5;
-                    adjustment_x = avg_y_adj_left -0.5;
+                    adjustment_x = avg_y_adj_left -y_offset;
+                }
+
+                if(avg_y_adj_left < 5.0) {
+                    adjustment_y = -1.0;
                 }
 
                 Log.d("StackIntakePosition_Logger", "calculated adjustment (x,y): " +
@@ -420,7 +401,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
                 double x_position = Range.clip(drive.pose.position.x - adjustment_x, -57.2, -55.6);
 
-                if( 180-Math.abs(Math.toDegrees(drive.pose.heading.toDouble())) > 2.0) {
+                if( 180-Math.abs(Math.toDegrees(drive.pose.heading.toDouble())) > 2.5) {
                     adjustment_y = 0.0;
                 }
                 Pose2d proposedPose = new Pose2d(x_position, stackPose.position.y + adjustment_y , stackPose.heading.toDouble());
@@ -434,34 +415,28 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 return false;
             }
 
-            double stack_position_x = pipeline.getMidRectX()*1.0;
-            double stack_position_y = pipeline.getMidRectY()*1.0;
             double stackDistanceLeft = intake.getStackDistance();
             double stackDistanceRight = intake.getStackDistance2();
 
-            if( counter >=2 && stack_position_x > 950 && stack_position_x < 1780 && stack_position_y > 150) {
-                // this x,y are different than the field coordinates, will convert when the measurements are done
-                // we take measurement 3 times, than use the average
-                x_positions.add(stack_position_x);
-                y_positions.add(stack_position_y);
-            }
-
-            if(counter >=2 && stackDistanceLeft > 5.0 && stackDistanceLeft <12.0) {
+            if(counter >=1 && stackDistanceLeft > 5.0 && stackDistanceLeft <12.0) {
                 sensorDistancesLeftList.add(stackDistanceLeft);
             }
 
-            if(counter >=2 && stackDistanceRight > 5.0 && stackDistanceRight < 12.0) {
+            if(counter >=1 && stackDistanceRight > 5.0 && stackDistanceRight < 12.0) {
                 sensorDistancesRightList.add(stackDistanceRight);
             }
 
-            Log.d("StackIntakePosition_Logger", "Current Drive Pose: " + new PoseMessage(drive.pose)
-                    + " | Target Stack Pose: " + new PoseMessage(stackPose) + " | count: " + counter
-                    + " | stack_position (x,y): (" + stack_position_x + "," + stack_position_y + ")"
-                    + " | stackDistance Left (in): " + String.format("%3.2f",stackDistanceLeft)
-                    + " | stackDistance Right (in): " + String.format("%3.2f",stackDistanceRight)
-                    + " | stackDistance Delta (in): " + String.format("%3.2f",(stackDistanceLeft-stackDistanceRight))
-                    + " | Elapsed time: " + (System.currentTimeMillis() - startTime)
-            );
+            try {
+                Log.d("StackIntakePosition_Logger", "Current Drive Pose: " + new PoseMessage(drive.pose)
+                        + " | Target Stack Pose: " + new PoseMessage(stackPose) + " | count: " + counter
+                        + " | stackDistance Left (in): " + String.format("%3.2f", stackDistanceLeft)
+                        + " | stackDistance Right (in): " + String.format("%3.2f", stackDistanceRight)
+                        + " | stackDistance Delta (in): " + String.format("%3.2f", (stackDistanceLeft - stackDistanceRight))
+                        + " | Elapsed time: " + (System.currentTimeMillis() - startTime)
+                );
+            } catch(Exception e) {
+                Log.d("StackIntakePosition_Logger", "Exception 1:  " + e.getMessage());
+            }
 
             return true;
         }

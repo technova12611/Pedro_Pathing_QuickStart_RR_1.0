@@ -31,12 +31,16 @@ public class Intake {
 
     public static double STACK_INTAKE_LEFT_INIT = 0.01;
     public static double STACK_INTAKE_LEFT_PRELOAD = 0.16;
+    public static double STACK_INTAKE_LEFT_1ST_PIXEL_1 = 0.12;
+    public static double STACK_INTAKE_LEFT_2nd_PIXEL_1 = 0.62;
     public static double STACK_INTAKE_LEFT_1ST_PIXEL = 0.58;
     public static double STACK_INTAKE_LEFT_2nd_PIXEL = 1.0;
 
     public static double STACK_INTAKE_RIGHT_INIT = 0.02;
     public static double STACK_INTAKE_RIGHT_PRELOAD = 0.12;
     public static double STACK_INTAKE_RIGHT_1ST_PIXEL = 0.58;
+
+    public static double STACK_INTAKE_RIGHT_1ST_PIXEL_1 = 0.62;
     public static double STACK_INTAKE_RIGHT_2nd_PIXEL = 1.0;
 
     public static double STACK_INTAKE_LINKAGE_INIT = 0.95;
@@ -220,15 +224,35 @@ public class Intake {
     }
 
     public Action intakeTwoStackedPixels() {
+//        return new SequentialAction(
+//                new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_1ST_PIXEL, "stackIntakeServoRight"),
+//                new SleepAction(0.15),
+//                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_1ST_PIXEL, "ServoPositionAction"),
+//                new SleepAction(0.45),
+//                new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_2nd_PIXEL, "stackIntakeServoRight"),
+//                new SleepAction(0.25),
+//                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_2nd_PIXEL, "stackIntakeServoLeft"),
+//                new SleepAction(0.35)
+//        );
+
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_1ST_PIXEL, "stackIntakeServoRight"),
-                new SleepAction(0.15),
-                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_1ST_PIXEL, "ServoPositionAction"),
-                new SleepAction(0.40),
+                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_1ST_PIXEL_1, "stackIntakeServoLeft"),
+                new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_1ST_PIXEL_1, "stackIntakeServoRight"),
+                new SleepAction(0.6),
+                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_2nd_PIXEL_1, "stackIntakeServoLeft"),
+                new SleepAction(0.3)
+//                new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_2nd_PIXEL, "stackIntakeServoRight"),
+//                new SleepAction(0.1),
+//                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_2nd_PIXEL, "stackIntakeServoLeft"),
+//                new SleepAction(0.1)
+        );
+    }
+
+    public Action intakeTwoStackedPixels2() {
+        return new SequentialAction(
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_2nd_PIXEL, "stackIntakeServoRight"),
-                new SleepAction(0.15),
-                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_2nd_PIXEL, "stackIntakeServoLeft"),
-                new SleepAction(0.40)
+                new SleepAction(0.2),
+                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_2nd_PIXEL, "stackIntakeServoLeft")
         );
     }
 
