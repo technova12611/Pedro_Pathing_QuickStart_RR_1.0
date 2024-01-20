@@ -56,7 +56,7 @@ public abstract class NearAutoBase extends AutoBase {
                       intake.stackIntakeLinkageDown(),
                       new SleepAction(1.0),
                       outtake.afterScore(),
-                      new SleepAction(0.35),
+                      new SleepAction(0.50),
 
                       new ParallelAction(
                           new SequentialAction(

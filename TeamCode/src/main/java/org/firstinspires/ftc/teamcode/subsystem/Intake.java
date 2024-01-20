@@ -50,6 +50,7 @@ public class Intake {
     private final DigitalChannel beamBreakerPassive;
 
     private Rev2mDistanceSensor stackDistance;
+    private Rev2mDistanceSensor stackDistance2;
 
     private boolean prevBeamBreakerState = true;
     private boolean curBeamBreakerState = true;
@@ -73,6 +74,7 @@ public class Intake {
         beamBreakerActive = hardwareMap.get(DigitalChannel.class, "beamBreaker1");
         beamBreakerPassive = hardwareMap.get(DigitalChannel.class, "beamBreaker2");
         stackDistance = (Rev2mDistanceSensor)hardwareMap.get(DistanceSensor.class, "stackDistance");
+        stackDistance2 = (Rev2mDistanceSensor)hardwareMap.get(DistanceSensor.class, "stackDistance2");
     }
 
     public void initialize(boolean isAuto) {
@@ -222,11 +224,11 @@ public class Intake {
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_1ST_PIXEL, "stackIntakeServoRight"),
                 new SleepAction(0.15),
                 new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_1ST_PIXEL, "ServoPositionAction"),
-                new SleepAction(0.45),
+                new SleepAction(0.40),
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_2nd_PIXEL, "stackIntakeServoRight"),
                 new SleepAction(0.15),
                 new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_2nd_PIXEL, "stackIntakeServoLeft"),
-                new SleepAction(0.45)
+                new SleepAction(0.40)
         );
     }
 
@@ -288,5 +290,10 @@ public class Intake {
     public double getStackDistance() {
         if(stackDistance == null) return 0.0;
         return stackDistance.getDistance(DistanceUnit.INCH);
+    }
+
+    public double getStackDistance2() {
+        if(stackDistance2 == null) return 0.0;
+        return stackDistance2.getDistance(DistanceUnit.INCH);
     }
 }

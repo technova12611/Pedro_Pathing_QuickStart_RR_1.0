@@ -39,12 +39,12 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_HIGH = OUTTAKE_SLIDE_ABOVE_LEVEL_2;
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
     public static int OUTTAKE_SLIDE_MID = 1250;
-    public static int OUTTAKE_SLIDE_CYCLES_ONE = 1000;
-    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1150;
-
+    public static int OUTTAKE_SLIDE_CYCLES_ONE = 950;
+    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1020;
     public static int OUTTAKE_SLIDE_FAR_LOW = 1070;
-    public static int OUTTAKE_SLIDE_LOW = 830;
-    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 1100;
+    public static int OUTTAKE_SLIDE_LOW = 843;
+    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 1020;
+    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO_2 = 1100;
     public static int OUTTAKE_SLIDE_INIT = 0;
     public static int OUTTAKE_SLIDE_INCREMENT= 200;
     public static double LATCH_CLOSED = 0.55;
@@ -74,7 +74,7 @@ public class Outtake {
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX = 2.70;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MIN = 2.63;
 
-    public static double SLIDE_PIVOT_DUMP_2 = 0.268;
+    public static double SLIDE_PIVOT_DUMP_2 = 0.255;
 
     public static double SLIDE_PIVOT_STRAFE = 0.285;
 
@@ -284,6 +284,13 @@ public class Outtake {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_DUMP_2, "slidePivot"),
                 this.slide.setTargetPositionAction(OUTTAKE_SLIDE_AFTER_DUMP_AUTO, "outtakeSlide")
+        );
+    }
+
+    public Action afterScore2() {
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_DUMP_2, "slidePivot"),
+                this.slide.setTargetPositionAction(OUTTAKE_SLIDE_AFTER_DUMP_AUTO_2, "outtakeSlide")
         );
     }
 

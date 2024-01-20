@@ -11,6 +11,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.apache.commons.math3.stat.StatUtils;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -32,6 +33,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Outtake;
 import org.firstinspires.ftc.teamcode.subsystem.Drone;
 import org.firstinspires.ftc.teamcode.utils.hardware.GamePadController;
 import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
+import org.firstinspires.ftc.teamcode.utils.software.MovingArrayList;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
@@ -278,16 +280,14 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         Memory.LAST_POSE = drive.pose;
         Globals.drivePose = drive.pose;
 
-        Log.d("Auto_logger", "End path drive Estimated Pose: " + new PoseMessage(drive.pose) + "| " +
-                "Heading: " + String.format("%3.2f", drive.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)));
+        Log.d("Auto_logger", "End path drive Estimated Pose: " + new PoseMessage(drive.pose));
 
         double logStartTime = getRuntime();
         while(opModeIsActive()) {
             drive.updatePoseEstimate();
             Globals.drivePose = drive.pose;
             if(getRuntime() - logStartTime > 5.0) {
-                Log.d("Auto_logger","End program drive Estimated Pose: " + new PoseMessage(drive.pose) + "| " +
-                        "Heading: " + String.format("%3.2f", drive.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)));
+                Log.d("Auto_logger","End program drive Estimated Pose: " + new PoseMessage(drive.pose));
                 logStartTime = getRuntime();
             }
             idle();
@@ -337,9 +337,11 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         int counter = 0;
         long startTime = 0;
 
-        ArrayList<Pose2d> positions = new ArrayList<>();
+        MovingArrayList x_positions = new MovingArrayList(10);
+        MovingArrayList y_positions = new MovingArrayList(10);
 
-        ArrayList<Double> sensorDistances = new ArrayList<>();
+        MovingArrayList sensorDistancesLeftList = new MovingArrayList(10);
+        MovingArrayList sensorDistancesRightList = new MovingArrayList(10);
 
         public StackIntakePositionAction(MecanumDrive drive, Intake intake, VisionPortal portal, ContourDetectionPipeline2 pipeline, Pose2d stackPose) {
             this.drive = drive;
@@ -357,69 +359,107 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 portal.setProcessorEnabled(this.pipeline, true);
             }
 
-            if(counter > 5) {
+            if(counter > 6) {
                 portal.setProcessorEnabled(this.pipeline, false);
 
-                double avg_x = positions.stream()
-                        .mapToDouble(obj ->obj.position.x).average().orElse(0.0);
-                double avg_y = positions.stream()
-                        .mapToDouble(obj ->obj.position.y).average().orElse(0.0);
-                double avg_y_adj = sensorDistances.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+                drive.updatePoseEstimate();
+
+                double delta;
+                if(drive.pose.heading.toDouble() > 0) {
+                    delta = 5.0 * Math.tan(drive.pose.heading.toDouble() - Math.toRadians(180));
+                } else {
+                    delta = 5.0 * Math.tan(Math.toRadians(180) + drive.pose.heading.toDouble());
+                }
+
+                double avg_x = x_positions.getAvg();
+                double avg_y = y_positions.getAvg();
+                double avg_y_adj_left = sensorDistancesLeftList.getAvg();
+                double avg_y_adj_right = sensorDistancesRightList.getAvg() + delta;
 
                 Log.d("StackIntakePosition_Logger", "Current Drive Pose: " + new PoseMessage(drive.pose)
                         + " | Stack Target Pose: " + new PoseMessage(stackPose) + " | count: " + counter
-                        + " | avg_stack_position (x,y, adj_y): (" + avg_x + "," + avg_y + "," + avg_y_adj + ")"
+                        + " | avg_stack_position vision: (" + avg_x + "," + avg_y + ")"
+                        + " | avg_stack_position (adj_y_left, adj_y_right, delta): "
+                        + String.format("(%3.2f,%3.2f,%3.2f)",avg_y_adj_left,avg_y_adj_right, (avg_y_adj_left-avg_y_adj_right) +
+                         " | angle adjustment: " + delta)
                 );
-
-                Pose2d proposedPose = stackPose;
-                boolean isRed = (Globals.COLOR == AlliancePosition.RED);
 
                 double adjustment_y = 0.0;
                 double adjustment_x = 0.0;
-                if(avg_y > 100) {
-                    if (avg_x > 1350 && avg_x < 1450) {
-                        adjustment_y = 1.0;
-                    } else if (avg_x > 1450 || (avg_x < 1000 && avg_x > 800)) {
-                        adjustment_y = 2.0;
-                    } else if (avg_x < 1180 && avg_x > 1050) {
-                        adjustment_y = -1.0;
-                    } else if (avg_x <= 1050) {
-                        adjustment_y = -2.0;
-                    }
+
+                double delta_stack_position = avg_y_adj_left - avg_y_adj_right;
+                double current_pose_adjustment_y = 0.0;
+
+                if(Math.abs(delta_stack_position) < 0.3 && avg_y_adj_left > 5.0 &&  avg_y_adj_right > 5.0) {
+                    adjustment_x = (avg_y_adj_left + avg_y_adj_right)/2 - 0.5;
+                } else if(delta_stack_position < -1.5) {
+                    adjustment_y = -2.25;
+                    adjustment_x = avg_y_adj_right -0.5;
+                    current_pose_adjustment_y = -adjustment_y/2.0;
+                } else if(delta_stack_position < -0.9) {
+                    adjustment_y = -1.25;
+                    adjustment_x = avg_y_adj_right -0.5;
+                } else if(delta_stack_position < -0.5) {
+                    adjustment_y = -0.5;
+                    adjustment_x = avg_y_adj_right -0.5;
+                }
+                else if(delta_stack_position > 1.5) {
+                    adjustment_y = 2.25;
+                    adjustment_x = avg_y_adj_left -0.5;
+                    current_pose_adjustment_y = -adjustment_y/2.0;
+                } else if(delta_stack_position > 0.9) {
+                    adjustment_y = 1.25;
+                    adjustment_x = avg_y_adj_left -0.5;
+                } else if(delta_stack_position > 0.5) {
+                    adjustment_y = 0.5;
+                    adjustment_x = avg_y_adj_left -0.5;
                 }
 
-                if(avg_y_adj > 10.0 && avg_y_adj < 20.0) {
-                    adjustment_x = avg_y_adj - 5.5;
-                }
+                Log.d("StackIntakePosition_Logger", "calculated adjustment (x,y): " +
+                         String.format("(%3.2f,%3.2f)",adjustment_x,adjustment_y));
 
-                proposedPose = new Pose2d(drive.pose.position.x - adjustment_x, stackPose.position.y + adjustment_y , stackPose.heading.toDouble());
+                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -57.2, -55.6);
+
+                if( 180-Math.abs(Math.toDegrees(drive.pose.heading.toDouble())) > 2.0) {
+                    adjustment_y = 0.0;
+                }
+                Pose2d proposedPose = new Pose2d(x_position, stackPose.position.y + adjustment_y , stackPose.heading.toDouble());
 
                 Log.d("StackIntakePosition_Logger", "adjustment_x: " + adjustment_x + " | adjustment_y: " + adjustment_y);
-                Log.d("StackIntakePosition_Logger", "Proposed Stack Pose: " + new PoseMessage(proposedPose) + " | target stack pose: " + new PoseMessage(stackPose));
+                Log.d("StackIntakePosition_Logger", "Proposed Stack Pose: " + new PoseMessage(proposedPose)
+                        + " | target stack pose: " + new PoseMessage(stackPose));
 
                 AutoBase.setStackPositionStatic(proposedPose);
 
                 return false;
             }
 
-            double stack_position_x = pipeline.getRectX()*1.0;
-            double stack_position_y = pipeline.getRectY()*1.0;
-            double stackDistanceY = intake.getStackDistance();
+            double stack_position_x = pipeline.getMidRectX()*1.0;
+            double stack_position_y = pipeline.getMidRectY()*1.0;
+            double stackDistanceLeft = intake.getStackDistance();
+            double stackDistanceRight = intake.getStackDistance2();
 
-            if( counter >=2 && stack_position_x > 600 && stack_position_y > 100) {
+            if( counter >=2 && stack_position_x > 950 && stack_position_x < 1780 && stack_position_y > 150) {
                 // this x,y are different than the field coordinates, will convert when the measurements are done
                 // we take measurement 3 times, than use the average
-                positions.add(new Pose2d(stack_position_x, stack_position_y, stackDistanceY));
+                x_positions.add(stack_position_x);
+                y_positions.add(stack_position_y);
             }
 
-            if(counter >=2 && stackDistanceY > 8.0 && stackDistanceY < 20.0) {
-                sensorDistances.add(stackDistanceY);
+            if(counter >=2 && stackDistanceLeft > 5.0 && stackDistanceLeft <12.0) {
+                sensorDistancesLeftList.add(stackDistanceLeft);
+            }
+
+            if(counter >=2 && stackDistanceRight > 5.0 && stackDistanceRight < 12.0) {
+                sensorDistancesRightList.add(stackDistanceRight);
             }
 
             Log.d("StackIntakePosition_Logger", "Current Drive Pose: " + new PoseMessage(drive.pose)
                     + " | Target Stack Pose: " + new PoseMessage(stackPose) + " | count: " + counter
                     + " | stack_position (x,y): (" + stack_position_x + "," + stack_position_y + ")"
-                    + " | stackDistance (in): " + stackDistanceY
+                    + " | stackDistance Left (in): " + String.format("%3.2f",stackDistanceLeft)
+                    + " | stackDistance Right (in): " + String.format("%3.2f",stackDistanceRight)
+                    + " | stackDistance Delta (in): " + String.format("%3.2f",(stackDistanceLeft-stackDistanceRight))
                     + " | Elapsed time: " + (System.currentTimeMillis() - startTime)
             );
 
@@ -442,5 +482,6 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
     public Action driveToStack() {
         return new NullAction();
     }
+
 }
 

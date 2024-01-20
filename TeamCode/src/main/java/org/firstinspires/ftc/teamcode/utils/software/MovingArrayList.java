@@ -42,6 +42,15 @@ public class MovingArrayList {
         return StatUtils.mean(array);
     }
 
+    public synchronized double getAvg() {
+        if(arrayList.size() > 3) {
+            removeMinMax();
+        }
+
+        return arrayList.stream()
+                .mapToDouble(Double::doubleValue).average().orElse(0.0);
+    }
+
     public void removeMinMax() {
         if (arrayList == null || arrayList.size() < 3) {
             throw new IllegalArgumentException("List must have at least 3 elements");
