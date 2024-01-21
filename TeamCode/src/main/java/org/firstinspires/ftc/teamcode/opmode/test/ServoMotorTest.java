@@ -33,7 +33,6 @@ import org.firstinspires.ftc.teamcode.utils.hardware.MotorWithPID;
 import org.firstinspires.ftc.teamcode.utils.hardware.MotorWithVelocityPID;
 
 @Config
-@Disabled
 @TeleOp(group = "Test")
 public class ServoMotorTest extends LinearOpMode {
 
@@ -68,7 +67,7 @@ public class ServoMotorTest extends LinearOpMode {
 
     public static double STACK_INTAKE_LEFT_VALUE = Intake.STACK_INTAKE_LEFT_INIT;
     public static double STACK_INTAKE_RIGHT_VALUE = Intake.STACK_INTAKE_RIGHT_INIT;
-    public static double STACK_INTAKE_LINKAGE_VALUE = Intake.STACK_INTAKE_LINKAGE_UP;
+    public static double STACK_INTAKE_LINKAGE_VALUE = Intake.STACK_INTAKE_LINKAGE_DOWN;
     public static double BOTTOM_ROLLER_CRSERVO_VALUE = 0.0;
     public static double OUTTAKE_LATCH_VALUE = Outtake.LATCH_CLOSED;
     public static double OUTTAKE_PIVOT_VALUE = Outtake.OUTTAKE_PIVOT_INIT;

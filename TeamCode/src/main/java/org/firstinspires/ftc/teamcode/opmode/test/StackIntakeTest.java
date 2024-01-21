@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmode.test;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
@@ -40,25 +41,30 @@ public class StackIntakeTest extends LinearOpMode {
                 new SequentialAction(
                         intake.stackIntakeLinkageDown(),
                         intake.intakeOn(),
-                        new SleepAction(3.0),
+                        new SleepAction(1.0),
                         intake.intakeTwoStackedPixels()
                 ));
 
-        sched.addAction(
-                new SleepAction(2.25)
-               );
-
-        sched.addAction(drive.actionBuilder(drive.pose)
-                .lineToX(-5.0)
-                .build());
+//        sched.addAction(
+//                new SleepAction(2.25)
+//               );
 
         sched.addAction(
-                new SequentialAction(
-                        intake.intakeTwoStackedPixels2(),
-                        new SleepAction(1.0),
-                        intake.stackIntakeLinkageUp(),
-                        intake.intakeOff()
-                ));
+                new ParallelAction(
+                    drive.actionBuilder(drive.pose)
+                    .lineToX(-2.0)
+                    .build(),
+
+                   new SequentialAction(
+                           new SleepAction(0.3),
+                           intake.intakeTwoStackedPixels2(),
+                           new SleepAction(2.0),
+                           intake.prepareTeleOpsIntake(),
+                           new SleepAction(0.5)
+                        ))
+        );
+
+        intake.stackIntakeLinkageDownDirect();
 
         waitForStart();
 
@@ -66,6 +72,7 @@ public class StackIntakeTest extends LinearOpMode {
             sched.run();
             telemetry.addLine(intake.getStackServoPositions());
             telemetry.update();
+            idle();
         }
     }
 

@@ -91,10 +91,18 @@ public abstract class FarAutoBase extends AutoBase {
                             intake.intakeOneStackedPixels(),
 
                             new MecanumDrive.DrivePoseLoggingAction(drive, "intake_one_white"),
-                            // move to stack intake position
-                            drive.actionBuilder(stackIntake[SPIKE])
-                                    .strafeTo(crossFieldAlignment[SPIKE].position)
-                                    .build(),
+
+                            // move to cross field position
+                            new ParallelAction(
+                                    drive.actionBuilder(stackIntake[SPIKE])
+                                            .strafeToLinearHeading(crossFieldAlignment[SPIKE].position, crossFieldAlignment[SPIKE].heading)
+                                            .build(),
+
+                                    new SequentialAction(
+                                            new SleepAction(0.3),
+                                            intake.intakeOneStackedPixels2()
+                                    )
+                            ),
 
                             new MecanumDrive.DrivePoseLoggingAction(drive, "crossFieldAlignment", true)
                     )
@@ -144,10 +152,18 @@ public abstract class FarAutoBase extends AutoBase {
                             intake.intakeOneStackedPixels(),
 
                             new MecanumDrive.DrivePoseLoggingAction(drive, "intake_one_white", true),
-                            // move to stack intake position
-                            drive.actionBuilder(stackIntake[SPIKE])
-                                    .strafeTo(crossFieldAlignment[SPIKE].position)
-                                    .build(),
+                            // move to cross field position
+                            new ParallelAction(
+                                    drive.actionBuilder(stackIntake[SPIKE])
+                                            .strafeToLinearHeading(crossFieldAlignment[SPIKE].position, crossFieldAlignment[SPIKE].heading)
+                                            .build(),
+
+                                    new SequentialAction(
+                                            new SleepAction(0.3),
+                                            intake.intakeOneStackedPixels2()
+                                    )
+                            ),
+
                             new MecanumDrive.DrivePoseLoggingAction(drive, "cross_field_alignment", true)
                     )
             );
@@ -216,9 +232,16 @@ public abstract class FarAutoBase extends AutoBase {
 
                             new MecanumDrive.DrivePoseLoggingAction(drive, "intake_one_white", true),
                             // move to stack intake position
-                            drive.actionBuilder(stackIntake[SPIKE])
+                            new ParallelAction(
+                                drive.actionBuilder(stackIntake[SPIKE])
                                     .strafeToLinearHeading(crossFieldAlignment[SPIKE].position, crossFieldAlignment[SPIKE].heading)
                                     .build(),
+
+                                new SequentialAction(
+                                new SleepAction(0.3),
+                                        intake.intakeOneStackedPixels2()
+                                        )
+                            ),
 
                             new MecanumDrive.DrivePoseLoggingAction(drive, "cross_field_alignment", true)
 
@@ -249,6 +272,8 @@ public abstract class FarAutoBase extends AutoBase {
                                 )
                         ),
                         new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_alignment_position"),
+
+                        new MecanumDrive.AutoPositionCheckAction(drive, backdropAlignment[SPIKE]),
 
                         new ParallelAction(
                                 new SequentialAction(
@@ -434,21 +459,12 @@ public abstract class FarAutoBase extends AutoBase {
                 )
         );
 
-        if(cycleCount == 1) {
-            sched.addAction(
-                    new SequentialAction(
-                            outtake.afterScore(),
-                            new SleepAction(0.2)
-                    )
-            );
-        } else {
-            sched.addAction(
-                    new SequentialAction(
-                            outtake.afterScore2(),
-                            new SleepAction(0.3)
-                    )
-            );
-        }
+        sched.addAction(
+                new SequentialAction(
+                        outtake.afterScore(),
+                        new SleepAction(0.2)
+                )
+        );
 
         sched.addAction(
                 new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_end")

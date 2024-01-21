@@ -53,7 +53,6 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                         .build(),
 
                                 new SequentialAction(
-
                                         new SleepAction(1.0),
                                         outtake.extendOuttakeLow()
                                 )

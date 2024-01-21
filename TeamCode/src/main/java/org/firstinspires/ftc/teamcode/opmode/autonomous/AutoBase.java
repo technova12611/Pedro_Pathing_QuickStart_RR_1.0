@@ -141,7 +141,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             SPIKE = side.ordinal();
             printDescription();
             telemetry.addLine("   ");
-            telemetry.addLine(" <----- Team Prop Vision Detection -----> ");
+            telemetry.addLine(" <----- Team Prop Vision Detection " + "(" + Globals.COLOR + ")" + " -----> ");
+            telemetry.addLine(" Check if the right alliance program is running ... ");
             telemetry.addLine(" Wait a few seconds to capture the Maximum color value ");
             telemetry.addLine(" before placing the team prop on the field ");
 
@@ -366,7 +367,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 double delta_stack_position = avg_y_adj_left - avg_y_adj_right;
                 double current_pose_adjustment_y = 0.0;
 
-                double y_offset = 1.0;
+                double y_offset = 0.95;
                 if(Math.abs(delta_stack_position) < 0.3 && avg_y_adj_left > 5.0 &&  avg_y_adj_right > 5.0) {
                     adjustment_x = (avg_y_adj_left + avg_y_adj_right)/2 - 0.5;
                 } else if(delta_stack_position < -1.5) {
@@ -399,7 +400,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 Log.d("StackIntakePosition_Logger", "calculated adjustment (x,y): " +
                          String.format("(%3.2f,%3.2f)",adjustment_x,adjustment_y));
 
-                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -57.2, -55.6);
+                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -57.2, -55.5);
 
                 if( 180-Math.abs(Math.toDegrees(drive.pose.heading.toDouble())) > 2.5) {
                     adjustment_y = 0.0;
