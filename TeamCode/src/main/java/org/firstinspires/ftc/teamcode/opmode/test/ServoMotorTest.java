@@ -37,7 +37,6 @@ import org.firstinspires.ftc.teamcode.utils.hardware.MotorWithVelocityPID;
 public class ServoMotorTest extends LinearOpMode {
 
     public static PIDCoefficients outtakePID = new PIDCoefficients(0.005, 0, 0.0001);
-    public static PIDCoefficients intakeMotorPid = new PIDCoefficients(0.0007, 0, 0.1);
 
     Servo stackIntakeServoLeft;
     Servo stackIntakeServoRight;
@@ -53,7 +52,7 @@ public class ServoMotorTest extends LinearOpMode {
     Servo outtakeFixerServo;
 
     MotorWithPID slide;
-    MotorWithVelocityPID intakeMotor;
+    DcMotorEx intakeMotor;
     DcMotorEx parOdometry1;
 
     DcMotorEx parOdometry2;
@@ -85,8 +84,6 @@ public class ServoMotorTest extends LinearOpMode {
     public static double INTAKE_MOTOR_POWER = 0;
 
     public static double OUTTAKE_FIXER_SERVO_POSITION = Outtake.OUTTAKE_FIXER_INIT;
-
-    double prevIntakeMotorPower = 0.0;
 
     public IMU imu;
 
@@ -136,8 +133,7 @@ public class ServoMotorTest extends LinearOpMode {
         this.slide.setMaxPower(0.95);
         this.slide.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        this.intakeMotor = new MotorWithVelocityPID(HardwareCreator.createMotor(hardwareMap, "intake_for_perp"), intakeMotorPid);
-        this.intakeMotor.setMaxPower(0.95);
+        this.intakeMotor = HardwareCreator.createMotor(hardwareMap, "intake_for_perp");
         this.intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.parOdometry1 = HardwareCreator.createMotor(hardwareMap, "par");
@@ -200,7 +196,7 @@ public class ServoMotorTest extends LinearOpMode {
 
             if(stackIntakeMode == 1) {
                 bottomRollerServo.setPower(0.6);
-                this.intakeMotor.getMotor().setPower(0.85);
+                this.intakeMotor.setPower(0.85);
                 if(stackIntakeLinkage.getPosition() > Intake.STACK_INTAKE_LINKAGE_DOWN + 0.1) {
                     stackIntakeLinkage.setPosition(Intake.STACK_INTAKE_LINKAGE_DOWN);
                     Thread.sleep(250);
@@ -217,7 +213,7 @@ public class ServoMotorTest extends LinearOpMode {
             }
             else if(stackIntakeMode == 2) {
                 bottomRollerServo.setPower(0.6);
-                this.intakeMotor.getMotor().setPower(0.85);
+                this.intakeMotor.setPower(0.85);
                 if(stackIntakeLinkage.getPosition() > Intake.STACK_INTAKE_LINKAGE_DOWN + 0.1) {
                     stackIntakeLinkage.setPosition(Intake.STACK_INTAKE_LINKAGE_DOWN);
                     Thread.sleep(250);
@@ -373,16 +369,7 @@ public class ServoMotorTest extends LinearOpMode {
 
             outtakeFixerServo.setPosition(OUTTAKE_FIXER_SERVO_POSITION);
 
-            if (INTAKE_MOTOR_VELOCITY != 0) {
-                this.intakeMotor.setTargetVelocity(INTAKE_MOTOR_VELOCITY);
-                this.intakeMotor.update();
-            } else if (INTAKE_MOTOR_POWER != 0.0) {
-                this.intakeMotor.getMotor().setPower(INTAKE_MOTOR_POWER);
-                prevIntakeMotorPower = INTAKE_MOTOR_POWER;
-            } else {
-                this.intakeMotor.getMotor().setPower(0.0);
-                this.intakeMotor.setTargetVelocity(0);
-            }
+            this.intakeMotor.setPower(INTAKE_MOTOR_POWER);
 
             curBeamBreakerState = beamBreaker1.getState();
             if(curBeamBreakerState && !prevBeamBreakerState) {
@@ -424,7 +411,7 @@ public class ServoMotorTest extends LinearOpMode {
 
             telemetry.addData("outtake motor position: ", slide.getCurrentPosition());
             telemetry.addData("outtake motor internal motor position: ", slide.getMotor().getCurrentPosition());
-            telemetry.addData("intake motor velocity: ", "%3.2f", intakeMotor.getVelocity());
+            telemetry.addData("intake motor power: ", "%3.2f", intakeMotor.getPower());
             telemetry.addData("outtake motor mode: ", slide.getRunMode());
             telemetry.addData("Beam breaker state: ", curBeamBreakerState);
             telemetry.addData("pixelCount: ", pixelsCount);

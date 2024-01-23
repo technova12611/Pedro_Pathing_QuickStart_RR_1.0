@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 
 @Config
-@Autonomous(name = "RED Far Cycle Auto (2+3)", group = "RED Auto", preselectTeleOp = "Manual Drive")
+@Autonomous(name = "RED Far (LEFT) Cycle Auto (2+3)", group = "RED Auto", preselectTeleOp = "Manual Drive")
 public class RedLeftCycleAuto extends RedLeftAuto {
     // 0 = left, 1 = middle, 2 = right
 
@@ -25,7 +25,12 @@ public class RedLeftCycleAuto extends RedLeftAuto {
         this.stackAlignment = new Pose2d(-48.0, -11.0, Math.toRadians(180.85));
         this.stackIntake1 = new Pose2d(-55.8, -12.0, Math.toRadians(180));
         this.safeTrussPassStop = new Pose2d(-49.0, -11.0, Math.toRadians(180));
-        this.backdropAlignmentCycle = new Pose2d(38.0, -11.0, Math.toRadians(180));
+
+        this.backdropAlignmentCycle = new Pose2d[]{
+                new Pose2d(38.0, -11.0, Math.toRadians(180)),
+                new Pose2d(38.0, -11.0, Math.toRadians(180)),
+                new Pose2d(38.0, -11.0, Math.toRadians(180))
+        };
     }
 
     @Override

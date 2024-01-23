@@ -37,13 +37,6 @@ repositories {
 dependencies {
     implementation project(':FtcRobotController')
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
-/*
-    implementation files('lib/core-1.0.0-beta3.jar')
-    implementation files('lib/actions-1.0.0-beta3.jar')
-    implementation files('lib/ftc-0.1.8.aar')
-    implementation files('lib/dashboard-0.4.13.aar')
-    implementation files('lib/core-0.4.13.jar')
-*/
 
     implementation 'org.openftc:easyopencv:1.7.0'
     implementation 'org.ftclib.ftclib:core:2.1.1'

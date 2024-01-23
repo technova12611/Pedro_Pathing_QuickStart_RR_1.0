@@ -28,7 +28,7 @@ import java.util.Map;
 
 @Config
 public class Outtake {
-    public static PIDCoefficients outtakePID = new PIDCoefficients(0.00675, 0, 0.0001);
+    public static PIDCoefficients outtakePID = new PIDCoefficients(0.00725, 0, 0.0001);
 
     public static int OUTTAKE_SLIDE_MAX = 2160;
     public static int OUTTAKE_SLIDE_ABOVE_LEVEL_2 = 2150;
@@ -40,11 +40,11 @@ public class Outtake {
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
     public static int OUTTAKE_SLIDE_MID = 1250;
     public static int OUTTAKE_SLIDE_CYCLES_ONE = 980;
-    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1070;
-    public static int OUTTAKE_SLIDE_FAR_LOW = 1070;
+    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1150;
+    public static int OUTTAKE_SLIDE_FAR_LOW = 1100;
     public static int OUTTAKE_SLIDE_LOW = 843;
-    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 1030;
-    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO_2 = 1150;
+    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 1050;
+    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO_2 = 1200;
     public static int OUTTAKE_SLIDE_INIT = 0;
     public static int OUTTAKE_SLIDE_INCREMENT= 200;
     public static double LATCH_CLOSED = 0.55;
@@ -65,11 +65,14 @@ public class Outtake {
 
     public static double SLIDE_PIVOT_INIT = 0.43;
     public static double SLIDE_PIVOT_SLIDING = 0.52;
+
+    public static double SLIDE_PIVOT_DUMP_0 = 0.22;
     public static double SLIDE_PIVOT_DUMP = 0.238;
 
     public static double SLIDE_PIVOT_DUMP_1 = 0.248;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.65;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.58;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN_0 = 2.52;
 
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX = 2.70;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MIN = 2.63;
@@ -241,7 +244,7 @@ public class Outtake {
 
         double sleepTime = 0.5;
         if(!isAuto) {
-            sleepTime = 0.60;
+            sleepTime = 0.8;
         }
 
         return new SequentialAction(
@@ -502,16 +505,25 @@ public class Outtake {
             backdropTouched = true;
         }
 
+        boolean isLogging = false;
+        String direction = "";
+        double servoPosition = slideServoPosition;
         if(backdropTouched) {
             // make sure the outtake is pushed too hard on backdrop
-            if (slideServoPosition > SLIDE_PIVOT_DUMP - 0.01 && slideServoPosition < SLIDE_PIVOT_DUMP_1) {
+            if (slideServoPosition > SLIDE_PIVOT_DUMP - 0.01 && slideServoPosition < SLIDE_PIVOT_DUMP_2) {
                 if (slidePivotVoltages.getMean() > SLIDE_PIVOT_DUMP_VOLTAGE_MIN) {
-                    double new_position = slideServoPosition + 0.006;
-                    slidePivot.setPosition(new_position);
-
-                    Log.d("Slide_Pivot_Logger", "slidePivot new_position:" + new_position + " | slideServoVoltage: " + slidePivotVoltages.getMean());
+                    servoPosition = slideServoPosition + 0.01;
+                    slidePivot.setPosition(servoPosition);
+                    isLogging = true;
+                    direction = "DOWN";
                 }
             }
+        }
+
+        if(isLogging) {
+            Log.d("Slide_Pivot_Logger",
+                    "slidePivot " + direction + " servo position:" + String.format("%3.3f",servoPosition)
+                            + " | slideServoVoltage: " + String.format("%3.3f",slidePivotVoltages.getMean()));
         }
 
         return backdropTouched;

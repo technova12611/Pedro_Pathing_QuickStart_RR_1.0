@@ -10,7 +10,9 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 
+import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 import org.firstinspires.ftc.teamcode.roadrunner.messages.PoseMessage;
 
@@ -130,11 +132,17 @@ public abstract class NearCycleAutoBase extends AutoBase {
         Action extendSlideAction;
         Pose2d stackIntakePosition;
         Vector2d cycleScorePosition = cycleScore[SPIKE].position;
+        Pose2d cycleStartPose = this.cycleStart[SPIKE];
         if(++cycleCount == 2) {
             extendSlideAction = outtake.extendOuttakeCycleTwo();
             stackIntakePosition = stackIntake2;
             // do we need to move back, need to test more, changed from 0.5 -> 0.25 for now
  //           cycleScorePosition = new Vector2d(cycleScorePosition.x-0.25, cycleScorePosition.y);
+            if(Globals.COLOR == AlliancePosition.RED && SPIKE == 0) {
+                cycleStartPose = this.cycleStart[1];
+            } else if (Globals.COLOR == AlliancePosition.BLUE && SPIKE == 2) {
+                cycleStartPose = this.cycleStart[1];
+            }
         } else {
             extendSlideAction = outtake.extendOuttakeCycleOne();
             stackIntakePosition = stackIntake1;
@@ -147,7 +155,9 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                 outtake.retractOuttake(),
                                 intake.prepareTeleOpsIntake(),
                                 drive.actionBuilder(startingPosition) //spike[SPIKE]
-                                        .strafeToLinearHeading(cycleStart[SPIKE].position, cycleStart[SPIKE].heading, this.drive.highSpeedVelConstraint, this.drive.highSpeedAccelConstraint)
+                                        .strafeToLinearHeading(cycleStartPose.position, cycleStartPose.heading,
+                                                this.drive.highSpeedVelConstraint,
+                                                this.drive.highSpeedAccelConstraint)
                                         .strafeToLinearHeading(stackAlignment.position,stackAlignment.heading,
                                                 this.drive.highSpeedVelConstraint, this.drive.highSpeedAccelConstraint)
                                         .build(),
@@ -187,9 +197,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                 ),
 
                                 new SequentialAction(
-                                        new SleepAction(0.5),
-                                        intake.intakeTwoStackedPixels2(),
-                                        new SleepAction(0.5),
+                                        new SleepAction(1.0),
                                         intake.stackIntakeLinkageUp(),
                                         new SleepAction(1.2),
                                         intake.prepareTeleOpsIntake(),
@@ -229,7 +237,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                     outtake.latchScore1(),
                     new SleepAction(0.30),
                     outtake.latchScore2(),
-                    new SleepAction(0.25)
+                    new SleepAction(0.30)
                 )
         );
 

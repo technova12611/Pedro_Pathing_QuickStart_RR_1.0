@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 
 @Config
-@Autonomous(name = "RED Near Cycle Auto (2+4)", group = "RED Auto", preselectTeleOp = "Manual Drive")
+@Autonomous(name = "RED Near (RIGHT) Cycle Auto (2+4)", group = "RED Auto", preselectTeleOp = "Manual Drive")
 public class RedRightCycleAuto extends NearCycleAutoBase {
 
     @Override
@@ -19,8 +19,8 @@ public class RedRightCycleAuto extends NearCycleAutoBase {
         this.spike = RedRightAuto.red_spike;
 
         this.cycleStart = new Pose2d[]{
-                new Pose2d(spike[0].position.x, -11.0, Math.toRadians(180)),
-                new Pose2d(spike[1].position.x, -11.0, Math.toRadians(180)),
+                new Pose2d(spike[2].position.x, -11.0, Math.toRadians(180)),
+                new Pose2d(spike[2].position.x, -11.0, Math.toRadians(180)),
                 new Pose2d(spike[2].position.x, -11.0, Math.toRadians(180))
         };
 
@@ -31,7 +31,7 @@ public class RedRightCycleAuto extends NearCycleAutoBase {
         this.backdropAlignment = new Pose2d(38.0, -11.0, Math.toRadians(180));
 
         cycleScore = new Pose2d[] {
-                new Pose2d(48.8, -37.0, Math.toRadians(180)),
+                new Pose2d(49.2, -35.0, Math.toRadians(180)),
                 new Pose2d(48.8, -31.0, Math.toRadians(180)),
                 new Pose2d(48.8, -31.0, Math.toRadians(180))
         };

@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 
 @Config
-@Autonomous(name = "RED Near Auto (2+0)", group = "RED Auto", preselectTeleOp = "Manual Drive")
+@Autonomous(name = "RED Near (RIGHT) Auto (2+0)", group = "RED Auto", preselectTeleOp = "Manual Drive")
 public class RedRightAuto extends NearAutoBase {
 
    // 0 = left, 1 = middle, 2 = right

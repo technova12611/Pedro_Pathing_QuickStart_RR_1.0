@@ -171,19 +171,21 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
         } else {
             if ( (meanCenterColor < threshold && meanSideColor >threshold) ||
                     (meanCenterColor < threshold && meanCenterColor < meanSideColor) ||
-                    (meanCenterColor < maxCenterColor - threshold ) ||
                     (meanSideColor - meanCenterColor > redDeltaThreshold &&
-                    meanSideColor < 5.5 && meanCenterColor < 5.5)) {
+                    meanSideColor < 5.5 && meanCenterColor < 5.5) //||
+//                    (meanCenterColor < maxCenterColor - threshold )
+            ) {
                 // center zone has it
                 location = Side.LEFT;
                 Imgproc.rectangle(frame, centerZoneArea, GREEN, 8);
                 Imgproc.rectangle(frame, sideZoneArea, YELLOW, 3);
             }
             else if ( (meanSideColor < threshold && meanCenterColor >threshold) ||
-                    (meanSideColor < threshold && meanSideColor < meanCenterColor) ||
-                    (meanSideColor < maxSideColor - threshold)
-                    || (meanCenterColor - meanSideColor > redDeltaThreshold
-                    && meanSideColor < 5.5 && meanCenterColor < 5.5)) {
+                    (meanSideColor < threshold && meanSideColor < meanCenterColor)  ||
+                    (meanCenterColor - meanSideColor > redDeltaThreshold
+                    && meanSideColor < 5.5 && meanCenterColor < 5.5) //||
+//                    (meanSideColor < maxSideColor - threshold)
+            ) {
                 // left zone has it
                 location = Side.RIGHT;
                 Imgproc.rectangle(frame, sideZoneArea, GREEN,8);

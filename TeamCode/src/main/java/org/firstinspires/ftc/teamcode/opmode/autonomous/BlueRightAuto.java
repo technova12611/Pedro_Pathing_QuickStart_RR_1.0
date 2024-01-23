@@ -11,10 +11,11 @@ import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 
 @Config
-@Autonomous(name = "Blue Far Auto (2+1)", group = "BLUE Auto", preselectTeleOp = "Manual Drive")
+@Autonomous(name = "Blue Far (RIGHT) Auto (2+1)", group = "BLUE Auto", preselectTeleOp = "Manual Drive")
 public class BlueRightAuto extends FarAutoBase {
    @Override
    protected void onInit() {
+      super.onInit();
       this.start = new Pose2d(-38.5, 62.0, Math.toRadians(-90));
       this.spike = new Pose2d[] {
               new Pose2d(-35.0, 38.5, Math.toRadians(-25)),
@@ -23,17 +24,17 @@ public class BlueRightAuto extends FarAutoBase {
       };
 
       this.backdrop = new Pose2d[] {
-              new Pose2d(48.2, 38.5, Math.toRadians(-180)),
-              new Pose2d(48.2, 33.5, Math.toRadians(-180)),
-              new Pose2d(48.2, 27.8, Math.toRadians(-180))
+              new Pose2d(48.0, 39.0, Math.toRadians(-180)),
+              new Pose2d(48.0, 32.5, Math.toRadians(-180)),
+              new Pose2d(47.8, 28.0, Math.toRadians(-180))
       };
 
       this.parking = new Pose2d(42.0, 20.0, Math.toRadians(-180));
 
       this.cycleScore = new Pose2d[] {
-              new Pose2d(47.3, 30.0, Math.toRadians(-180)),
-              new Pose2d(47.3, 27.0, Math.toRadians(-180)),
-              new Pose2d(47.3, 36.0, Math.toRadians(-180)),
+              new Pose2d(47.8, 32.0, Math.toRadians(-180)),
+              new Pose2d(47.8, 30.0, Math.toRadians(-180)),
+              new Pose2d(47.8, 36.0, Math.toRadians(-180)),
       };
 
       this.backOffFromSpike = new Pose2d[] {
@@ -49,24 +50,24 @@ public class BlueRightAuto extends FarAutoBase {
       };
 
       this.stackIntake = new Pose2d[] {
-              new Pose2d(-57.7, 11.25, Math.toRadians(-180)),
-              new Pose2d(-57.5, 35.25, Math.toRadians(-180)),
-              new Pose2d(-57.7, 11.25, Math.toRadians(180))
+              new Pose2d(-57.2, 11.0, Math.toRadians(-180)),
+              new Pose2d(-57.0, 35.0, Math.toRadians(-180)),
+              new Pose2d(-57.2, 11.0, Math.toRadians(-180))
       };
       this.crossFieldAlignment = new Pose2d[] {
               new Pose2d(-46.5, 11.5, Math.toRadians(-180)),
-              new Pose2d(-38.5, 35.7, Math.toRadians(-180)),
+              new Pose2d(-38.5, 35.5, Math.toRadians(-180)),
               new Pose2d(-46.5, 11.5, Math.toRadians(-180))
       };
 
       this.backdropAlignment = new Pose2d[] {
-              new Pose2d(42.0, 11.5, Math.toRadians(-180)),
-                      new Pose2d(42.0, 35.5, Math.toRadians(-180)),
-                              new Pose2d(42.0, 11.5, Math.toRadians(-180))};
+              new Pose2d(40.0, 11.5, Math.toRadians(-180)),
+                      new Pose2d(32.0, 35.5, Math.toRadians(-180)),
+                              new Pose2d(40.0, 11.5, Math.toRadians(-180))};
 
       this.moveUp1 =  new Pose2d(-38.5, 54.0, Math.toRadians(-90));
 
-      this.stackIntakeAlignment2 = new Pose2d(-48.5, 11.0, Math.toRadians(-180));
+      this.stackIntakeAlignment2 = new Pose2d(-48.0, 11.0, Math.toRadians(-180));
    }
 
    @Override

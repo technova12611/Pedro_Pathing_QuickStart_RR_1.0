@@ -56,8 +56,6 @@ public class StackIntakeTest extends LinearOpMode {
                     .build(),
 
                    new SequentialAction(
-                           new SleepAction(0.3),
-                           intake.intakeTwoStackedPixels2(),
                            new SleepAction(2.0),
                            intake.prepareTeleOpsIntake(),
                            new SleepAction(0.5)
