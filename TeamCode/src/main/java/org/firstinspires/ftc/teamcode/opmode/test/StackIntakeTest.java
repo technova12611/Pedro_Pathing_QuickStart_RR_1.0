@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.utils.software.ActionScheduler;
 import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 
 @Config
+@Disabled
 @TeleOp(group = "Test")
 public class StackIntakeTest extends LinearOpMode {
 

@@ -304,6 +304,7 @@ public abstract class FarAutoBase extends AutoBase {
                         ),
 
                         new MecanumDrive.DrivePoseLoggingAction(drive, "start_scoring"),
+                        new MecanumDrive.AutoPositionCheckAction(drive, backdropAlignment[SPIKE]),
 
                         outtake.prepareToScoreCycle(),
                         new SleepAction(0.5),
@@ -388,17 +389,11 @@ public abstract class FarAutoBase extends AutoBase {
 
         sched.addAction(
                 new SequentialAction(
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_start_position"),
-
-                        // intake the pixels from the stack
-                        intake.intakeTwoStackedPixels(),
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_end", true),
                         // move back to the backdrop
                         new ParallelAction(
                                 new SequentialAction(
                                         drive.actionBuilder(stackIntakePosition)
                                                 .setReversed(true)
-                                                .strafeToLinearHeading(safeTrussPassStop.position, safeTrussPassStop.heading)
                                                 .strafeToLinearHeading(backdropAlignmentCycle[SPIKE].position,backdropAlignmentCycle[SPIKE].heading,
                                                         this.drive.highSpeedVelConstraint,
                                                         this.drive.highSpeedAccelConstraint)
@@ -407,8 +402,6 @@ public abstract class FarAutoBase extends AutoBase {
                                 ),
 
                                 new SequentialAction(
-                                        new SleepAction(1.0),
-                                        intake.stackIntakeLinkageUp(),
                                         new SleepAction(1.2),
                                         intake.prepareTeleOpsIntake(),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "Intake_off")
@@ -474,13 +467,30 @@ public abstract class FarAutoBase extends AutoBase {
 
     @Override
     public Action driveToStack() {
-        return new ParallelAction(
-                new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_1_auto_alignment_start"),
-                drive.actionBuilder(stackAlignment)
-                        .strafeToLinearHeading(getStackPosition().position, getStackPosition().heading)
-                        .build(),
-                intake.intakeOn()
-        );
+
+        return
+                new SequentialAction(
+                        new ParallelAction(
+                                new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_1_auto_alignment_start"),
+                                drive.actionBuilder(stackAlignment)
+                                        .strafeToLinearHeading(getStackPosition().position, getStackPosition().heading)
+                                        .build(),
+                                intake.intakeOn()
+                        ),
+
+                        intake.intakeTwoStackedPixels(),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_end", true),
+                        // move back to the backdrop
+
+                        drive.actionBuilder(getStackPosition())
+                                .setReversed(true)
+                                .strafeToLinearHeading(new Vector2d(safeTrussPassStop.position.x, getStackPosition().position.y),safeTrussPassStop.heading,
+                                        this.drive.highSpeedVelConstraint,
+                                        this.drive.highSpeedAccelConstraint)
+                                .build(),
+                        intake.stackIntakeLinkageUp(),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_alignment_end")
+                );
     }
 
 }

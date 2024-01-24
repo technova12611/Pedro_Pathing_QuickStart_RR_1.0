@@ -8,6 +8,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -27,6 +28,7 @@ import org.firstinspires.ftc.teamcode.utils.hardware.GamePadController;
 import org.firstinspires.ftc.vision.VisionPortal;
 
 @Config
+@Disabled
 @TeleOp(group = "Test")
 public class WhitePixelDetectPipelineTest extends LinearOpMode {
     private ContourDetectionPipeline2 pixelPipeline;

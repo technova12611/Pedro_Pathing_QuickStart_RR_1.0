@@ -367,7 +367,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 double delta_stack_position = avg_y_adj_left - avg_y_adj_right;
                 double current_pose_adjustment_y = 0.0;
 
-                double y_offset = 1.25;
+                double y_offset = 1.8;
                 if(Math.abs(delta_stack_position) <= 0.5 && avg_y_adj_left > 5.0 &&  avg_y_adj_right > 5.0) {
                     adjustment_x = (avg_y_adj_left + avg_y_adj_right)/2 - 0.5;
                 } else if(delta_stack_position < -1.5) {
@@ -400,12 +400,12 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 Log.d("StackIntakePosition_Logger", "calculated adjustment (x,y): " +
                          String.format("(%3.2f,%3.2f)",adjustment_x,adjustment_y) +
                         " | calculated pose: (" + (drive.pose.position.x - adjustment_x) + "," +
-                        drive.pose.position.y + adjustment_y + ")"
+                        drive.pose.position.y + "," + adjustment_y + ")"
                 );
 
-                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -57.5, -56.0);
+                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -57.5, -55.5);
 
-                if( 180-Math.abs(Math.toDegrees(drive.pose.heading.toDouble())) > 2.5) {
+                if( 180-Math.abs(Math.toDegrees(drive.pose.heading.toDouble())) > 3.0) {
                     adjustment_y = 0.0;
                 }
 

@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
@@ -71,10 +72,10 @@ public class Outtake {
 
     public static double SLIDE_PIVOT_DUMP_1 = 0.248;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.65;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.58;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.60;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN_0 = 2.52;
 
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX = 2.70;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX = 2.72;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MIN = 2.63;
 
     public static double SLIDE_PIVOT_DUMP_2 = 0.255;
@@ -241,10 +242,9 @@ public class Outtake {
     }
 
     public Action retractOuttake() {
-
         double sleepTime = 0.5;
         if(!isAuto) {
-            sleepTime = 0.8;
+            sleepTime = 0.7;
         }
 
         return new SequentialAction(
@@ -491,6 +491,7 @@ public class Outtake {
                 " | backdropTouched: " + backdropTouched;
     }
 
+    private ElapsedTime slidePivotlEapsedTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     public boolean checkSlidePivotPosition() {
         double slideServoVoltage = slidePivotVoltage.getVoltage();
         double slideServoPosition = slidePivot.getPosition();
@@ -511,19 +512,20 @@ public class Outtake {
         if(backdropTouched) {
             // make sure the outtake is pushed too hard on backdrop
             if (slideServoPosition > SLIDE_PIVOT_DUMP - 0.01 && slideServoPosition < SLIDE_PIVOT_DUMP_2) {
-                if (slidePivotVoltages.getMean() > SLIDE_PIVOT_DUMP_VOLTAGE_MIN) {
-                    servoPosition = slideServoPosition + 0.01;
-                    slidePivot.setPosition(servoPosition);
+                if (slidePivotVoltages.getMean() > SLIDE_PIVOT_DUMP_VOLTAGE_MAX) {
+//                    servoPosition = slideServoPosition + 0.01;
+ //                   slidePivot.setPosition(servoPosition);
                     isLogging = true;
                     direction = "DOWN";
                 }
             }
         }
 
-        if(isLogging) {
+        if(isLogging && slidePivotlEapsedTimer.milliseconds() > 150) {
             Log.d("Slide_Pivot_Logger",
                     "slidePivot " + direction + " servo position:" + String.format("%3.3f",servoPosition)
                             + " | slideServoVoltage: " + String.format("%3.3f",slidePivotVoltages.getMean()));
+            slidePivotlEapsedTimer.reset();
         }
 
         return backdropTouched;
@@ -746,5 +748,10 @@ public class Outtake {
     public Servo getOuttakeFixerServo() {
         return this.outtakeFixerServo;
     }
+
+    public double getSlidePivotServoVoltage() {
+        return slidePivotVoltages.getMean();
+    }
+
 
 }

@@ -17,8 +17,8 @@ public class RedLeftCycleAuto extends RedLeftAuto {
         super.onInit();
 
         this.cycleStart = new Pose2d[]{
-                new Pose2d(RedRightAuto.red_spike[0].position.x, -11.0, Math.toRadians(180)),
-                new Pose2d(RedRightAuto.red_spike[1].position.x, -11.0, Math.toRadians(180)),
+                new Pose2d(RedRightAuto.red_spike[2].position.x, -11.0, Math.toRadians(180)),
+                new Pose2d(RedRightAuto.red_spike[2].position.x, -11.0, Math.toRadians(180)),
                 new Pose2d(RedRightAuto.red_spike[2].position.x, -11.0, Math.toRadians(180))
         };
 

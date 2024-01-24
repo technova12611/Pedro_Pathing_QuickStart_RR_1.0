@@ -19,8 +19,8 @@ public class RedRightCycleAuto extends NearCycleAutoBase {
         this.spike = RedRightAuto.red_spike;
 
         this.cycleStart = new Pose2d[]{
-                new Pose2d(spike[2].position.x, -11.0, Math.toRadians(180)),
-                new Pose2d(spike[2].position.x, -11.0, Math.toRadians(180)),
+                new Pose2d(spike[0].position.x, -11.0, Math.toRadians(180)),
+                new Pose2d(spike[1].position.x, -11.0, Math.toRadians(180)),
                 new Pose2d(spike[2].position.x, -11.0, Math.toRadians(180))
         };
 
@@ -32,8 +32,8 @@ public class RedRightCycleAuto extends NearCycleAutoBase {
 
         cycleScore = new Pose2d[] {
                 new Pose2d(49.2, -35.0, Math.toRadians(180)),
-                new Pose2d(48.8, -31.0, Math.toRadians(180)),
-                new Pose2d(48.8, -31.0, Math.toRadians(180))
+                new Pose2d(49.0, -31.0, Math.toRadians(180)),
+                new Pose2d(49.0, -31.0, Math.toRadians(180))
         };
 
         this.parking = new Pose2d(44.1, -20.0, Math.toRadians(180));

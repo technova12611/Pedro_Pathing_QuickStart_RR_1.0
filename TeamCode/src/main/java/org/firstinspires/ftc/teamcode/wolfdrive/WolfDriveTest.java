@@ -7,7 +7,14 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystem.AprilTag;
+import org.firstinspires.ftc.teamcode.subsystem.Drone;
+import org.firstinspires.ftc.teamcode.subsystem.Hang;
+import org.firstinspires.ftc.teamcode.subsystem.Intake;
+import org.firstinspires.ftc.teamcode.subsystem.Outtake;
+import org.firstinspires.ftc.teamcode.utils.software.SmartGameTimer;
 
 @TeleOp(group = "Test")
 public class WolfDriveTest extends LinearOpMode {
@@ -16,6 +23,9 @@ public class WolfDriveTest extends LinearOpMode {
 
     private MecanumDrive baseDrive;
     private WolfDrive drive;
+
+    private Outtake outtake;
+    private Intake intake;
 
     private double speed = 1;
 
@@ -27,6 +37,12 @@ public class WolfDriveTest extends LinearOpMode {
         // Init
         baseDrive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
         drive = new WolfDrive(baseDrive);
+
+        intake = new Intake(hardwareMap);
+        outtake = new Outtake(hardwareMap);
+        outtake.isAuto = false;
+        intake.initialize(false);
+        outtake.initialize();
 
         // Ready!
         telemetry.addLine("Ready!");
@@ -60,6 +76,7 @@ public class WolfDriveTest extends LinearOpMode {
             telemetry.addData("Correction", drive.getCorrectionString());
             telemetry.addData("Drive direction", drive.getDriveDirectionString());
             telemetry.addLine(drive.getWheelPowerString());
+            telemetry.update();
         }
     }
 }

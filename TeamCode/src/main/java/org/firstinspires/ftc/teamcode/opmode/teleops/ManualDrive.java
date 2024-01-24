@@ -368,15 +368,31 @@ public class ManualDrive extends LinearOpMode {
         if (g1.rightBumper()) input_turn -= SLOW_TURN_SPEED;
 
         Vector2d input = new Vector2d(input_x, input_y);
-        drive.setDrivePowers(new PoseVelocity2d(input, input_turn));
 
-        if (input_x > 0.43) {
+        if(autoBackdropAdjustmentActivated && input_x == 0.0 && input_y == 0.0 && input_turn == 0.0) {
+            // do another
+            // not set upset the power
+        } else {
+            drive.setDrivePowers(new PoseVelocity2d(input, input_turn));
+        }
+
+        if (input_x > 0.1) {
+            if (isSlideOut && outtake.hasOuttakeReached() && outtake.getSlidePivotServoVoltage() < Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_MAX) {
+                outtake.backdropTouched = false;
+            }
+        }
+
+        if (input_x > 0.45) {
             if (isSlideOut && Intake.pixelsCount == 0 && pixelScored) {
                 retractSlide();
             } else if (isFixerServoOut) {
                 isFixerServoOut = false;
                 sched.queueAction(outtake.resetOuttakeFixerServo());
             }
+        }
+
+        if(input_x != 0.0 || input_y != 0.0 || input_turn != 0.0 ) {
+            autoBackdropDistance = false;
         }
 
         telemetry.addData("drive_power", "input_x: %3.2f | input_y: %3.2f | speed: %3.2f", input_x, input_y, speed);
@@ -443,11 +459,19 @@ public class ManualDrive extends LinearOpMode {
                 if (firstTimeSlideOut == null) {
                     sched.queueAction(new SleepAction(0.5));
                     sched.queueAction(outtake.resetSlidePivotServoDumpVoltageLimit());
-
                     firstTimeSlideOut = false;
                 }
                 isAprilTagDetected = true;
             }
+        }
+
+        if(outtake.backdropTouched && !autoBackdropDistance && isSlideOut && outtake.getSlidePivotServoVoltage() > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX) {
+            autoBackdropDistance = true;
+            sched.queueAction(new AutoBackdropDistanceAdjustmentAction(drive, 0.08, outtake,300));
+        }
+
+        if(!outtake.backdropTouched || !isSlideOut) {
+            autoBackdropDistance = false;
         }
 
         if (isSlideOut && isAprilTagDetected && AprilTag.yaw != null) {
@@ -506,7 +530,7 @@ public class ManualDrive extends LinearOpMode {
                 double nextLevelPosition = outtake.getFixerServoPositionByLevel(nextLevel);
                 Log.d("AutoDrive_Logger", "nextLevel:" + nextLevel + " nextLevelPosition: " + String.format("%3.2f", nextLevelPosition));
                 autoActionSched.addAction(
-                        new AutoDriveStraightAction(drive, -0.35, outtake.getOuttakeFixerServo(), 0.001, nextLevelPosition, 400)
+                        new AutoDriveStraightAction(drive, -0.35, outtake.getOuttakeFixerServo(), 0.001, nextLevelPosition, 500)
                     );
 
                 autoActionSched.run();
@@ -556,9 +580,9 @@ public class ManualDrive extends LinearOpMode {
         // drone launch
         if (g1.backOnce()) {
             sched.queueAction(intake.stackIntakeLinkageDown());
-            sched.queueAction(new SleepAction(0.25));
+            sched.queueAction(new SleepAction(0.3));
             sched.queueAction(drone.scoreDrone());
-            sched.queueAction(new SleepAction(0.6));
+            sched.queueAction(new SleepAction(0.3));
             sched.queueAction(intake.stackIntakeLinkageUp());
             sched.queueAction(drone.initDrone());
         }
@@ -703,6 +727,87 @@ public class ManualDrive extends LinearOpMode {
             return true;
         }
     }
+
+    private class AutoBackdropDistanceAdjustmentAction implements Action {
+        MecanumDrive drive;
+        Outtake outtake;
+
+        double power;
+        long elapsedTime;
+        Long startTime = null;
+        boolean firstTime = true;
+
+        double voltage_limit = Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MIN;
+
+        public AutoBackdropDistanceAdjustmentAction(MecanumDrive drive, double power, Outtake outtake, long elapsedTime) {
+            this.drive = drive;
+            this.power = power;
+            this.outtake = outtake;
+            this.elapsedTime = elapsedTime;
+        }
+
+        @Override
+        public boolean run(TelemetryPacket packet) {
+
+            if(!autoBackdropDistance) {
+                drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0.0, 0.0), 0.0));
+                autoBackdropAdjustmentActivated = false;
+                return false;
+            }
+
+            if(firstTime) {
+                firstTime = false;
+                Log.d("AutoBackdropDistanceAdjustment_Logger", "Slide position monitoring: " + System.currentTimeMillis()
+                        + " | outtake reached: " + outtake.hasOuttakeReached()
+                        + ", voltage: " + String.format("%3.2f", outtake.getSlidePivotServoVoltage()));
+            }
+
+            if(outtake.backdropTouched ) {
+                if(startTime == null) {
+                    startTime = System.currentTimeMillis();
+                    Log.d("AutoBackdropDistanceAdjustment_Logger", "Motor Start time: " + startTime + ", power: " + String.format("%3.2f", power));
+
+                    if(outtake != null) {
+                        Log.d("AutoBackdropDistanceAdjustment_Logger", "Servo Start time: "
+                                + startTime
+                                + " | outtake reached: " + outtake.hasOuttakeReached()
+                                + ", voltage: " + String.format("%3.2f", outtake.getSlidePivotServoVoltage()));
+                    }
+                }
+            }
+
+            if (this.drive != null ) {
+                if (autoBackdropDistance &&
+                        ( (startTime!= null && System.currentTimeMillis() - startTime > elapsedTime) ||
+                                (outtake.getSlidePivotServoVoltage() < voltage_limit && outtake.backdropTouched))) {
+                    Log.d("AutoBackdropDistanceAdjustment_Logger", "Motor End time: " + System.currentTimeMillis()
+                            + ", power: " + String.format("%3.2f", power)
+                            + ", voltage: " + String.format("%3.2f", outtake.getSlidePivotServoVoltage())
+                            + " , outtake reached: " + outtake.hasOuttakeReached()
+                    );
+                    drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0.0, 0.0), 0.0));
+                    autoBackdropAdjustmentActivated = false;
+                    return false;
+                }
+
+                if(autoBackdropDistance && outtake.hasOuttakeReached() && isSlideOut) {
+                    Vector2d input = new Vector2d(power, 0.0);
+                    drive.setDrivePowers(new PoseVelocity2d(input, 0.0));
+                    autoBackdropAdjustmentActivated = true;
+
+                    Log.d("AutoBackdropDistanceAdjustment_Logger", "Motor power: "  + String.format("%3.2f", power)
+                            + ", voltage: " + String.format("%3.2f", outtake.getSlidePivotServoVoltage())
+                            + " , outtake reached: " + outtake.hasOuttakeReached()
+                    );
+                }
+            }
+
+            return true;
+        }
+    }
+
+    protected boolean autoBackdropDistance = false;
+    protected boolean autoBackdropAdjustmentActivated = false;
 
 }
 

@@ -47,14 +47,14 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
     public static int width = 180;
     public static int height = 180;
 
-    public static double blueThreshold = 1.75;
-    public static double redThreshold = 1.75;
+    public static double blueThreshold = 1.5;
+    public static double redThreshold = 1.5;
 
     public static double threshold = 0.0;
 
-    public static double redDeltaThreshold = 1.25;
+    public static double redDeltaThreshold = 2.0;
 
-    public static double blueDeltaThreshold = 1.25;
+    public static double blueDeltaThreshold = 2.0;
 
     public double sideColor = 0.0;
     public double centerColor = 0.0;

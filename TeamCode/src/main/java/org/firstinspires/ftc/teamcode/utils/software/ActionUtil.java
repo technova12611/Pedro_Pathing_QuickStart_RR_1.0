@@ -13,6 +13,8 @@ import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
+import java.util.concurrent.Callable;
+
 public class ActionUtil {
    public static class DcMotorExPowerAction implements Action {
       double power;
@@ -90,6 +92,23 @@ public class ActionUtil {
       public boolean run(TelemetryPacket packet) {
          servo.setPower(power);
          return false;
+      }
+   }
+
+   public static class RunnableAction implements Action {
+      Callable<Boolean> action;
+
+      public RunnableAction(Callable<Boolean> action) {
+         this.action = action;
+      }
+
+      @Override
+      public boolean run(TelemetryPacket packet) {
+         try {
+            return action.call();
+         } catch (Exception e) {
+            throw new RuntimeException(e);
+         }
       }
    }
 }
