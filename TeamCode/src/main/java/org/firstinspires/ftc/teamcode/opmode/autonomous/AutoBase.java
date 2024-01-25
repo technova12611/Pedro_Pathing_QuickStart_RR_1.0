@@ -13,11 +13,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.apache.commons.math3.stat.StatUtils;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
-import org.firstinspires.ftc.teamcode.pipeline.ContourDetectionPipeline2;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 import org.firstinspires.ftc.teamcode.pipeline.PropBasePipeline;
 import org.firstinspires.ftc.teamcode.pipeline.PropFarPipeline;
@@ -35,12 +32,9 @@ import org.firstinspires.ftc.teamcode.utils.hardware.GamePadController;
 import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 import org.firstinspires.ftc.teamcode.utils.software.MovingArrayList;
 import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-
-import java.util.ArrayList;
 
 @Config
-public abstract class AutoBase extends LinearOpMode implements StackPositionCallback {
+public abstract class AutoBase extends LinearOpMode implements StackPositionCallback, BackdropPositionCallback {
     protected MecanumDrive drive;
     protected Outtake outtake;
     protected Intake intake;
@@ -56,7 +50,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
     // configure a wait time to allow partner time to finish the backdrop
     //----------------------------------------------------------------
     public int farSideAutoWaitTimeInSeconds = 0;
-    private int[] waitTimeOptions = {0,5,8};
+    private int[] waitTimeOptions = {0,5,8,12};
     private int selectionIdx = 0;
 
     public static boolean displayDistanceSensor = true;
@@ -106,6 +100,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         } else {
             propPipeline = new PropFarPipeline();
         }
+
+        propPipeline.allianceColor = getAlliance();
 
         portal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, Globals.FRONT_WEBCAM_NAME))
@@ -189,7 +185,9 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 telemetry.addLine("   ");
                 telemetry.addLine("<------- FAR side Wait Time Selection ------->");
                 telemetry.addLine("  Use DPAD Up/Down button to select wait time ");
+                telemetry.addLine("   ");
                 telemetry.addLine(   "    Wait Time to Score Yellow: " + farSideAutoWaitTimeInSeconds + " (seconds)");
+                telemetry.addLine("   ");
             }
 
             double loopTimeForAfterProp = loopTimer.milliseconds();
@@ -310,13 +308,13 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
     protected abstract AlliancePosition getAlliance();
     protected abstract FieldPosition getFieldPosition();
 
+    protected static double x_adjustment = 0.0;
 
     public static class StackIntakePositionAction implements Action {
         MecanumDrive drive;
         Intake intake;
         Pose2d stackPose;
         Boolean firstTime = null;
-
 
         int counter = 0;
         long startTime = 0;
@@ -334,6 +332,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         public boolean run(TelemetryPacket packet) {
             if(counter++ == 0) {
                 startTime = System.currentTimeMillis();
+                AutoBase.x_adjustment = 0.0;
             }
 
             if(counter > 5) {
@@ -365,15 +364,13 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 double adjustment_x = 0.0;
 
                 double delta_stack_position = avg_y_adj_left - avg_y_adj_right;
-                double current_pose_adjustment_y = 0.0;
 
-                double y_offset = 1.8;
+                double y_offset = 1.5;
                 if(Math.abs(delta_stack_position) <= 0.5 && avg_y_adj_left > 5.0 &&  avg_y_adj_right > 5.0) {
                     adjustment_x = (avg_y_adj_left + avg_y_adj_right)/2 - 0.5;
                 } else if(delta_stack_position < -1.5) {
-                    adjustment_y = -2.0;
+                    adjustment_y = -1.75;
                     adjustment_x = avg_y_adj_right -y_offset;
-                    current_pose_adjustment_y = -adjustment_y/2.0;
                 } else if(delta_stack_position < -0.9) {
                     adjustment_y = -1.0;
                     adjustment_x = avg_y_adj_right -y_offset;
@@ -382,9 +379,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                     adjustment_x = avg_y_adj_right -y_offset;
                 }
                 else if(delta_stack_position > 1.5) {
-                    adjustment_y = 2.0;
+                    adjustment_y = 1.75;
                     adjustment_x = avg_y_adj_left -y_offset;
-                    current_pose_adjustment_y = -adjustment_y/2.0;
                 } else if(delta_stack_position > 0.9) {
                     adjustment_y = 1.0;
                     adjustment_x = avg_y_adj_left -y_offset;
@@ -399,8 +395,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
                 Log.d("StackIntakePosition_Logger", "calculated adjustment (x,y): " +
                          String.format("(%3.2f,%3.2f)",adjustment_x,adjustment_y) +
-                        " | calculated pose: (" + (drive.pose.position.x - adjustment_x) + "," +
-                        drive.pose.position.y + "," + adjustment_y + ")"
+                        " | calculated pose: (" + String.format("%3.2f", (drive.pose.position.x - adjustment_x)) + "," +
+                        String.format("%3.2f", (drive.pose.position.y + adjustment_y)) + "," + adjustment_y + ")"
                 );
 
                 double x_position = Range.clip(drive.pose.position.x - adjustment_x, -57.5, -55.5);
@@ -424,6 +420,26 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         + " | target stack pose: " + new PoseMessage(stackPose));
 
                 AutoBase.setStackPositionStatic(proposedPose);
+
+                if(Globals.COLOR == AlliancePosition.RED) {
+                    if(adjustment_x > 9.0) {
+                        AutoBase.x_adjustment = 0.5;
+                    } else if (adjustment_x < 6.5){
+                        AutoBase.x_adjustment = -0.5;
+                    } else {
+                        AutoBase.x_adjustment = 0.0;
+                    }
+                } else {
+                    if(adjustment_x > 11.0) {
+                        AutoBase.x_adjustment = 0.5;
+                    } else if (adjustment_x < 8.0){
+                        AutoBase.x_adjustment = -0.5;
+                    } else {
+                        AutoBase.x_adjustment = 0.0;
+                    }
+                }
+
+                Log.d("StackIntakePosition_Logger", "Proposed X Adjustment: " + String.format("%3.2f", AutoBase.x_adjustment));
 
                 return false;
             }
@@ -459,10 +475,6 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         return this.stackPosition;
     }
 
-    public void setStackPosition(Pose2d stackPosition) {
-        AutoBase.stackPosition = stackPosition;
-    }
-
     public final static void setStackPositionStatic(Pose2d stackPosition) {
         AutoBase.stackPosition = stackPosition;
     }
@@ -470,6 +482,63 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
     public Action driveToStack() {
         return new NullAction();
     }
+
+    public Action driveToBackdrop() {
+        return new NullAction();
+    }
+
+    protected static Vector2d backdropAdjustment = new Vector2d (0.0,0.0);
+
+    public static class BackdropAlignmentAction implements Action {
+        MecanumDrive drive;
+        Outtake outtake;
+        Pose2d backdropPose;
+        Boolean firstTime = null;
+
+        int counter = 0;
+        long startTime = 0;
+
+        public BackdropAlignmentAction(MecanumDrive drive, Outtake outtake, Pose2d backdropPose) {
+            this.drive = drive;
+            this.outtake = outtake;
+            this.backdropPose = backdropPose;
+        }
+
+        @Override
+        public boolean run(TelemetryPacket packet) {
+
+            if(counter++ == 0) {
+                startTime = System.currentTimeMillis();
+            }
+
+            double slidePivotVoltage = outtake.getSlidePivotServoVoltage();
+
+            if(counter > 3) {
+                drive.updatePoseEstimate();
+
+                if(!outtake.hasOuttakeReached()) {
+                    AutoBase.backdropAdjustment = new Vector2d(drive.pose.position.x + 0.5, drive.pose.position.y);
+                } else if(slidePivotVoltage > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX + 0.1) {
+                    AutoBase.backdropAdjustment = new Vector2d(drive.pose.position.x - 0.5, drive.pose.position.y);
+                }
+
+                return false;
+            }
+
+            try {
+                Log.d("BackdropAlignmentAction", "Current Drive Pose: " + new PoseMessage(drive.pose)
+                        + " | slide pivot voltage: " + new PoseMessage(backdropPose) + " | count: " + counter
+                        + " | adjustment pose: " + new PoseMessage(new Pose2d(AutoBase.backdropAdjustment,drive.pose.heading.toDouble()))
+                        + " | Elapsed time: " + (System.currentTimeMillis() - startTime)
+                );
+            } catch(Exception e) {
+                Log.d("BackdropAlignmentAction_Logger", "Exception 1:  " + e.getMessage());
+            }
+
+            return true;
+        }
+    }
+
 
 }
 

@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 
 @Config
-@Autonomous(name = "Blue Far (RIGHT) Auto (2+1)", group = "BLUE Auto", preselectTeleOp = "Manual Drive")
+@Autonomous(name = "Blue Far (RIGHT) Auto (2+1)", group = "BLUE Auto FAR", preselectTeleOp = "Manual Drive")
 public class BlueRightAuto extends FarAutoBase {
    @Override
    protected void onInit() {
@@ -55,9 +55,9 @@ public class BlueRightAuto extends FarAutoBase {
               new Pose2d(-57.2, 11.0, Math.toRadians(-180))
       };
       this.crossFieldAlignment = new Pose2d[] {
-              new Pose2d(-46.5, 11.5, Math.toRadians(-180)),
+              new Pose2d(-46.5, 11.0, Math.toRadians(-180)),
               new Pose2d(-38.5, 35.5, Math.toRadians(-180)),
-              new Pose2d(-46.5, 11.5, Math.toRadians(-180))
+              new Pose2d(-46.5, 11.0, Math.toRadians(-180))
       };
 
       this.backdropAlignment = new Pose2d[] {

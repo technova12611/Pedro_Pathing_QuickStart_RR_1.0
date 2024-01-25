@@ -8,6 +8,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 
 import org.firstinspires.ftc.teamcode.opmode.autonomous.AutoBase;
+import org.firstinspires.ftc.teamcode.opmode.autonomous.BackdropPositionCallback;
 import org.firstinspires.ftc.teamcode.opmode.autonomous.StackPositionCallback;
 
 import java.util.LinkedList;
@@ -25,6 +26,8 @@ public class AutoActionScheduler {
 
    private StackPositionCallback stackCallback;
 
+   private BackdropPositionCallback backdropCallback;
+
    public AutoActionScheduler(Runnable pidUpdate) {
       this.pidUpdate = pidUpdate;
    }
@@ -35,6 +38,10 @@ public class AutoActionScheduler {
 
    public void setStackAlignmentCallback(StackPositionCallback stackCallback) {
       this.stackCallback = stackCallback;
+   }
+
+   public void setBackdropAlignmentCallback(BackdropPositionCallback backdropCallback) {
+      this.backdropCallback = backdropCallback;
    }
 
    public void run() {
@@ -64,6 +71,15 @@ public class AutoActionScheduler {
                   Log.d("AutoActionScheduler:", "** Adding a new StackDriveAction " + " started at " + (System.currentTimeMillis()-startTime + "(ms)"));
                   ((LinkedList) actions).addFirst(stackCallback.driveToStack());
                   Log.d("AutoActionScheduler:", "** Added a new StackDriveAction " + " completed at " + (System.currentTimeMillis()-startTime + "(ms)"));
+               }
+            }
+            if(a instanceof AutoBase.BackdropAlignmentAction) {
+               Log.d("AutoActionScheduler:", "BackdropAlignmentAction finished: " + backdropCallback);
+
+               if(backdropCallback != null) {
+                  Log.d("AutoActionScheduler:", "** Adding a new BackdropDriveAction " + " started at " + (System.currentTimeMillis()-startTime + "(ms)"));
+                  ((LinkedList) actions).addFirst(backdropCallback.driveToBackdrop());
+                  Log.d("AutoActionScheduler:", "** Added a new BackdropDriveAction " + " completed at " + (System.currentTimeMillis()-startTime + "(ms)"));
                }
             }
 

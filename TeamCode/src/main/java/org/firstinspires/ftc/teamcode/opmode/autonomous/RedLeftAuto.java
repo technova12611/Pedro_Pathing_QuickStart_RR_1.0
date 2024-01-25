@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 
 @Config
-@Autonomous(name = "RED Far (LEFT) Auto (2+1)", group = "RED Auto", preselectTeleOp = "Manual Drive")
+@Autonomous(name = "RED Far (LEFT) Auto (2+1)", group = "RED Auto FAR", preselectTeleOp = "Manual Drive")
 public class RedLeftAuto extends FarAutoBase {
     // 0 = left, 1 = middle, 2 = right
 

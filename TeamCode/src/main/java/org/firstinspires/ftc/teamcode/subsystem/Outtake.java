@@ -42,7 +42,7 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_MID = 1250;
     public static int OUTTAKE_SLIDE_CYCLES_ONE = 980;
     public static int OUTTAKE_SLIDE_CYCLES_TWO = 1150;
-    public static int OUTTAKE_SLIDE_FAR_LOW = 1100;
+    public static int OUTTAKE_SLIDE_FAR_LOW = 930;
     public static int OUTTAKE_SLIDE_LOW = 843;
     public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 1050;
     public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO_2 = 1200;
@@ -75,8 +75,8 @@ public class Outtake {
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.60;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN_0 = 2.52;
 
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX = 2.72;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MIN = 2.63;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX = 2.75;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MIN = 2.65;
 
     public static double SLIDE_PIVOT_DUMP_2 = 0.255;
 
@@ -521,7 +521,7 @@ public class Outtake {
             }
         }
 
-        if(isLogging && slidePivotlEapsedTimer.milliseconds() > 150) {
+        if(isLogging && slidePivotlEapsedTimer.milliseconds() > 250) {
             Log.d("Slide_Pivot_Logger",
                     "slidePivot " + direction + " servo position:" + String.format("%3.3f",servoPosition)
                             + " | slideServoVoltage: " + String.format("%3.3f",slidePivotVoltages.getMean()));

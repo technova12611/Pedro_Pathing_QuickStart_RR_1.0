@@ -33,7 +33,6 @@ import org.firstinspires.ftc.teamcode.utils.hardware.MotorWithPID;
 import org.firstinspires.ftc.teamcode.utils.hardware.MotorWithVelocityPID;
 
 @Config
-@Disabled
 @TeleOp(group = "Test")
 public class ServoMotorTest extends LinearOpMode {
 
@@ -281,7 +280,7 @@ public class ServoMotorTest extends LinearOpMode {
                     this.slide.setTargetPosition(OUTTAKE_MOTOR_POSITION);
                 }
                 else {
-                    this.slide.setTargetPosition(Outtake.OUTTAKE_SLIDE_CYCLES_ONE);
+                    this.slide.setTargetPosition(Outtake.OUTTAKE_SLIDE_FAR_LOW);
                 }
 
             }
@@ -289,16 +288,22 @@ public class ServoMotorTest extends LinearOpMode {
             else if(outtakeMode == 4) {
                 slidePivot.setPosition(Outtake.SLIDE_PIVOT_DUMP);
                 outtakePivot.setPosition(Outtake.OUTTAKE_PIVOT_DUMP_CYCLE);
-                Thread.sleep(250);
-                outtakeLatch.setPosition(Outtake.LATCH_SCORE_1);
 
-                Thread.sleep(500);
-                outtakeLatch.setPosition(Outtake.LATCH_SCORE_2);
-                Thread.sleep(500);
+                this.slide.getMotor().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                if(OUTTAKE_MOTOR_POSITION != 0) {
+                    this.slide.setTargetPosition(OUTTAKE_MOTOR_POSITION);
+                }
 
-                pixelsCount=0;
-
-                outtakeMode = 2;
+//                Thread.sleep(250);
+//                outtakeLatch.setPosition(Outtake.LATCH_SCORE_1);
+//
+//                Thread.sleep(500);
+//                outtakeLatch.setPosition(Outtake.LATCH_SCORE_2);
+//                Thread.sleep(500);
+//
+//                pixelsCount=0;
+//
+//                outtakeMode = 2;
 
             }
             // scoring 2
@@ -331,6 +336,20 @@ public class ServoMotorTest extends LinearOpMode {
                     this.slide.setTargetPosition(0);
                 }
 
+            }
+            else if(outtakeMode == 7 ) {
+
+                slidePivot.setPosition(Outtake.SLIDE_PIVOT_SLIDING);
+                outtakePivot.setPosition(Outtake.OUTTAKE_PIVOT_SLIDING);
+                Thread.sleep(600);
+
+                this.slide.getMotor().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                if(OUTTAKE_MOTOR_POSITION != 0) {
+                    this.slide.setTargetPosition(OUTTAKE_MOTOR_POSITION);
+                }
+                else {
+                    this.slide.setTargetPosition(Outtake.OUTTAKE_SLIDE_FAR_LOW);
+                }
             }
             else {
                 // outtake latch servo test

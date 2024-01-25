@@ -24,14 +24,14 @@ import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 @Disabled
 @Autonomous(group = "Test")
 public final class AutoPathTest extends LinearOpMode {
-    public static Pose2d starting = new Pose2d(16.0, -62.0, Math.PI/2);
+    public static Pose2d starting = new Pose2d(14.5, -62.0, Math.PI/2);
     public static Pose2d cycleStart = new Pose2d(28.5, -11.0, Math.PI);
     public static Pose2d backdrop = new Pose2d(48.5, -36.0, Math.PI);
     public static Pose2d spike = new Pose2d(28.5, -24.5, Math.PI);
     public static Pose2d parking = new Pose2d(52.0, -60.0, Math.PI);
 
-    public static Pose2d stackAlignment = new Pose2d(-50.0, -11.0, Math.PI);
-    public static Pose2d stackIntake = new Pose2d(-54.75, -12.5, Math.PI);
+    public static Pose2d stackAlignment = new Pose2d(-48.0, -11.0, Math.PI);
+    public static Pose2d stackIntake = new Pose2d(-56.0, -12.0, Math.PI);
     public Pose2d safeTrussPassStop = new Pose2d(-49.0, -11.0, Math.toRadians(180));
 
     protected AutoActionScheduler sched;
@@ -67,10 +67,20 @@ public final class AutoPathTest extends LinearOpMode {
                 new SequentialAction(
                         new MecanumDrive.DrivePoseLoggingAction(drive, "path_begin"),
                         drive.actionBuilder(drive.pose)
+                                .strafeToLinearHeading(backdrop.position, backdrop.heading)
+                                .build(),
+
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop"),
+                        drive.actionBuilder(backdrop)
+                                .strafeToLinearHeading(spike.position, spike.heading)
+                                .build(),
+
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "spike"),
+                        drive.actionBuilder(spike)
                                 .strafeToLinearHeading(cycleStart.position, cycleStart.heading)
                                 .build(),
 
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "stackAlignment"),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle"),
                         new ParallelAction(
                             drive.actionBuilderFast(cycleStart)
                                     .strafeTo(stackAlignment.position)
@@ -86,25 +96,25 @@ public final class AutoPathTest extends LinearOpMode {
                                 .build(),
 
                         intake.intakeTwoStackedPixels(),
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "stackIntake_end"),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "stackIntake_end")
 
-                        new ParallelAction(
-                                new SequentialAction(
-                                        drive.actionBuilder(stackIntake)
-                                                .setReversed(true)
-                                                .strafeTo(safeTrussPassStop.position)
-                                                .build(),
-                                        new MecanumDrive.DrivePoseLoggingAction(drive, "safe_pass_stop")
-                                ),
-
-                                new SequentialAction(
-                                        new SleepAction(0.5),
-                                        intake.stackIntakeLinkageUp(),
-                                        new SleepAction(1.25),
-                                        intake.prepareTeleOpsIntake(),
-                                        new MecanumDrive.DrivePoseLoggingAction(drive, "Intake_off")
-                                )
-                        )
+//                        new ParallelAction(
+//                                new SequentialAction(
+//                                        drive.actionBuilder(stackIntake)
+//                                                .setReversed(true)
+//                                                .strafeTo(safeTrussPassStop.position)
+//                                                .build(),
+//                                        new MecanumDrive.DrivePoseLoggingAction(drive, "safe_pass_stop")
+//                                ),
+//
+//                                new SequentialAction(
+//                                        new SleepAction(0.5),
+//                                        intake.stackIntakeLinkageUp(),
+//                                        new SleepAction(1.25),
+//                                        intake.prepareTeleOpsIntake(),
+//                                        new MecanumDrive.DrivePoseLoggingAction(drive, "Intake_off")
+//                                )
+//                        )
                 )
         );
 

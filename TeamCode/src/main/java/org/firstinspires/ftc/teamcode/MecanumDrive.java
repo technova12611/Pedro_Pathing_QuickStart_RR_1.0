@@ -74,9 +74,9 @@ public final class MecanumDrive {
         public double minProfileAccel = -40;
         public double maxProfileAccel = 60.0;
 
-        public double maxWheelVelHighSpeed = 63;
-        public double minProfileAccelHighSpeed = -52;
-        public double maxProfileAccelHighSpeed = 75;
+        public double maxWheelVelHighSpeed = 65;
+        public double minProfileAccelHighSpeed = -55;
+        public double maxProfileAccelHighSpeed = 72;
 
         // turn profile parameters (in radians)
         public double maxAngVel = Math.PI; // shared with path
@@ -85,7 +85,7 @@ public final class MecanumDrive {
         // path controller gains
         public double axialGain = 7.25; //5.25;
         public double lateralGain = 18.25; //16.5;
-        public double headingGain = 9.75; //7.5; // shared with turn
+        public double headingGain = 8.05; //7.5; // shared with turn
 
         public double axialVelGain = 0.525; //0.25;
         public double lateralVelGain = 0.25; //0.01;
@@ -526,8 +526,8 @@ public final class MecanumDrive {
                         + " | Target Pose: " + new PoseMessage(target)
                 );
             }
-            if(Math.abs(drive.pose.position.x - target.position.x) > 5.0 ||
-                    Math.abs(drive.pose.position.y - target.position.y) > 5.0) {
+            if(Math.abs(drive.pose.position.x - target.position.x) > 6.0 ||
+                    Math.abs(drive.pose.position.y - target.position.y) > 6.0) {
                 return true;
             }
 

@@ -242,7 +242,8 @@ public abstract class FarAutoBase extends AutoBase {
                             // move to stack intake position
                             new ParallelAction(
                                 drive.actionBuilder(stackIntake[SPIKE])
-                                    .strafeToLinearHeading(crossFieldAlignment[SPIKE].position, crossFieldAlignment[SPIKE].heading)
+                                    .strafeToLinearHeading(crossFieldAlignment[SPIKE].position, crossFieldAlignment[SPIKE].heading,
+                                            drive.slowVelConstraint, drive.slowAccelConstraint)
                                     .build(),
 
                                 new SequentialAction(
@@ -259,6 +260,7 @@ public abstract class FarAutoBase extends AutoBase {
 
         // Move to the backdrop side, and potentially add a configurable sleep time
         //-------------------------------------------------------------------------
+        double waitTime = doCycle()?0.0:farSideAutoWaitTimeInSeconds;
         sched.addAction(
                 new SequentialAction(
                         new ParallelAction(
@@ -283,6 +285,8 @@ public abstract class FarAutoBase extends AutoBase {
 
                         new MecanumDrive.AutoPositionCheckAction(drive, backdropAlignment[SPIKE]),
 
+                        new SleepAction(waitTime),
+
                         new ParallelAction(
                                 new SequentialAction(
                                         new SleepAction(0.5),
@@ -299,23 +303,21 @@ public abstract class FarAutoBase extends AutoBase {
                                 new SequentialAction(
                                         outtake.prepareToSlide(),
                                         new SleepAction(0.5),
-                                        outtake.extendOuttakeFarLow()
+                                        outtake.extendOuttakeFarLow(),
+                                        new SleepAction(0.5),
+                                        outtake.prepareToScoreCycle(),
+                                        new SleepAction(0.2)
                                 )
                         ),
 
                         new MecanumDrive.DrivePoseLoggingAction(drive, "start_scoring"),
-                        new MecanumDrive.AutoPositionCheckAction(drive, backdropAlignment[SPIKE]),
-
-                        outtake.prepareToScoreCycle(),
-                        new SleepAction(0.5),
 
                         outtake.latchScore1(),
-                        new SleepAction(0.50),
-                        outtake.latchScore2(),
-                        new SleepAction(0.30),
+                        new SleepAction(0.65),
                         outtake.afterScore2(),
                         new SleepAction(0.3),
-
+                        outtake.latchScore2(),
+                        new SleepAction(0.40),
                         new MecanumDrive.DrivePoseLoggingAction(drive, "score_yellow_preload"),
 
                         outtake.prepareToSlide(),
@@ -473,7 +475,8 @@ public abstract class FarAutoBase extends AutoBase {
                         new ParallelAction(
                                 new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_1_auto_alignment_start"),
                                 drive.actionBuilder(stackAlignment)
-                                        .strafeToLinearHeading(getStackPosition().position, getStackPosition().heading)
+                                        .strafeToLinearHeading(getStackPosition().position, getStackPosition().heading,
+                                              drive.slowVelConstraint, drive.slowAccelConstraint)
                                         .build(),
                                 intake.intakeOn()
                         ),
@@ -485,8 +488,7 @@ public abstract class FarAutoBase extends AutoBase {
                         drive.actionBuilder(getStackPosition())
                                 .setReversed(true)
                                 .strafeToLinearHeading(new Vector2d(safeTrussPassStop.position.x, getStackPosition().position.y),safeTrussPassStop.heading,
-                                        this.drive.highSpeedVelConstraint,
-                                        this.drive.highSpeedAccelConstraint)
+                                        drive.slowVelConstraint, drive.slowAccelConstraint)
                                 .build(),
                         intake.stackIntakeLinkageUp(),
                         new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_alignment_end")

@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 
 @Config
-@Autonomous(name = "RED Far (LEFT) Cycle Auto (2+3)", group = "RED Auto", preselectTeleOp = "Manual Drive")
+@Autonomous(name = "RED Far (LEFT) Cycle Auto (2+3)", group = "RED Auto FAR", preselectTeleOp = "Manual Drive")
 public class RedLeftCycleAuto extends RedLeftAuto {
     // 0 = left, 1 = middle, 2 = right
 

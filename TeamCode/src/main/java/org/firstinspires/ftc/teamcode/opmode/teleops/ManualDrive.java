@@ -465,9 +465,10 @@ public class ManualDrive extends LinearOpMode {
             }
         }
 
-        if(outtake.backdropTouched && !autoBackdropDistance && isSlideOut && outtake.getSlidePivotServoVoltage() > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX) {
+        if(outtake.backdropTouched && !autoBackdropDistance && isSlideOut &&
+                outtake.getSlidePivotServoVoltage() > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX) {
             autoBackdropDistance = true;
-            sched.queueAction(new AutoBackdropDistanceAdjustmentAction(drive, 0.08, outtake,300));
+ //           sched.queueAction(new AutoBackdropDistanceAdjustmentAction(drive, 0.10, outtake,200));
         }
 
         if(!outtake.backdropTouched || !isSlideOut) {

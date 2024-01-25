@@ -76,7 +76,7 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
 
     public int arraySize = 0;
 
-    public static AlliancePosition allianceColor;
+    public AlliancePosition allianceColor;
 
     // BGR
     private final Scalar
@@ -87,7 +87,7 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
 
     @Override
     public void init(int width, int height, CameraCalibration calibration) {
-        allianceColor = Globals.COLOR;
+        if(allianceColor ==null) allianceColor = Globals.COLOR;
         sideZoneColorList = new MovingArrayList(10);
         centerZoneColorList = new MovingArrayList(10);
 
