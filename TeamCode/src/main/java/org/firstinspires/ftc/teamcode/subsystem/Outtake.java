@@ -10,13 +10,16 @@ import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
 import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
@@ -126,6 +129,8 @@ public class Outtake {
 
     public boolean backdropTouched = false;
 
+    private Rev2mDistanceSensor backdropDistance;
+
     public FixerServoPosition fixerServoPosition = FixerServoPosition.LEVEL_0;
     private MovingArrayList slidePivotVoltages = new MovingArrayList(10);
 
@@ -147,6 +152,8 @@ public class Outtake {
 
         this.slidePivotVoltage = hardwareMap.get(AnalogInput.class, "slidePivotVoltage");
         this.outtakePivotVoltage = hardwareMap.get(AnalogInput.class, "outtakePivotVoltage");
+
+        backdropDistance = (Rev2mDistanceSensor)hardwareMap.get(DistanceSensor.class, "backdropDistance");
     }
 
     public enum OuttakeLatchState {
@@ -253,10 +260,23 @@ public class Outtake {
  //               latchClosed(),
                 new ParallelAction(
                     outtakeWireDown(),
+                        new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
                     this.slide.setTargetPositionAction(OUTTAKE_SLIDE_INIT, "outtakeSlide")
                 )//,
 //                new SleepAction(0.5),
 //                prepareToTransfer()
+        );
+    }
+
+    public Action fastRetractOuttake(double sleepTime) {
+        return new SequentialAction(
+                prepareToSlide(),
+                new SleepAction(sleepTime),
+                new ParallelAction(
+                        this.slide.setTargetPositionAction(OUTTAKE_SLIDE_INIT, "outtakeSlide"),
+                        outtakeWireDown(),
+                        new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch")
+                )
         );
     }
 
@@ -753,5 +773,8 @@ public class Outtake {
         return slidePivotVoltages.getMean();
     }
 
-
+    public double getBackdropDistance() {
+        if(backdropDistance == null) return 0.0;
+        return backdropDistance.getDistance(DistanceUnit.INCH);
+    }
 }

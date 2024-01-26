@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.opmode.autonomous;
 import android.util.Log;
 
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.NullAction;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
@@ -111,7 +110,8 @@ public abstract class NearCycleAutoBase extends AutoBase {
 
         sched.addAction(new ParallelAction(
                         new SequentialAction(
-                                outtake.retractOuttake(),
+                                new MecanumDrive.DrivePoseLoggingAction(drive, "start_of_retracting"),
+                                outtake.fastRetractOuttake(0.3),
                                 new SleepAction(0.5),
                                 intake.prepareTeleOpsIntake(),
                                 outtake.prepareToTransfer(),
@@ -202,13 +202,16 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         new MecanumDrive.DrivePoseLoggingAction(drive, "Before_backdrop_score"),
                         new MecanumDrive.AutoPositionCheckAction(drive, backdropAlignment),
 
+                        new BackdropRelocalizationAction(drive, outtake, cycleScore[SPIKE]),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "after_localization"),
+
                         // move to backdrop scoring position
                         new ParallelAction(
                                 new SequentialAction(
                                     drive.actionBuilder(backdropAlignment)
                                             .setReversed(true)
-                                            .strafeToLinearHeading(cycleScorePosition, cycleScore[SPIKE].heading)
-                                            //        drive.slowVelConstraint, drive.slowAccelConstraint)
+                                            .strafeToLinearHeading(cycleScorePosition, cycleScore[SPIKE].heading,
+                                                    drive.slowVelConstraint, drive.slowAccelConstraint)
                                             .build(),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_position")
                                 ),
@@ -233,27 +236,11 @@ public abstract class NearCycleAutoBase extends AutoBase {
                     // score pixels
                     new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_open_latch_start"),
                     outtake.latchScore1(),
-                    new SleepAction(0.35),
+                    new SleepAction(0.25),
                     outtake.latchScore2(),
-                    new SleepAction(0.50)
+                    new SleepAction(0.45)
                 )
         );
-
-//        if(cycleCount == 1) {
-//            sched.addAction(
-//                    new SequentialAction(
-//                            outtake.afterScore(),
-//                            new SleepAction(0.2)
-//                    )
-//            );
-//        } else {
-//            sched.addAction(
-//                    new SequentialAction(
-//                            outtake.afterScore2(),
-//                            new SleepAction(0.2)
-//                    )
-//            );
-//        }
 
         sched.addAction(
                 new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_end")
@@ -320,31 +307,5 @@ public abstract class NearCycleAutoBase extends AutoBase {
                 intake.stackIntakeLinkageUp(),
                 new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_alignment_end")
             );
-    }
-
-    public Action driveToBackdrop() {
-
-        return new ParallelAction(
-
-                new SequentialAction(
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_adjustment_begin"),
-                        drive.actionBuilder(drive.pose)
-                                .setReversed(true)
-                                .strafeToLinearHeading(backdropAdjustment, backdrop[SPIKE].heading,
-                                    this.drive.slowVelConstraint,
-                                     this.drive.slowAccelConstraint)
-                                .build(),
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_adjustment_end")
-                ),
-
-                new SequentialAction(
-                        // score pixels
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_open_latch_start"),
-                        outtake.latchScore1(),
-                        new SleepAction(0.30),
-                        outtake.latchScore2(),
-                        new SleepAction(0.50)
-                )
-        );
     }
 }

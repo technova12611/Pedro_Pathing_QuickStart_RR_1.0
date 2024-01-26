@@ -220,6 +220,7 @@ public class ManualDrive extends LinearOpMode {
             telemetry.addData("Slide current position", outtake.getMotorCurrentPosition());
             telemetry.addData("Slide target position", outtake.getMotorTargetPosition());
             telemetry.addData("Slide motor busy", outtake.isMotorBusy());
+            telemetry.addData("backdrop distance", String.format("%3.2f",outtake.getBackdropDistance()));
             telemetry.update();
 
             if (System.currentTimeMillis() - start_time > 80) {

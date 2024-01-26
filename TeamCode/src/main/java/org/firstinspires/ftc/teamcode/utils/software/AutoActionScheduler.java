@@ -73,16 +73,6 @@ public class AutoActionScheduler {
                   Log.d("AutoActionScheduler:", "** Added a new StackDriveAction " + " completed at " + (System.currentTimeMillis()-startTime + "(ms)"));
                }
             }
-            if(a instanceof AutoBase.BackdropAlignmentAction) {
-               Log.d("AutoActionScheduler:", "BackdropAlignmentAction finished: " + backdropCallback);
-
-               if(backdropCallback != null) {
-                  Log.d("AutoActionScheduler:", "** Adding a new BackdropDriveAction " + " started at " + (System.currentTimeMillis()-startTime + "(ms)"));
-                  ((LinkedList) actions).addFirst(backdropCallback.driveToBackdrop());
-                  Log.d("AutoActionScheduler:", "** Added a new BackdropDriveAction " + " completed at " + (System.currentTimeMillis()-startTime + "(ms)"));
-               }
-            }
-
             Log.d("AutoActionScheduler:", "Action: " + a + " - " + (++actionOrder) + " finished at " + (System.currentTimeMillis()-startTime + "(ms)"));
          }
       }

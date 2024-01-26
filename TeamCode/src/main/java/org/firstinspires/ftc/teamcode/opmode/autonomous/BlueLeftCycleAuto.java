@@ -37,7 +37,7 @@ public class BlueLeftCycleAuto extends NearCycleAutoBase {
                 new Pose2d(47.5, 36.0, Math.toRadians(-180))
         };
 
-        this.parking = new Pose2d(44.5, 20.0, Math.toRadians(-180));
+        this.parking = new Pose2d(46.5, 20.0, Math.toRadians(-180));
     }
 
     protected AlliancePosition getAlliance() {

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmode.autonomous;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.NullAction;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
@@ -258,6 +259,12 @@ public abstract class FarAutoBase extends AutoBase {
             );
         }
 
+        Action relocalizationAction = new BackdropRelocalizationAction(drive, outtake, backdrop[SPIKE]);
+
+        if(SPIKE == 1) {
+            relocalizationAction = new NullAction();
+        }
+
         // Move to the backdrop side, and potentially add a configurable sleep time
         //-------------------------------------------------------------------------
         double waitTime = doCycle()?0.0:farSideAutoWaitTimeInSeconds;
@@ -284,6 +291,9 @@ public abstract class FarAutoBase extends AutoBase {
                         new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_alignment_position"),
 
                         new MecanumDrive.AutoPositionCheckAction(drive, backdropAlignment[SPIKE]),
+
+                        relocalizationAction,
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "after_localization"),
 
                         new SleepAction(waitTime),
 
@@ -413,6 +423,9 @@ public abstract class FarAutoBase extends AutoBase {
                         new MecanumDrive.DrivePoseLoggingAction(drive, "Before_backdrop_score"),
                         new MecanumDrive.AutoPositionCheckAction(drive, backdropAlignmentCycle[SPIKE]),
 
+                        new BackdropRelocalizationAction(drive, outtake, cycleScore[SPIKE]),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "after_localization"),
+
                         // move to backdrop scoring position
                         new ParallelAction(
                                 new SequentialAction(
@@ -465,34 +478,6 @@ public abstract class FarAutoBase extends AutoBase {
 
     protected boolean doCycle() {
         return false;
-    }
-
-    @Override
-    public Action driveToStack() {
-
-        return
-                new SequentialAction(
-                        new ParallelAction(
-                                new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_1_auto_alignment_start"),
-                                drive.actionBuilder(stackAlignment)
-                                        .strafeToLinearHeading(getStackPosition().position, getStackPosition().heading,
-                                              drive.slowVelConstraint, drive.slowAccelConstraint)
-                                        .build(),
-                                intake.intakeOn()
-                        ),
-
-                        intake.intakeTwoStackedPixels(),
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_end", true),
-                        // move back to the backdrop
-
-                        drive.actionBuilder(getStackPosition())
-                                .setReversed(true)
-                                .strafeToLinearHeading(new Vector2d(safeTrussPassStop.position.x, getStackPosition().position.y),safeTrussPassStop.heading,
-                                        drive.slowVelConstraint, drive.slowAccelConstraint)
-                                .build(),
-                        intake.stackIntakeLinkageUp(),
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_alignment_end")
-                );
     }
 
 }

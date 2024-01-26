@@ -335,7 +335,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 AutoBase.x_adjustment = 0.0;
             }
 
-            if(counter > 5) {
+            if(counter > 4) {
                 drive.updatePoseEstimate();
                 double delta;
                 if(drive.pose.heading.toDouble() > 0) {
@@ -423,17 +423,17 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
                 if(Globals.COLOR == AlliancePosition.RED) {
                     if(adjustment_x > 9.0) {
-                        AutoBase.x_adjustment = 0.5;
-                    } else if (adjustment_x < 6.5){
-                        AutoBase.x_adjustment = -0.5;
+                        AutoBase.x_adjustment = 0.25;
+                    } else if (adjustment_x < 6.75){
+                        AutoBase.x_adjustment = -0.25;
                     } else {
                         AutoBase.x_adjustment = 0.0;
                     }
                 } else {
-                    if(adjustment_x > 11.0) {
-                        AutoBase.x_adjustment = 0.5;
+                    if(adjustment_x > 10.0) {
+                        AutoBase.x_adjustment = 0.25;
                     } else if (adjustment_x < 8.0){
-                        AutoBase.x_adjustment = -0.5;
+                        AutoBase.x_adjustment = -0.25;
                     } else {
                         AutoBase.x_adjustment = 0.0;
                     }
@@ -513,7 +513,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
             double slidePivotVoltage = outtake.getSlidePivotServoVoltage();
 
-            if(counter > 3) {
+            if(counter >= 3) {
                 drive.updatePoseEstimate();
 
                 if(!outtake.hasOuttakeReached()) {
@@ -539,6 +539,64 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         }
     }
 
+    public static class BackdropRelocalizationAction implements Action {
+        MecanumDrive drive;
+        Outtake outtake;
+        Pose2d backdropPose;
+        MovingArrayList backdropDistanceList = new MovingArrayList(5);
+        boolean firstTime = true;
+        ElapsedTime timer = null;
+        int counter = 0;
+
+        public BackdropRelocalizationAction(MecanumDrive drive, Outtake outtake, Pose2d backdropPose) {
+            this.drive = drive;
+            this.outtake = outtake;
+            this.backdropPose = backdropPose;
+        }
+
+        @Override
+        public boolean run(TelemetryPacket packet) {
+
+            if(timer == null) {
+                timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+            }
+            if(counter++ >=3) {
+                double adjustment = 0.0;
+                double avg_distance = backdropDistanceList.getAvg();
+                if(avg_distance < 24.5) {
+                    adjustment = 0.65;
+                } else if(avg_distance < 25.2) {
+                    adjustment = 0.35;
+                } else if(avg_distance > 26.5) {
+                    adjustment = -0.65;
+                } else if(avg_distance > 25.8) {
+                    adjustment = -0.35;
+                }
+                Pose2d currentPose = drive.pose;
+                drive.pose = new Pose2d(currentPose.position.plus(new Vector2d(adjustment, 0)), currentPose.heading);
+                drive.updatePoseEstimate();
+
+                Log.d("BackdropDistance_Logger", "Current Drive Pose: " + new PoseMessage(currentPose)
+                        + " | avg backdrop distance: " + String.format("%3.2f", avg_distance)
+                        + " | new drive pose: " + new PoseMessage(drive.pose)
+                        + " | adjustment: " + String.format("%3.2f", adjustment)
+                        + " | Target backdrop Pose: " + new PoseMessage(backdropPose));
+                return false;
+            }
+            double distance = outtake.getBackdropDistance();
+            if(distance < 27.5 && distance > 23.5) {
+                backdropDistanceList.add(distance);
+            }
+
+            Log.d("BackdropDistance_Logger", "Count: " + counter +  " | Current Drive Pose: " + new PoseMessage(drive.pose)
+                    + " | backdrop distance: " + String.format("%3.2f", distance)
+                    + " | Target backdrop Pose: " + new PoseMessage(backdropPose)
+                    + " | elapsed time: " + String.format("%3.2f", timer.milliseconds())
+            );
+
+            return true;
+        }
+    }
 
 }
 
