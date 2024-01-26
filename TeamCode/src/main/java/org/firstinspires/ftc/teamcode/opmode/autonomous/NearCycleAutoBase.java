@@ -276,7 +276,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                new ParallelAction(
                        new SequentialAction(
                                new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_start", true),
-                           intake.intakeTwoStackedPixels(),
+                           intake.intakeTwoStackedPixels2(),
                                new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_end", true),
                                new ActionUtil.RunnableAction(() -> {
                                    drive.pose = new Pose2d(drive.pose.position.plus(new Vector2d(AutoBase.x_adjustment, 0)), drive.pose.heading);

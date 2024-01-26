@@ -335,7 +335,22 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 AutoBase.x_adjustment = 0.0;
             }
 
-            if(counter > 4) {
+            double sensorElapsedTime = System.currentTimeMillis();
+            double stackDistanceLeft = intake.getStackDistance();
+            double stackDistanceRight = intake.getStackDistance2();
+
+            if(System.currentTimeMillis() - sensorElapsedTime > 200) {
+                AutoBase.setStackPositionStatic(stackPose);
+                Log.d("StackIntakePosition_Logger", "Current Drive Pose: " + new PoseMessage(drive.pose) +
+
+                        "sensor failed !!!" + "Elapsed time: " + (System.currentTimeMillis() - startTime)
+                        + "Left sensor:" + String.format("%3.2f", stackDistanceLeft ) + ","
+                        + "Right sensor: " + String.format("%3.2f", stackDistanceRight)
+                );
+
+                return false;
+            }
+            if(counter > 5) {
                 drive.updatePoseEstimate();
                 double delta;
                 if(drive.pose.heading.toDouble() > 0) {
@@ -368,23 +383,23 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 double y_offset = 1.5;
                 if(Math.abs(delta_stack_position) <= 0.5 && avg_y_adj_left > 5.0 &&  avg_y_adj_right > 5.0) {
                     adjustment_x = (avg_y_adj_left + avg_y_adj_right)/2 - 0.5;
-                } else if(delta_stack_position < -1.5) {
+                } else if(delta_stack_position < -1.8) {
                     adjustment_y = -1.75;
                     adjustment_x = avg_y_adj_right -y_offset;
-                } else if(delta_stack_position < -0.9) {
+                } else if(delta_stack_position < -1.2) {
                     adjustment_y = -1.0;
                     adjustment_x = avg_y_adj_right -y_offset;
-                } else if(delta_stack_position < -0.5) {
+                } else if(delta_stack_position < -0.7) {
                     adjustment_y = -0.5;
                     adjustment_x = avg_y_adj_right -y_offset;
                 }
-                else if(delta_stack_position > 1.5) {
+                else if(delta_stack_position > 1.8) {
                     adjustment_y = 1.75;
                     adjustment_x = avg_y_adj_left -y_offset;
-                } else if(delta_stack_position > 0.9) {
+                } else if(delta_stack_position > 1.2) {
                     adjustment_y = 1.0;
                     adjustment_x = avg_y_adj_left -y_offset;
-                } else if(delta_stack_position > 0.5) {
+                } else if(delta_stack_position > 0.7) {
                     adjustment_y = 0.5;
                     adjustment_x = avg_y_adj_left -y_offset;
                 }
@@ -399,7 +414,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         String.format("%3.2f", (drive.pose.position.y + adjustment_y)) + "," + adjustment_y + ")"
                 );
 
-                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -57.5, -55.5);
+                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -58.25, -55.5);
 
                 if( 180-Math.abs(Math.toDegrees(drive.pose.heading.toDouble())) > 3.0) {
                     adjustment_y = 0.0;
@@ -444,9 +459,6 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 return false;
             }
 
-            double stackDistanceLeft = intake.getStackDistance();
-            double stackDistanceRight = intake.getStackDistance2();
-
             if(counter >=1 && stackDistanceLeft > 5.0 && stackDistanceLeft <15.0) {
                 sensorDistancesLeftList.add(stackDistanceLeft);
             }
@@ -489,56 +501,6 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
     protected static Vector2d backdropAdjustment = new Vector2d (0.0,0.0);
 
-    public static class BackdropAlignmentAction implements Action {
-        MecanumDrive drive;
-        Outtake outtake;
-        Pose2d backdropPose;
-        Boolean firstTime = null;
-
-        int counter = 0;
-        long startTime = 0;
-
-        public BackdropAlignmentAction(MecanumDrive drive, Outtake outtake, Pose2d backdropPose) {
-            this.drive = drive;
-            this.outtake = outtake;
-            this.backdropPose = backdropPose;
-        }
-
-        @Override
-        public boolean run(TelemetryPacket packet) {
-
-            if(counter++ == 0) {
-                startTime = System.currentTimeMillis();
-            }
-
-            double slidePivotVoltage = outtake.getSlidePivotServoVoltage();
-
-            if(counter >= 3) {
-                drive.updatePoseEstimate();
-
-                if(!outtake.hasOuttakeReached()) {
-                    AutoBase.backdropAdjustment = new Vector2d(drive.pose.position.x + 0.5, drive.pose.position.y);
-                } else if(slidePivotVoltage > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX + 0.1) {
-                    AutoBase.backdropAdjustment = new Vector2d(drive.pose.position.x - 0.5, drive.pose.position.y);
-                }
-
-                return false;
-            }
-
-            try {
-                Log.d("BackdropAlignmentAction", "Current Drive Pose: " + new PoseMessage(drive.pose)
-                        + " | slide pivot voltage: " + new PoseMessage(backdropPose) + " | count: " + counter
-                        + " | adjustment pose: " + new PoseMessage(new Pose2d(AutoBase.backdropAdjustment,drive.pose.heading.toDouble()))
-                        + " | Elapsed time: " + (System.currentTimeMillis() - startTime)
-                );
-            } catch(Exception e) {
-                Log.d("BackdropAlignmentAction_Logger", "Exception 1:  " + e.getMessage());
-            }
-
-            return true;
-        }
-    }
-
     public static class BackdropRelocalizationAction implements Action {
         MecanumDrive drive;
         Outtake outtake;
@@ -563,14 +525,14 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             if(counter++ >=3) {
                 double adjustment = 0.0;
                 double avg_distance = backdropDistanceList.getAvg();
-                if(avg_distance < 24.5) {
-                    adjustment = 0.65;
-                } else if(avg_distance < 25.2) {
-                    adjustment = 0.35;
-                } else if(avg_distance > 26.5) {
-                    adjustment = -0.65;
-                } else if(avg_distance > 25.8) {
-                    adjustment = -0.35;
+                if(avg_distance < 24.0) {
+                    adjustment = 0.5;
+                } else if(avg_distance < 25.0) {
+                    adjustment = 0.25;
+                } else if(avg_distance > 27.0) {
+                    adjustment = -0.6;
+                } else if(avg_distance > 26.0) {
+                    adjustment = -0.3;
                 }
                 Pose2d currentPose = drive.pose;
                 drive.pose = new Pose2d(currentPose.position.plus(new Vector2d(adjustment, 0)), currentPose.heading);

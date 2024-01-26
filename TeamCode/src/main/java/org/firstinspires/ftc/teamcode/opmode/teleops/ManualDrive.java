@@ -593,7 +593,7 @@ public class ManualDrive extends LinearOpMode {
         if (g1.start() && g1.x()) {
             if (!isStackIntakeOn) {
                 isStackIntakeOn = true;
-                sched.queueAction(intake.intakeTwoStackedPixels());
+                sched.queueAction(intake.intakeTwoStackedPixels2());
             }
         }
 
