@@ -15,6 +15,7 @@
             <Servo name="outtakeWireServo" port="5" />
             <LynxEmbeddedIMU name="imu" port="0" bus="0" />
             <REV_VL53L0X_RANGE_SENSOR name="stackDistance2" port="0" bus="1" />
+            <REV_VL53L0X_RANGE_SENSOR name="stackDistance" port="0" bus="3" />
         </LynxModule>
         <LynxModule name="Control Hub" port="173">
             <goBILDA5202SeriesMotor name="leftFront" port="0" />
@@ -32,7 +33,7 @@
             <AnalogInput name="slidePivotVoltage3" port="3" />
             <DigitalDevice name="beamBreaker1" port="0" />
             <DigitalDevice name="beamBreaker2" port="2" />
-            <REV_VL53L0X_RANGE_SENSOR name="stackDistance" port="0" bus="1" />
+            <REV_VL53L0X_RANGE_SENSOR name="backdropDistance" port="0" bus="1" />
         </LynxModule>
     </LynxUsbDevice>
     <Webcam name="Webcam 2" serialNumber="5FE6DE1F" />

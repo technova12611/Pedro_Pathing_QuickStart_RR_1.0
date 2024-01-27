@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.wolfdrive;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.Range;
@@ -17,6 +18,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Outtake;
 import org.firstinspires.ftc.teamcode.utils.software.SmartGameTimer;
 
 @TeleOp(group = "Test")
+@Disabled
 public class WolfDriveTest extends LinearOpMode {
     public static double TURN_SPEED = 0.75;
     public static double SLOW_TURN_SPEED = 0.3;

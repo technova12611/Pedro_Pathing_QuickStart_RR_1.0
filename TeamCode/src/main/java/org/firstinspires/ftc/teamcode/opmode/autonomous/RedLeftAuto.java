@@ -59,7 +59,7 @@ public class RedLeftAuto extends FarAutoBase {
 
         this.backdropAlignment = new Pose2d[] {
                 new Pose2d(38.0, -11.25, Math.toRadians(180)),
-                new Pose2d(32.0, -36.0, Math.toRadians(180)),
+                new Pose2d(24.0, -36.0, Math.toRadians(180)),
                 new Pose2d(38.0, -11.25, Math.toRadians(180))
         };
 

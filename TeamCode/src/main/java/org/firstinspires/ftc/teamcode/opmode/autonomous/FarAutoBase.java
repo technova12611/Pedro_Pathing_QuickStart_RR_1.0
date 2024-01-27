@@ -424,7 +424,7 @@ public abstract class FarAutoBase extends AutoBase {
                                 ),
 
                                 new SequentialAction(
-                                        new SleepAction(1.2),
+                                        new SleepAction(1.5),
                                         intake.prepareTeleOpsIntake(),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "Intake_off")
                                 )
