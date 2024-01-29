@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmode.autonomous;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
@@ -10,6 +12,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
+import org.firstinspires.ftc.teamcode.subsystem.Outtake;
+import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
 
 @Config
 public abstract class NearAutoBase extends AutoBase {
@@ -42,8 +46,6 @@ public abstract class NearAutoBase extends AutoBase {
                               .strafeToLinearHeading(backdrop[SPIKE].position,
                                       backdrop[SPIKE].heading, drive.slowVelConstraint,drive.slowAccelConstraint)
                               .build(),
-
-
                           new SequentialAction(
                                   new SleepAction(1.25),
                               outtake.extendOuttakeLow()
@@ -52,44 +54,57 @@ public abstract class NearAutoBase extends AutoBase {
                       new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_position"),
                       outtake.prepareToScoreCycle(),
                       new SleepAction(0.5),
+                      getBackdropDistanceAdjustmentAction(),
                       outtake.latchScore1(),
                       intake.stackIntakeLinkageDown(),
                       new SleepAction(1.0),
                       outtake.afterScore(),
                       new SleepAction(0.50),
+                      new ActionUtil.RunnableAction(() -> {
+                          pidDriveActivated = false;
+                          straightDistance = 0.0;
+                          return false;
+                      })
+              ));
 
-                      new ParallelAction(
-                          new SequentialAction(
-                                  outtake.prepareToSlide(),
-                              new SleepAction(0.25),
-                              outtake.retractOuttake()),
-
-                              // to score the purple pixel on the spike
-                              drive.actionBuilder(backdrop[SPIKE])
-                                      .strafeToLinearHeading(spike[SPIKE].position, spike[SPIKE].heading, drive.slowVelConstraint,drive.slowAccelConstraint)
-                                      .build()
-                      ),
-                      new MecanumDrive.DrivePoseLoggingAction(drive, "spike_position"),
-
-                      intake.scorePurplePreload(),
-                      new SleepAction(0.5),
-
-                      // to park and prepare for teleops
-                      new ParallelAction(
-                              intake.prepareTeleOpsIntake(),
-                              outtake.prepareToTransfer(),
-                              drive.actionBuilder(spike[SPIKE])
-                                      .setReversed(true)
-                                      .strafeToLinearHeading(parking.position, parking.heading)
-                                      .strafeToLinearHeading(parking_2.position, parking_2.heading)
-                                      .build()
-                      ),
-
-//                      new SleepAction(1.0),
-//                      new MecanumDrive.UpdateDrivePoseAction(drive, this.visionPortal2, this.aprilTag),
-                     new MecanumDrive.DrivePoseLoggingAction(drive, "parking_position")
-              )
-      );
+//      // score purple pixel
+//       sched.addAction(
+//               new SequentialAction(
+//                  new ParallelAction(
+//                      new SequentialAction(
+//                              outtake.prepareToSlide(),
+//                          new SleepAction(0.25),
+//                          outtake.retractOuttake()),
+//
+//                          // to score the purple pixel on the spike
+//                          drive.actionBuilder(backdrop[SPIKE])
+//                                  .strafeToLinearHeading(spike[SPIKE].position, spike[SPIKE].heading, drive.slowVelConstraint,drive.slowAccelConstraint)
+//                                  .build()
+//                  ),
+//                  new MecanumDrive.DrivePoseLoggingAction(drive, "spike_position"),
+//
+//                  intake.scorePurplePreload(),
+//                  new SleepAction(0.5)
+//               )
+//       );
+//
+//       // to park and prepare for teleops
+//       sched.addAction(
+//           new SequentialAction(
+//              new ParallelAction(
+//                      intake.prepareTeleOpsIntake(),
+//                      outtake.prepareToTransfer(),
+//                      drive.actionBuilder(spike[SPIKE])
+//                              .setReversed(true)
+//                              .strafeToLinearHeading(parking.position, parking.heading)
+//                              .strafeToLinearHeading(parking_2.position, parking_2.heading)
+//                              .build()
+//              ),
+//
+//              new SleepAction(1.0),
+//              new MecanumDrive.DrivePoseLoggingAction(drive, "parking_position")
+//          )
+//      );
    }
 
    @Override

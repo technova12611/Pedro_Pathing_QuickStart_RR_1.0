@@ -12,6 +12,7 @@ import com.acmerobotics.roadrunner.Vector2d;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
+import org.firstinspires.ftc.teamcode.subsystem.Outtake;
 import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
 
 @Config
@@ -332,12 +333,20 @@ public abstract class FarAutoBase extends AutoBase {
 
                         new MecanumDrive.DrivePoseLoggingAction(drive, "start_scoring"),
 
+                        getBackdropDistanceAdjustmentAction(),
+
                         outtake.latchScore1(),
                         new SleepAction(0.65),
                         outtake.afterScore2(),
                         new SleepAction(0.3),
                         outtake.latchScore2(),
                         new SleepAction(0.40),
+                        new ActionUtil.RunnableAction(() -> {
+                            pidDriveActivated = false;
+                            straightDistance = 0.0;
+                            return false;
+                        }),
+
                         new MecanumDrive.DrivePoseLoggingAction(drive, "score_yellow_preload"),
 
                         outtake.prepareToSlide(),
@@ -462,10 +471,16 @@ public abstract class FarAutoBase extends AutoBase {
                 new SequentialAction(
                         // score pixels
                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_open_latch_start"),
+                        getBackdropDistanceAdjustmentAction(),
                         outtake.latchScore1(),
                         new SleepAction(0.30),
                         outtake.latchScore2(),
-                        new SleepAction(0.5)
+                        new SleepAction(0.5),
+                        new ActionUtil.RunnableAction(() -> {
+                            pidDriveActivated = false;
+                            straightDistance = 0.0;
+                            return false;
+                        })
                 )
         );
 

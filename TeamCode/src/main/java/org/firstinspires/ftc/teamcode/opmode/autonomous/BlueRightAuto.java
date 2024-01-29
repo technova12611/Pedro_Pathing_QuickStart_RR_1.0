@@ -32,9 +32,9 @@ public class BlueRightAuto extends FarAutoBase {
       this.parking = new Pose2d(42.0, 20.0, Math.toRadians(-180));
 
       this.cycleScore = new Pose2d[] {
-              new Pose2d(48.0, 32.0, Math.toRadians(-180)),
-              new Pose2d(48.0, 30.0, Math.toRadians(-180)),
-              new Pose2d(48.0, 36.0, Math.toRadians(-180)),
+              new Pose2d(47.8, 32.0, Math.toRadians(-180)),
+              new Pose2d(47.8, 30.0, Math.toRadians(-180)),
+              new Pose2d(47.8, 36.0, Math.toRadians(-180)),
       };
 
       this.backOffFromSpike = new Pose2d[] {
@@ -50,9 +50,9 @@ public class BlueRightAuto extends FarAutoBase {
       };
 
       this.stackIntake = new Pose2d[] {
-              new Pose2d(-57.2, 11.0, Math.toRadians(-180)),
-              new Pose2d(-57.0, 35.0, Math.toRadians(-180)),
-              new Pose2d(-57.2, 11.0, Math.toRadians(-180))
+              new Pose2d(-58.0, 11.0, Math.toRadians(-180)),
+              new Pose2d(-58.0, 35.0, Math.toRadians(-180)),
+              new Pose2d(-58.0, 11.0, Math.toRadians(-180))
       };
       this.crossFieldAlignment = new Pose2d[] {
               new Pose2d(-46.5, 11.0, Math.toRadians(-180)),

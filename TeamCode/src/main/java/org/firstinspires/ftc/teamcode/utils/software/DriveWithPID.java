@@ -52,6 +52,8 @@ public class DriveWithPID {
 
         if(direction == DriveDirection.STRAFE) {
             internalOffset =  ((TwoDeadWheelLocalizer)drive.localizer).perp.getPositionAndVelocity().position;
+        } else if(direction == DriveDirection.STRAIGHT) {
+            internalOffset =  ((TwoDeadWheelLocalizer)drive.localizer).par.getPositionAndVelocity().position;
         }
     }
 
@@ -118,14 +120,28 @@ public class DriveWithPID {
      * @param position the desired encoder target position
      */
     public void setTargetPosition(int position) {
-        this.internalOffset = ((TwoDeadWheelLocalizer)drive.localizer).perp.getPositionAndVelocity().position;
+
+        if(direction == DriveDirection.STRAFE) {
+            this.internalOffset = ((TwoDeadWheelLocalizer) drive.localizer).perp.getPositionAndVelocity().position;
+        }
+        if(direction == DriveDirection.STRAIGHT) {
+            this.internalOffset = ((TwoDeadWheelLocalizer) drive.localizer).par.getPositionAndVelocity().position;
+        }
         this.targetPosition = position + this.internalOffset;
-        this.perp_pidfController.setTargetPosition(this.targetPosition);
-        this.par_pidfController.setTargetPosition(((TwoDeadWheelLocalizer)drive.localizer).par.getPositionAndVelocity().position);
-        this.turn_pidfController.setTargetPosition(((TwoDeadWheelLocalizer)drive.localizer).imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
+        if(direction == DriveDirection.STRAFE) {
+            this.perp_pidfController.setTargetPosition(this.targetPosition);
+            this.par_pidfController.setTargetPosition(((TwoDeadWheelLocalizer) drive.localizer).par.getPositionAndVelocity().position);
+            this.turn_pidfController.setTargetPosition(((TwoDeadWheelLocalizer) drive.localizer).imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
+        }
+
+        if(direction == DriveDirection.STRAIGHT) {
+            this.par_pidfController.setTargetPosition(this.targetPosition);
+            this.perp_pidfController.setTargetPosition(((TwoDeadWheelLocalizer) drive.localizer).perp.getPositionAndVelocity().position);
+            this.turn_pidfController.setTargetPosition(((TwoDeadWheelLocalizer) drive.localizer).imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
+        }
         this.setStartTime();
         Log.d("DriveWithPID_Logger_0_1_set", "position: " + position + ", this.targetPosition: "
-                + this.targetPosition + ", this.internalOffset:" + this.internalOffset);
+                + this.targetPosition + ", this.internalOffset:" + this.internalOffset + " | start_time:" + startTime);
     }
 
     private class TargetPositionAction implements Action {
@@ -176,6 +192,8 @@ public class DriveWithPID {
 
     public void resetIntegralGain() {
         this.perp_pidfController.reset();
+        this.par_pidfController.reset();
+        this.turn_pidfController.reset();
     }
 
     /**
@@ -186,7 +204,14 @@ public class DriveWithPID {
         if(startTime == null) {
             return false;
         }
-        return Math.abs(perp_pidfController.getLastError()) > tolerance && (System.currentTimeMillis() - startTime) < maxElapsedTime;
+
+        if(direction == DriveDirection.STRAFE) {
+            return Math.abs(perp_pidfController.getLastError()) > tolerance && (System.currentTimeMillis() - startTime) < maxElapsedTime;
+        } else if(direction == DriveDirection.STRAIGHT) {
+            return Math.abs(par_pidfController.getLastError()) > tolerance && (System.currentTimeMillis() - startTime) < maxElapsedTime;
+        }
+
+        return false;
     }
 
     /**
@@ -204,6 +229,9 @@ public class DriveWithPID {
     public int getCurrentPosition() {
         if(direction == DriveDirection.STRAFE) {
             return ((TwoDeadWheelLocalizer)drive.localizer).perp.getPositionAndVelocity().position;
+        }
+        if(direction == DriveDirection.STRAIGHT) {
+            return ((TwoDeadWheelLocalizer)drive.localizer).par.getPositionAndVelocity().position;
         }
         return 0;
     }

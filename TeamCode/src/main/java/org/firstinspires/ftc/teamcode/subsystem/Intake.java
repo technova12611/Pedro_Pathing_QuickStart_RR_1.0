@@ -222,7 +222,7 @@ public class Intake {
         return new SequentialAction(
                 new StackIntakeStateAction(StackIntakeState.UP),
                 new ActionUtil.ServoPositionAction(stackIntakeLinkage, STACK_INTAKE_LINKAGE_UP, "stackIntakeLinkage"),
-                new SleepAction(0.2),
+                new SleepAction(0.1),
                 new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_INIT, "stackIntakeServoLeft"),
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_INIT, "stackIntakeServoRight"),
                 intakeOff()

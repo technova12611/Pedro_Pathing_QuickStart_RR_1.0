@@ -8,17 +8,14 @@ import com.acmerobotics.roadrunner.AccelConstraint;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.AngularVelConstraint;
 import com.acmerobotics.roadrunner.MinVelConstraint;
-import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.VelConstraint;
-import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
@@ -37,10 +34,9 @@ import org.firstinspires.ftc.teamcode.utils.hardware.GamePadController;
 import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 import org.firstinspires.ftc.teamcode.utils.software.DriveWithPID;
 import org.firstinspires.ftc.teamcode.utils.software.SmartGameTimer;
+import org.firstinspires.ftc.teamcode.wolfdrive.WolfDrive;
 
 import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Config
 @TeleOp(group = "Drive", name = "Manual Drive")
@@ -61,7 +57,7 @@ public class ManualDrive extends LinearOpMode {
     private Hang hang;
     private Drone drone;
 
-    private AprilTag aprilTag;
+//    private AprilTag aprilTag;
 
     Long intakeReverseStartTime = null;
     Long intakeSlowdownStartTime = null;
@@ -75,6 +71,8 @@ public class ManualDrive extends LinearOpMode {
     double slowModeForHanging = 0.5;
     double slowModeForBackdrop = 0.5;
     boolean isHangingActivated = false;
+
+    boolean isDroneLaunched = false;
     long startTime = 0L;
 
     boolean pixelScored = false;
@@ -89,7 +87,11 @@ public class ManualDrive extends LinearOpMode {
 
     Boolean isFixerServoOut = Boolean.FALSE;
 
-    private DriveWithPID pidDrive;
+    private DriveWithPID pidDriveStrafe;
+
+    private DriveWithPID pidDriveStraight;
+
+    private WolfDrive wolfDrive;
 
     Gamepad.LedEffect redEffect = new Gamepad.LedEffect.Builder()
             .addStep(1, 0, 0, 750) // Show red for 250ms
@@ -121,7 +123,9 @@ public class ManualDrive extends LinearOpMode {
         outtake = new Outtake(hardwareMap);
         hang = new Hang(hardwareMap);
         drone = new Drone(hardwareMap);
-        aprilTag = new AprilTag(hardwareMap, telemetry);
+//        aprilTag = new AprilTag(hardwareMap, telemetry);
+
+        wolfDrive = new WolfDrive(drive);
 
         smartGameTimer = new SmartGameTimer(false);
 
@@ -141,9 +145,11 @@ public class ManualDrive extends LinearOpMode {
         long current_time = System.currentTimeMillis();
         telemetry.addLine("Initializing AprilTag: " + (current_time - start_time));
         telemetry.update();
-        aprilTag.initialize();
+//        aprilTag.initialize();
 
-        pidDrive = new DriveWithPID(drive, null, DriveWithPID.DriveDirection.STRAFE);
+        pidDriveStrafe = new DriveWithPID(drive, null, DriveWithPID.DriveDirection.STRAFE);
+
+        pidDriveStraight = new DriveWithPID(drive, null, DriveWithPID.DriveDirection.STRAIGHT);
 
         // Ready!
         telemetry.addLine("Manual Drive is Ready! Complete in " + (System.currentTimeMillis() - start_time) + " (ms)");
@@ -281,6 +287,7 @@ public class ManualDrive extends LinearOpMode {
                 intakeReverseStartTime = new Long(System.currentTimeMillis());
 
                 g1.runLedEffect(greenEffect);
+                g1.rumble(600);
 
                 Log.d("TeleOps_Pixel_detection", "Pixel counted changed to "
                         + Intake.pixelsCount + ", need to reverse after intake, detected at " + (intakeReverseStartTime - startTime));
@@ -315,7 +322,7 @@ public class ManualDrive extends LinearOpMode {
                             + Intake.pixelsCount + ", reversing started at " + (intakeReverseStartTime - startTime));
                 }
 
-                if (elapsedTimeMs > 2500 &&
+                if (elapsedTimeMs > 2800 &&
                         intake.intakeState.equals(Intake.IntakeState.REVERSING)) {
                     sched.queueAction(intake.intakeOff());
                     intakeReverseStartTime = null;
@@ -374,7 +381,12 @@ public class ManualDrive extends LinearOpMode {
             // do another
             // not set upset the power
         } else {
-            drive.setDrivePowers(new PoseVelocity2d(input, input_turn));
+            // test wolfPack drive
+            PoseVelocity2d currentVel = drive.updatePoseEstimate();
+            wolfDrive.trackPosition(drive.pose);
+            wolfDrive.driveWithCorrection(new PoseVelocity2d(input, input_turn), currentVel);
+
+            //drive.setDrivePowers(new PoseVelocity2d(input, input_turn));
         }
 
         if (input_x > 0.1) {
@@ -392,6 +404,14 @@ public class ManualDrive extends LinearOpMode {
             }
         }
 
+        if(Math.abs(input_y) > 0.1 && isSlideOut && outtake.hasOuttakeReached()) {
+            sched.queueAction(outtake.afterScore());
+            manualStrafeToScore = true;
+        } else if(isSlideOut && input_y == 0.0 && manualStrafeToScore){
+            sched.queueAction(outtake.prepareToScore());
+            manualStrafeToScore = false;
+        }
+
         if(input_x != 0.0 || input_y != 0.0 || input_turn != 0.0 ) {
             autoBackdropDistance = false;
         }
@@ -402,6 +422,7 @@ public class ManualDrive extends LinearOpMode {
     boolean isSlideOut = false;
     boolean isAprilTagDetected = false;
     boolean isStackIntakeOn = false;
+    boolean manualStrafeToScore = false;
 
     private void subsystemControls() {
         // Intake controls
@@ -455,7 +476,7 @@ public class ManualDrive extends LinearOpMode {
                 sched.queueAction(outtake.extendOuttakeTeleOps());
                 sched.queueAction(new SleepAction(0.5));
                 sched.queueAction(outtake.prepareToScore());
-                sched.queueAction(aprilTag.updatePosition());
+//                sched.queueAction(aprilTag.updatePosition());
 
                 if (firstTimeSlideOut == null) {
                     sched.queueAction(new SleepAction(0.5));
@@ -464,12 +485,6 @@ public class ManualDrive extends LinearOpMode {
                 }
                 isAprilTagDetected = true;
             }
-        }
-
-        if(outtake.backdropTouched && !autoBackdropDistance && isSlideOut &&
-                outtake.getSlidePivotServoVoltage() > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX) {
-            autoBackdropDistance = true;
- //           sched.queueAction(new AutoBackdropDistanceAdjustmentAction(drive, 0.10, outtake,200));
         }
 
         if(!outtake.backdropTouched || !isSlideOut) {
@@ -481,12 +496,12 @@ public class ManualDrive extends LinearOpMode {
             final double yaw = AprilTag.yaw.doubleValue();
             Log.d("AprilTag_Localization", String.format("%3.2f", yaw));
 
-            AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);
-            autoActionSched.addAction(drive.actionBuilder(drive.pose)
-                    .turn(Math.toRadians(yaw))
-                    .build());
-
-            autoActionSched.run();
+//            AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);
+//            autoActionSched.addAction(drive.actionBuilder(drive.pose)
+//                    .turn(Math.toRadians(yaw))
+//                    .build());
+//
+//            autoActionSched.run();
             AprilTag.yaw = null;
         }
 
@@ -495,21 +510,14 @@ public class ManualDrive extends LinearOpMode {
         }
 
         // Hang arms up/down
-        if (g1.start() & g1.dpadUpOnce()) {
-            sched.queueAction(hang.unblockHook());
-            sched.queueAction(new SleepAction(0.35));
-            sched.queueAction(outtake.outtakeWireForHanging());
-
-            if (outtake.isHangingHookUp) {
-                isHangingActivated = true;
-            } else {
-                isHangingActivated = false;
-            }
+        if(g1.dpadUpLong()) {
+            sched.queueAction(outtake.resetOuttakeFixerServo());
+            isFixerServoOut = false;
         }
         else if (g1.dpadUpOnce()) {
             isFixerServoOut = true;
             sched.queueAction(outtake.moveUpOuttakeFixerServo());
-            sched.queueAction(aprilTag.updatePosition());
+//            sched.queueAction(aprilTag.updatePosition());
         }
 
         if (g1.dpadDownLong()) {
@@ -545,8 +553,31 @@ public class ManualDrive extends LinearOpMode {
             start_y = null;
         }
 
+        if(outtake.backdropTouched && !autoBackdropDistance && isSlideOut &&
+                outtake.getSlidePivotServoVoltage() > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX && !pidDriveStraight.isBusy()) {
+            autoBackdropDistance = true;
+
+            double forwardDistance =0.5;
+            if(outtake.getSlidePivotServoVoltage() > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME) {
+                forwardDistance =1.0;
+            }
+
+            Log.d("DriveWithPID_Logger_0_Teleops", "Pose before straight forward: " + new PoseMessage(this.drive.pose) + " | target=" + forwardDistance);
+            start_y = drive.pose.position.y;
+
+            AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);
+            autoActionSched.addAction(
+                        pidDriveStraight.setTargetPositionActionBlocking((int) (forwardDistance / MecanumDrive.PARAMS.inPerTick))
+                );
+            autoActionSched.addAction(
+                    new MecanumDrive.DrivePoseLoggingAction(drive,"aut_adjust_backdrop_distance")
+            );
+
+            autoActionSched.run();
+        }
+
         // move left and right by one slot
-        if ((g1.dpadLeftOnce() || g1.dpadRightOnce()) && !pidDrive.isBusy()) {
+        if ((g1.dpadLeftOnce() || g1.dpadRightOnce()) && !pidDriveStrafe.isBusy()) {
 
             int multiplier = (Globals.RUN_AUTO) ? 1 : -1;
 
@@ -561,18 +592,12 @@ public class ManualDrive extends LinearOpMode {
                         new SequentialAction(
                                 outtake.strafeToAlign(),
                                 new SleepAction(0.2),
-                                pidDrive.setTargetPositionActionBlocking((int) (strafeDistance / MecanumDrive.PARAMS.inPerTick)),
-//                                drive.actionBuilder(drive.pose)
-//                                        .strafeToConstantHeading(new Vector2d(drive.pose.position.x, drive.pose.position.y + strafeDistance))
-//                                        .build(),
+                                pidDriveStrafe.setTargetPositionActionBlocking((int) (strafeDistance / MecanumDrive.PARAMS.inPerTick)),
                                 outtake.prepareToScore())
                 );
             } else {
                 autoActionSched.addAction(
-//                                drive.actionBuilder(drive.pose)
-//                                        .strafeToConstantHeading(new Vector2d(drive.pose.position.x, drive.pose.position.y + strafeDistance))
-//                                        .build()
-                        pidDrive.setTargetPositionActionBlocking((int) (strafeDistance / MecanumDrive.PARAMS.inPerTick))
+                        pidDriveStrafe.setTargetPositionActionBlocking((int) (strafeDistance / MecanumDrive.PARAMS.inPerTick))
                 );
             }
 
@@ -581,12 +606,24 @@ public class ManualDrive extends LinearOpMode {
 
         // drone launch
         if (g1.backOnce()) {
-            sched.queueAction(intake.stackIntakeLinkageDown());
-            sched.queueAction(new SleepAction(0.3));
-            sched.queueAction(drone.scoreDrone());
-            sched.queueAction(new SleepAction(0.3));
-            sched.queueAction(intake.stackIntakeLinkageUp());
-            sched.queueAction(drone.initDrone());
+            if(!isDroneLaunched) {
+                isDroneLaunched=true;
+                sched.queueAction(intake.stackIntakeLinkageDown());
+                sched.queueAction(new SleepAction(0.3));
+                sched.queueAction(drone.scoreDrone());
+                sched.queueAction(new SleepAction(0.3));
+                sched.queueAction(intake.stackIntakeLinkageUp());
+                sched.queueAction(drone.initDrone());
+            } else if(!isHangingActivated) {
+                sched.queueAction(new SleepAction(0.5));
+                sched.queueAction(hang.unblockHook());
+                sched.queueAction(new SleepAction(0.35));
+                sched.queueAction(outtake.outtakeWireForHanging());
+                isHangingActivated = true;
+            } else if(isHangingActivated) {
+                sched.queueAction(outtake.hangingHookSafeDown());
+                isHangingActivated = false;
+            }
         }
 
         // stack intake

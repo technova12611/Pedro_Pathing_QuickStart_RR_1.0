@@ -13,12 +13,12 @@ import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
 
 @Config
 public class Drone {
-    public static double LATCH_SCORED = 0.50;
-    public static double LATCH_CLOSED = 0.30;
+    public static double LATCH_SCORED = 0.45;
+    public static double LATCH_CLOSED = 0.66;
 
     // Drone Tilt is Axon Mini Servo
-    public static double TILT_INIT = 0.32;
-    public static double TILT_LAUNCH = 0.61;
+    public static double TILT_INIT = 0.30;
+    public static double TILT_LAUNCH = 0.6;
 
     final Servo latch;
     final Servo tilt;
@@ -35,19 +35,19 @@ public class Drone {
 
     public Action scoreDrone() {
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(tilt, TILT_LAUNCH),
+                new ActionUtil.ServoPositionAction(tilt, TILT_LAUNCH, "drone_tilt"),
                 new SleepAction(0.5),
-                new ActionUtil.ServoPositionAction(latch, LATCH_SCORED),
+                new ActionUtil.ServoPositionAction(latch, LATCH_SCORED, "drone_latch"),
                 new SleepAction(0.5),
-                new ActionUtil.ServoPositionAction(tilt, TILT_INIT),
-                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED)
+                new ActionUtil.ServoPositionAction(tilt, TILT_INIT, "drone_tilt"),
+                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "drone_latch")
         );
     }
 
     public Action initDrone() {
         return new ParallelAction(
-                new ActionUtil.ServoPositionAction(tilt, TILT_INIT),
-                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED)
+                new ActionUtil.ServoPositionAction(tilt, TILT_INIT, "drone_tilt"),
+                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "drone_latch")
         );
     }
 }

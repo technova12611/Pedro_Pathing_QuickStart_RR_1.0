@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 import org.firstinspires.ftc.teamcode.roadrunner.messages.PoseMessage;
+import org.firstinspires.ftc.teamcode.subsystem.Outtake;
 import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
 
 public abstract class NearCycleAutoBase extends AutoBase {
@@ -66,11 +67,17 @@ public abstract class NearCycleAutoBase extends AutoBase {
 
                         outtake.prepareToScore(),
                         new SleepAction(0.30),
+                        getBackdropDistanceAdjustmentAction(),
                         outtake.latchScore1(),
                         new SleepAction(0.50),
                         intake.stackIntakeLinkageDown(),
                         outtake.afterScore(),
                         new SleepAction(0.3),
+                        new ActionUtil.RunnableAction(() -> {
+                            pidDriveActivated = false;
+                            straightDistance = 0.0;
+                            return false;
+                        }),
                         new MecanumDrive.DrivePoseLoggingAction(drive, "end_of_scoring_position"),
                         new ParallelAction(
                                 outtake.retractOuttake(),
@@ -193,7 +200,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                 ),
 
                                 new SequentialAction(
-                                        new SleepAction(1.5),
+                                        new SleepAction(1.7),
                                         intake.prepareTeleOpsIntake(),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "Intake_off")
                                 )
@@ -235,10 +242,18 @@ public abstract class NearCycleAutoBase extends AutoBase {
                 new SequentialAction(
                     // score pixels
                     new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_open_latch_start"),
-                    outtake.latchScore1(),
+
+                        getBackdropDistanceAdjustmentAction(),
+
+                        outtake.latchScore1(),
                     new SleepAction(0.25),
                     outtake.latchScore2(),
-                    new SleepAction(0.45)
+                    new SleepAction(0.45),
+                    new ActionUtil.RunnableAction(() -> {
+                        pidDriveActivated = false;
+                        straightDistance = 0.0;
+                        return false;
+                    })
                 )
         );
 

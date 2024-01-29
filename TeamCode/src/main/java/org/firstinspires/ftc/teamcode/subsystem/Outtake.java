@@ -78,12 +78,14 @@ public class Outtake {
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.60;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN_0 = 2.52;
 
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX = 2.75;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MIN = 2.65;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX = 2.85;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MIN = 2.70;
+
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME = 3.0;
 
     public static double SLIDE_PIVOT_DUMP_2 = 0.255;
 
-    public static double SLIDE_PIVOT_STRAFE = 0.285;
+    public static double SLIDE_PIVOT_STRAFE = 0.25;
 
     public static double SLIDE_PIVOT_DUMP_HIGH = 0.10;
 
@@ -93,6 +95,12 @@ public class Outtake {
 
     public static double OUTTAKE_WIRE_SAFE_DOWN = 0.70;
 
+    public static double OUTTAKE_WIRE_HALF_DOWN = 0.63;
+
+    public static double OUTTAKE_WIRE_SAFE_DOWN_FOR_HANGING = 0.67;
+
+    public static double OUTTAKE_WIRE_QUARTER_DOWN = 0.55;
+
     public static double OUTTAKE_WIRE_MIDDLE = 0.47;
     public static double OUTTAKE_WIRE_HIGH = 0.40;
     public static double OUTTAKE_WIRE_VERY_HIGH = 0.35;
@@ -100,14 +108,14 @@ public class Outtake {
     public static double OUTTAKE_WIRE_FOR_HANGING_DOWN = 0.73;
     public static double OUTTAKE_WIRE_FOR_HANGING_UP = 0.38;
 
-    public static double OUTTAKE_FIXER_INIT = 0.77;
-    public static double OUTTAKE_FIXER_LEVEL_1 = 0.08;
-    public static double OUTTAKE_FIXER_LEVEL_1_5 = 0.10;
-    public static double OUTTAKE_FIXER_LEVEL_2 = 0.13;
-    public static double OUTTAKE_FIXER_LEVEL_2_5 = 0.15;
-    public static double OUTTAKE_FIXER_LEVEL_3 = 0.18;
-    public static double OUTTAKE_FIXER_LEVEL_3_5 = 0.21;
-    public static double OUTTAKE_FIXER_LEVEL_4 = 0.25;
+    public static double OUTTAKE_FIXER_INIT = 0.11;
+    public static double OUTTAKE_FIXER_LEVEL_1 = 0.78;
+    public static double OUTTAKE_FIXER_LEVEL_1_5 = 0.755;
+    public static double OUTTAKE_FIXER_LEVEL_2 = 0.73;
+    public static double OUTTAKE_FIXER_LEVEL_2_5 = 0.71;
+    public static double OUTTAKE_FIXER_LEVEL_3 = 0.69;
+    public static double OUTTAKE_FIXER_LEVEL_3_5 = 0.67;
+    public static double OUTTAKE_FIXER_LEVEL_4 = 0.65;
 
     final MotorWithPID slide;
     public boolean slidePIDEnabled = true;
@@ -512,17 +520,20 @@ public class Outtake {
     }
 
     private ElapsedTime slidePivotlEapsedTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    private double previousSlidePivotVoltage = 0.0;
     public boolean checkSlidePivotPosition() {
         double slideServoVoltage = slidePivotVoltage.getVoltage();
         double slideServoPosition = slidePivot.getPosition();
 
         slidePivotVoltages.add(slideServoVoltage);
 
+        double slidePivotVoltageMean = slidePivotVoltages.getMean();
+
         if(backdropTouched &&
-                slidePivotVoltages.getMean() <= SLIDE_PIVOT_DUMP_VOLTAGE_MIN) {
+                slidePivotVoltageMean <= SLIDE_PIVOT_DUMP_VOLTAGE_MIN) {
             backdropTouched= false;
-        } else if (slideServoPosition > SLIDE_PIVOT_DUMP_HIGH &&
-                slidePivotVoltages.getMean() >= SLIDE_PIVOT_DUMP_VOLTAGE_MAX) {
+        } else if (slideServoPosition > SLIDE_PIVOT_DUMP_HIGH && slideServoPosition < SLIDE_PIVOT_DUMP_2 &&
+                slidePivotVoltageMean >= SLIDE_PIVOT_DUMP_VOLTAGE_MAX) {
             backdropTouched = true;
         }
 
@@ -532,7 +543,7 @@ public class Outtake {
         if(backdropTouched) {
             // make sure the outtake is pushed too hard on backdrop
             if (slideServoPosition > SLIDE_PIVOT_DUMP - 0.01 && slideServoPosition < SLIDE_PIVOT_DUMP_2) {
-                if (slidePivotVoltages.getMean() > SLIDE_PIVOT_DUMP_VOLTAGE_MAX) {
+                if (slidePivotVoltageMean > SLIDE_PIVOT_DUMP_VOLTAGE_MAX) {
 //                    servoPosition = slideServoPosition + 0.01;
  //                   slidePivot.setPosition(servoPosition);
                     isLogging = true;
@@ -541,12 +552,15 @@ public class Outtake {
             }
         }
 
-        if(isLogging && slidePivotlEapsedTimer.milliseconds() > 250) {
+        if(isLogging && (slidePivotlEapsedTimer.milliseconds() > 250
+                || Math.abs(slidePivotVoltageMean - previousSlidePivotVoltage) > 0.01)) {
             Log.d("Slide_Pivot_Logger",
                     "slidePivot " + direction + " servo position:" + String.format("%3.3f",servoPosition)
-                            + " | slideServoVoltage: " + String.format("%3.3f",slidePivotVoltages.getMean()));
+                            + " | slideServoVoltage: " + String.format("%3.3f",slidePivotVoltageMean));
             slidePivotlEapsedTimer.reset();
         }
+
+        previousSlidePivotVoltage = slidePivotVoltageMean;
 
         return backdropTouched;
     }
@@ -776,5 +790,22 @@ public class Outtake {
     public double getBackdropDistance() {
         if(backdropDistance == null) return 0.0;
         return backdropDistance.getDistance(DistanceUnit.INCH);
+    }
+
+    public Action hangingHookSafeDown() {
+
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(outtakeWireServo,
+                        OUTTAKE_WIRE_QUARTER_DOWN,
+                        "outtake_wire"),
+                new SleepAction(0.5),
+                new ActionUtil.ServoPositionAction(outtakeWireServo,
+                        OUTTAKE_WIRE_HALF_DOWN,
+                        "outtake_wire"),
+                new SleepAction(0.3),
+                new ActionUtil.ServoPositionAction(outtakeWireServo,
+                        OUTTAKE_WIRE_SAFE_DOWN_FOR_HANGING,
+                        "outtake_wire")
+        );
     }
 }
