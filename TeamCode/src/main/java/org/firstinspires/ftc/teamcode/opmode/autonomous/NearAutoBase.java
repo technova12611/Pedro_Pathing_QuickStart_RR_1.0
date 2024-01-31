@@ -67,44 +67,44 @@ public abstract class NearAutoBase extends AutoBase {
                       })
               ));
 
-//      // score purple pixel
-//       sched.addAction(
-//               new SequentialAction(
-//                  new ParallelAction(
-//                      new SequentialAction(
-//                              outtake.prepareToSlide(),
-//                          new SleepAction(0.25),
-//                          outtake.retractOuttake()),
-//
-//                          // to score the purple pixel on the spike
-//                          drive.actionBuilder(backdrop[SPIKE])
-//                                  .strafeToLinearHeading(spike[SPIKE].position, spike[SPIKE].heading, drive.slowVelConstraint,drive.slowAccelConstraint)
-//                                  .build()
-//                  ),
-//                  new MecanumDrive.DrivePoseLoggingAction(drive, "spike_position"),
-//
-//                  intake.scorePurplePreload(),
-//                  new SleepAction(0.5)
-//               )
-//       );
-//
-//       // to park and prepare for teleops
-//       sched.addAction(
-//           new SequentialAction(
-//              new ParallelAction(
-//                      intake.prepareTeleOpsIntake(),
-//                      outtake.prepareToTransfer(),
-//                      drive.actionBuilder(spike[SPIKE])
-//                              .setReversed(true)
-//                              .strafeToLinearHeading(parking.position, parking.heading)
-//                              .strafeToLinearHeading(parking_2.position, parking_2.heading)
-//                              .build()
-//              ),
-//
-//              new SleepAction(1.0),
-//              new MecanumDrive.DrivePoseLoggingAction(drive, "parking_position")
-//          )
-//      );
+      // score purple pixel
+       sched.addAction(
+               new SequentialAction(
+                  new ParallelAction(
+                      new SequentialAction(
+                              outtake.prepareToSlide(),
+                          new SleepAction(0.25),
+                          outtake.retractOuttake()),
+
+                          // to score the purple pixel on the spike
+                          drive.actionBuilder(backdrop[SPIKE])
+                                  .strafeToLinearHeading(spike[SPIKE].position, spike[SPIKE].heading, drive.slowVelConstraint,drive.slowAccelConstraint)
+                                  .build()
+                  ),
+                  new MecanumDrive.DrivePoseLoggingAction(drive, "spike_position"),
+
+                  intake.scorePurplePreload(),
+                  new SleepAction(0.5)
+               )
+       );
+
+       // to park and prepare for teleops
+       sched.addAction(
+           new SequentialAction(
+              new ParallelAction(
+                      intake.prepareTeleOpsIntake(),
+                      outtake.prepareToTransfer(),
+                      drive.actionBuilder(spike[SPIKE])
+                              .setReversed(true)
+                              .strafeToLinearHeading(parking.position, parking.heading)
+                              .strafeToLinearHeading(parking_2.position, parking_2.heading)
+                              .build()
+              ),
+
+              new SleepAction(1.0),
+              new MecanumDrive.DrivePoseLoggingAction(drive, "parking_position")
+          )
+      );
    }
 
    @Override

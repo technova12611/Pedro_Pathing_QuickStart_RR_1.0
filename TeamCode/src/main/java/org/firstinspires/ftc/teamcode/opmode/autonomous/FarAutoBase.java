@@ -406,7 +406,7 @@ public abstract class FarAutoBase extends AutoBase {
                                 new SequentialAction(
                                         new SleepAction(1.8),
                                         outtake.prepareToTransfer(),
-                                        new SleepAction(0.8),
+                                        new SleepAction(0.5),
                                         intake.stackIntakeLinkageDown()
                                 )
                         ),
@@ -517,7 +517,7 @@ public abstract class FarAutoBase extends AutoBase {
                     intake.intakeTwoStackedPixels2(),
                     new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_end", true),
                     new ActionUtil.RunnableAction(() -> {
-                                        drive.pose = new Pose2d(drive.pose.position.plus(new Vector2d(AutoBase.x_adjustment, 0)), drive.pose.heading);
+                                        drive.pose = new Pose2d(drive.pose.position.plus(new Vector2d(AutoBase.x_adjustment, y_adjustment)), drive.pose.heading);
                                         drive.updatePoseEstimate();
                                         return false;
                     }),

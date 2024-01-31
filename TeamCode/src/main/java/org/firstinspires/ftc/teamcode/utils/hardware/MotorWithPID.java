@@ -52,7 +52,7 @@ public class MotorWithPID {
     public void update() {
         double newPower = Range.clip(this.pidfController.update(motor.getCurrentPosition(), motor.getVelocity()), -maxPower, maxPower);
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-//        Log.d("MotorWithPID", "newPower " + newPower + ", lastError " + pidfController.getLastError());
+        //Log.d("MotorWithPID", "newPower " + newPower + ", lastError " + pidfController.getLastError());
 
         if(getTargetPosition() == 0 && !isBusy()) {
             motor.setPower(0.0);
@@ -122,7 +122,7 @@ public class MotorWithPID {
                     return true;
                 }
 
-                Log.d("MotorWithPID." + motorName , "target: " + getTargetPosition() + " | " + "current:" + getCurrentPosition());
+                //Log.d("MotorWithPID." + motorName , "target: " + getTargetPosition() + " | " + "current:" + getCurrentPosition());
             }
 
             if (blocking) {

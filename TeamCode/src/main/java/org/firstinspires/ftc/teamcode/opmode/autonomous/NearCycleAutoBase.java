@@ -173,7 +173,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                 new SequentialAction(
                                         new SleepAction(1.8),
                                         outtake.prepareToTransfer(),
-                                        new SleepAction(0.8),
+                                        new SleepAction(0.5),
                                         intake.stackIntakeLinkageDown()
                                 )
                         ),
@@ -294,7 +294,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                            intake.intakeTwoStackedPixels2(),
                                new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_end", true),
                                new ActionUtil.RunnableAction(() -> {
-                                   drive.pose = new Pose2d(drive.pose.position.plus(new Vector2d(AutoBase.x_adjustment, 0)), drive.pose.heading);
+                                   drive.pose = new Pose2d(drive.pose.position.plus(new Vector2d(AutoBase.x_adjustment, AutoBase.y_adjustment)), drive.pose.heading);
                                    drive.updatePoseEstimate();
                                    return false;
                                }),
@@ -304,10 +304,10 @@ public abstract class NearCycleAutoBase extends AutoBase {
                        new SequentialAction(
                                new SleepAction(1.0),
                                new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_pose_adj", true),
-                               drive.actionBuilder(getStackPosition())
-                                    .setReversed(true)
-                                    .strafeToLinearHeading(intakeBackOffPose,getStackPosition().heading)
-                                   .build(),
+//                               drive.actionBuilder(getStackPosition())
+//                                    .setReversed(true)
+//                                    .strafeToLinearHeading(intakeBackOffPose,getStackPosition().heading)
+//                                   .build(),
                                new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_backoff", true)
                        )
                ),

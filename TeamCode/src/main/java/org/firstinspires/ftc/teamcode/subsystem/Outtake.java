@@ -32,7 +32,7 @@ import java.util.Map;
 
 @Config
 public class Outtake {
-    public static PIDCoefficients outtakePID = new PIDCoefficients(0.00725, 0, 0.0001);
+    public static PIDCoefficients outtakePID = new PIDCoefficients(0.005, 0, 0.0001);
 
     public static int OUTTAKE_SLIDE_MAX = 2160;
     public static int OUTTAKE_SLIDE_ABOVE_LEVEL_2 = 2150;
@@ -74,11 +74,11 @@ public class Outtake {
     public static double SLIDE_PIVOT_DUMP = 0.238;
 
     public static double SLIDE_PIVOT_DUMP_1 = 0.248;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.65;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.60;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.68;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.62;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN_0 = 2.52;
 
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX = 2.85;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX = 2.82;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MIN = 2.70;
 
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME = 3.0;
@@ -109,8 +109,8 @@ public class Outtake {
     public static double OUTTAKE_WIRE_FOR_HANGING_UP = 0.38;
 
     public static double OUTTAKE_FIXER_INIT = 0.11;
-    public static double OUTTAKE_FIXER_LEVEL_1 = 0.78;
-    public static double OUTTAKE_FIXER_LEVEL_1_5 = 0.755;
+    public static double OUTTAKE_FIXER_LEVEL_1 = 0.77;
+    public static double OUTTAKE_FIXER_LEVEL_1_5 = 0.75;
     public static double OUTTAKE_FIXER_LEVEL_2 = 0.73;
     public static double OUTTAKE_FIXER_LEVEL_2_5 = 0.71;
     public static double OUTTAKE_FIXER_LEVEL_3 = 0.69;
@@ -543,20 +543,21 @@ public class Outtake {
         if(backdropTouched) {
             // make sure the outtake is pushed too hard on backdrop
             if (slideServoPosition > SLIDE_PIVOT_DUMP - 0.01 && slideServoPosition < SLIDE_PIVOT_DUMP_2) {
-                if (slidePivotVoltageMean > SLIDE_PIVOT_DUMP_VOLTAGE_MAX) {
-//                    servoPosition = slideServoPosition + 0.01;
- //                   slidePivot.setPosition(servoPosition);
-                    isLogging = true;
+                if (slidePivotVoltageMean > SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME) {
+                    direction = "DOWN";
+                }
+                else if (slidePivotVoltageMean > SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX) {
                     direction = "DOWN";
                 }
             }
+
+            isLogging = true;
         }
 
-        if(isLogging && (slidePivotlEapsedTimer.milliseconds() > 250
-                || Math.abs(slidePivotVoltageMean - previousSlidePivotVoltage) > 0.01)) {
+        if(isLogging && Math.abs(slidePivotVoltageMean - previousSlidePivotVoltage) > 0.01) {
             Log.d("Slide_Pivot_Logger",
                     "slidePivot " + direction + " servo position:" + String.format("%3.3f",servoPosition)
-                            + " | slideServoVoltage: " + String.format("%3.3f",slidePivotVoltageMean));
+                            + " | slideServoVoltage: " + String.format("%3.2f",slidePivotVoltageMean));
             slidePivotlEapsedTimer.reset();
         }
 
@@ -699,6 +700,24 @@ public class Outtake {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(outtakeFixerServo,
                         fixerServoPosition.position,
+                        "outtakeFixerServo")
+        );
+    }
+
+    public Action moveUpOuttakeFixerServoSlowly() {
+
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(outtakeFixerServo,
+                        outtakeFixerServo.getPosition() - 0.015,
+                        "outtakeFixerServo")
+        );
+    }
+
+    public Action moveDownOuttakeFixerServoSlowly() {
+
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(outtakeFixerServo,
+                        outtakeFixerServo.getPosition() + 0.01,
                         "outtakeFixerServo")
         );
     }

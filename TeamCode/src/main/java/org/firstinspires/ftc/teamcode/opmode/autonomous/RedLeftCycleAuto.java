@@ -22,7 +22,7 @@ public class RedLeftCycleAuto extends RedLeftAuto {
                 new Pose2d(RedRightAuto.red_spike[2].position.x, -11.0, Math.toRadians(180))
         };
 
-        this.stackAlignment = new Pose2d(-48.0, -11.0, Math.toRadians(180.85));
+        this.stackAlignment = new Pose2d(-46.0, -11.0, Math.toRadians(180.85));
         this.stackIntake1 = new Pose2d(-56.5, -12.0, Math.toRadians(180));
         this.safeTrussPassStop = new Pose2d(-51.0, -11.0, Math.toRadians(180));
 

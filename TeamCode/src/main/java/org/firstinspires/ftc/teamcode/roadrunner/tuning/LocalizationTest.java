@@ -12,7 +12,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.TwoDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.roadrunner.messages.PoseMessage;
-import org.firstinspires.ftc.teamcode.roadrunner.ThreeDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.subsystem.Outtake;
 
@@ -56,13 +55,13 @@ public class LocalizationTest extends LinearOpMode {
 //            telemetry.addData("par1 encoder end value: ", localizer.par1.getPositionAndVelocity().position);
             telemetry.addData("perp encoder end value: ", localizer.perp.getPositionAndVelocity().position);
 
-            telemetry.addData("left distance sensor: ", intake.getStackDistance());
-            telemetry.addData("right distance sensor: ", intake.getStackDistance2());
+            telemetry.addData("left distance sensor: ", intake.getStackDistanceLeft());
+            telemetry.addData("right distance sensor: ", intake.getStackDistanceRight());
 
             if(gamepad1.a) {
                 Log.d("Localization_logger", new PoseMessage(drive.pose).toString() + " | " +
-                                "left distance sensor: " + intake.getStackDistance() + " | " +
-                                "right distance sensor: " + intake.getStackDistance2()
+                                "left distance sensor: " + intake.getStackDistanceLeft() + " | " +
+                                "right distance sensor: " + intake.getStackDistanceRight()
                         );
             }
             telemetry.update();

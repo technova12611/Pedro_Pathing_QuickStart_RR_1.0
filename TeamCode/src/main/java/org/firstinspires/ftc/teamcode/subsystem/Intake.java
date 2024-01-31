@@ -22,7 +22,7 @@ import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 
 @Config
 public class Intake {
-    public static int INTAKE_SPEED = 905;
+    public static int INTAKE_SPEED = 915;
     final DcMotorEx intakeMotor;
     final Servo stackIntakeLinkage;
     final Servo stackIntakeServoLeft;
@@ -80,6 +80,7 @@ public class Intake {
         stackDistance2 = (Rev2mDistanceSensor)hardwareMap.get(DistanceSensor.class, "stackDistance2");
     }
 
+    private boolean isAuto = false;
     public void initialize(boolean isAuto) {
         if( isAuto) {
             stackIntakeLinkage.setPosition(STACK_INTAKE_LINKAGE_INIT);
@@ -87,6 +88,10 @@ public class Intake {
             stackIntakeServoRight.setPosition(STACK_INTAKE_RIGHT_PRELOAD);
             totalPixelCount = 1;
             pixelsCount = 1;
+
+            INTAKE_SPEED = 950;
+
+            isAuto = true;
         }
         else {
             stackIntakeLinkage.setPosition(STACK_INTAKE_LINKAGE_UP);
@@ -94,6 +99,8 @@ public class Intake {
             stackIntakeServoRight.setPosition(STACK_INTAKE_RIGHT_INIT);
 
             pixelsCount = 0;
+
+            INTAKE_SPEED = 920;
         }
 
         intakeState = IntakeState.OFF;
@@ -190,6 +197,13 @@ public class Intake {
         intakeMotor.setPower(-1.0);
     }
 
+    public void intakeOffDirect() {
+        Log.d("Intake_Motor","Intake is reversing, pixel count: " + pixelsCount);
+        intakeState = IntakeState.OFF;
+        bottomRollerServo.setPower(.0);
+        intakeMotor.setPower(0.0);
+    }
+
     public Action intakeOff() {
         Log.d("Intake_Motor","Intake is off");
         return new SequentialAction(
@@ -251,7 +265,7 @@ public class Intake {
 //                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_1ST_PIXEL, "stackIntakeServoLeft"),
                 new SleepAction(0.50),
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_2nd_PIXEL, "stackIntakeServoRight"),
-                new SleepAction(0.2),
+                new SleepAction(0.1),
                 new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_1ST_PIXEL, "stackIntakeServoLeft"),
                 new SleepAction(0.4)
         );
@@ -312,20 +326,30 @@ public class Intake {
 
         prevBeamBreakerState = curBeamBreakerState;
 
-        if(pixelsCount == 3) {
-            //intakeReverseDirect();
+        if(isAuto && pixelsCount > 2 && reverseStartTime == null) {
+            Log.d("Beam_Breaker_Pixel_Detected_logger", "Reverse intake to get rid of 3rd pixels");
+            intakeReverseDirect();
+            reverseStartTime = System.currentTimeMillis();
+        }
+
+        if(isAuto && reverseStartTime != null && System.currentTimeMillis() - reverseStartTime > 1500) {
+            intakeOffDirect();
+            reverseStartTime = null;
         }
     }
+
+    private Long reverseStartTime;
+
     public String getStackServoPositions() {
         return String.format("Left stack servo: %.3f | Right stack servo: %.3f ",
                 this.stackIntakeServoLeft.getPosition(), this.stackIntakeServoRight.getPosition());
     }
-    public double getStackDistance() {
+    public double getStackDistanceLeft() {
         if(stackDistance == null) return 0.0;
         return stackDistance.getDistance(DistanceUnit.INCH);
     }
 
-    public double getStackDistance2() {
+    public double getStackDistanceRight() {
         if(stackDistance2 == null) return 0.0;
         return stackDistance2.getDistance(DistanceUnit.INCH);
     }

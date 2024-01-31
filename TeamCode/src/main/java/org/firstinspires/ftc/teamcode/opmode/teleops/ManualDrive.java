@@ -8,6 +8,7 @@ import com.acmerobotics.roadrunner.AccelConstraint;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.AngularVelConstraint;
 import com.acmerobotics.roadrunner.MinVelConstraint;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.SequentialAction;
@@ -31,6 +32,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Outtake;
 import org.firstinspires.ftc.teamcode.subsystem.Drone;
 import org.firstinspires.ftc.teamcode.utils.software.ActionScheduler;
 import org.firstinspires.ftc.teamcode.utils.hardware.GamePadController;
+import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
 import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 import org.firstinspires.ftc.teamcode.utils.software.DriveWithPID;
 import org.firstinspires.ftc.teamcode.utils.software.SmartGameTimer;
@@ -46,7 +48,7 @@ public class ManualDrive extends LinearOpMode {
     public static double SLOW_TURN_SPEED = 0.3;
     public static double SLOW_DRIVE_SPEED = 0.3;
 
-    public static double STRAFE_DISTANCE = 2.85;
+    public static double STRAFE_DISTANCE = 2.25;
     private SmartGameTimer smartGameTimer;
     private GamePadController g1, g2;
     private MecanumDrive drive;
@@ -260,20 +262,20 @@ public class ManualDrive extends LinearOpMode {
                 Log.d("TeleOps_Pixel_detection", prevPixelCount + "->" + Intake.pixelsCount + ", elapsed time (ms) " + elapsedTime);
 
                 if (elapsedTime < 600) {
-                    if (Intake.pixelsCount > 1) {
+                    if (Intake.pixelsCount == 2) {
                         Intake.totalPixelCount--;
                         prevPixelCount = Intake.pixelsCount;
 
                         Log.d("TeleOps_Pixel_detection", "deduct 1 from the counts. Total: " + Intake.totalPixelCount + " current: " + Intake.pixelsCount);
+
+                        sched.queueAction(intake.intakeReverse());
+
+                        intakeSlowdownStartTime = new Long(System.currentTimeMillis());
+                        lastTimePixelDetected = null;
+                        Log.d("TeleOps_Pixel_detection", "slow down 2nd pixel at " + (intakeSlowdownStartTime - startTime));
+
+                        g1.runLedEffect(whiteEffect);
                     }
-
-                    sched.queueAction(intake.intakeReverse());
-
-                    intakeSlowdownStartTime = new Long(System.currentTimeMillis());
-                    lastTimePixelDetected = null;
-                    Log.d("TeleOps_Pixel_detection", "slow down 2nd pixel at " + (intakeSlowdownStartTime - startTime));
-
-                    g1.runLedEffect(whiteEffect);
                 }
 
                 // if 0-->1, slowdown a bit to avoid collision
@@ -515,8 +517,13 @@ public class ManualDrive extends LinearOpMode {
             isFixerServoOut = false;
         }
         else if (g1.dpadUpOnce()) {
+            if(!isFixerServoOut) {
+                sched.queueAction(outtake.moveUpOuttakeFixerServo());
+            } else {
+                sched.queueAction(outtake.moveUpOuttakeFixerServoSlowly());
+            }
             isFixerServoOut = true;
-            sched.queueAction(outtake.moveUpOuttakeFixerServo());
+//            sched.queueAction(outtake.moveUpOuttakeFixerServoSlowly());
 //            sched.queueAction(aprilTag.updatePosition());
         }
 
@@ -524,26 +531,76 @@ public class ManualDrive extends LinearOpMode {
             if (isHangingActivated) {
                 sched.queueAction(hang.hang());
             }
+            if(isFixerServoOut) {
+//
+//                AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);
+//
+//                int level = outtake.getFixerServoLevel().level;
+//                int nextLevel = level + 15;
+//                if(nextLevel > Outtake.FixerServoPosition.MAX_FIXER_LEVEL) {
+//                    nextLevel = Outtake.FixerServoPosition.MAX_FIXER_LEVEL;
+//                }
+//
+//                double nextLevelPosition = outtake.getFixerServoPositionByLevel(nextLevel);
+//                Log.d("AutoDrive_Logger", "nextLevel:" + nextLevel + " nextLevelPosition: " + String.format("%3.2f", nextLevelPosition));
+//
+//                double increment = 0.0;
+//                if(level == 10) {
+//                    increment = -0.003;
+//                }
+//                autoActionSched.addAction(
+//                        new AutoDriveStraightAction(drive, -0.2, outtake.getOuttakeFixerServo(), increment, nextLevelPosition, 150)
+//                    );
+//
+//                autoActionSched.run();
+
+                double forwardDistance =-1.0;
+                drive.updatePoseEstimate();
+
+                int level = outtake.getFixerServoLevel().level;
+                int nextLevel1 = level + 5;
+                int nextLevel2 = level + 10;
+                if(nextLevel1 > Outtake.FixerServoPosition.MAX_FIXER_LEVEL) {
+                    nextLevel1 = Outtake.FixerServoPosition.MAX_FIXER_LEVEL;
+                }
+
+                if(nextLevel2 > Outtake.FixerServoPosition.MAX_FIXER_LEVEL) {
+                    nextLevel2 = Outtake.FixerServoPosition.MAX_FIXER_LEVEL;
+                }
+
+                double nextLevelPosition1 = outtake.getFixerServoPositionByLevel(nextLevel1);
+                double nextLevelPosition2 = outtake.getFixerServoPositionByLevel(nextLevel2);
+
+                Log.d("DriveWithPID_Logger_0_Teleops", "Pose before straight forward: " + new PoseMessage(this.drive.pose) + " | target=" + forwardDistance);
+                start_y = drive.pose.position.y;
+
+                pidDriveStraight.setMaxPower(0.35);
+
+                AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);
+                autoActionSched.addAction(
+                        new ParallelAction(
+                            pidDriveStraight.setTargetPositionActionBlocking((int) (forwardDistance / MecanumDrive.PARAMS.inPerTick)),
+                            new SequentialAction(
+                                    new SleepAction(0.15),
+                                new ActionUtil.ServoPositionAction(outtake.getOuttakeFixerServo(),nextLevelPosition1,"outtake_fixer"),
+                                    new SleepAction(0.1),
+                                    new ActionUtil.ServoPositionAction(outtake.getOuttakeFixerServo(),nextLevelPosition2,"outtake_fixer")
+                            )
+                        )
+                );
+
+                autoActionSched.addAction(
+                        new MecanumDrive.DrivePoseLoggingAction(drive,"fixer_move_action")
+                );
+
+                autoActionSched.run();
+            }
         } else if (g1.dpadDownOnce()) {
             if (isHangingActivated) {
                 sched.queueAction(hang.hangSlowly());
             }
             else {
-                AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);
-
-                int level = outtake.getFixerServoLevel().level;
-                int nextLevel = level + 5;
-                if(nextLevel > Outtake.FixerServoPosition.MAX_FIXER_LEVEL) {
-                    nextLevel = Outtake.FixerServoPosition.MAX_FIXER_LEVEL;
-                }
-
-                double nextLevelPosition = outtake.getFixerServoPositionByLevel(nextLevel);
-                Log.d("AutoDrive_Logger", "nextLevel:" + nextLevel + " nextLevelPosition: " + String.format("%3.2f", nextLevelPosition));
-                autoActionSched.addAction(
-                        new AutoDriveStraightAction(drive, -0.35, outtake.getOuttakeFixerServo(), 0.001, nextLevelPosition, 500)
-                    );
-
-                autoActionSched.run();
+                sched.queueAction(outtake.moveDownOuttakeFixerServoSlowly());
             }
         }
 
@@ -563,6 +620,7 @@ public class ManualDrive extends LinearOpMode {
             }
 
             Log.d("DriveWithPID_Logger_0_Teleops", "Pose before straight forward: " + new PoseMessage(this.drive.pose) + " | target=" + forwardDistance);
+            drive.updatePoseEstimate();
             start_y = drive.pose.position.y;
 
             AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);
@@ -608,12 +666,7 @@ public class ManualDrive extends LinearOpMode {
         if (g1.backOnce()) {
             if(!isDroneLaunched) {
                 isDroneLaunched=true;
-                sched.queueAction(intake.stackIntakeLinkageDown());
-                sched.queueAction(new SleepAction(0.3));
                 sched.queueAction(drone.scoreDrone());
-                sched.queueAction(new SleepAction(0.3));
-                sched.queueAction(intake.stackIntakeLinkageUp());
-                sched.queueAction(drone.initDrone());
             } else if(!isHangingActivated) {
                 sched.queueAction(new SleepAction(0.5));
                 sched.queueAction(hang.unblockHook());
