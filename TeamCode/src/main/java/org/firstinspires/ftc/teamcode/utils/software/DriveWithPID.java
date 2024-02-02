@@ -194,6 +194,7 @@ public class DriveWithPID {
         this.perp_pidfController.reset();
         this.par_pidfController.reset();
         this.turn_pidfController.reset();
+        resetStartTime();
     }
 
     /**
@@ -270,7 +271,7 @@ public class DriveWithPID {
         }
     }
 
-    private void resetStartTime() {
+    public void resetStartTime() {
         this.startTime = null;
     }
 }

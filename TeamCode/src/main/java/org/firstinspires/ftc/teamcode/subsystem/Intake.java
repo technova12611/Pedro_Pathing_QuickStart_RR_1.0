@@ -257,7 +257,7 @@ public class Intake {
         );
     }
 
-    public Action intakeTwoStackedPixels2() {
+    public Action intakeTwoStackedPixels3() {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_1ST_PIXEL, "stackIntakeServoRight"),
 //                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_1ST_PIXEL_1, "stackIntakeServoLeft"),
@@ -271,9 +271,26 @@ public class Intake {
         );
     }
 
+    public Action intakeTwoStackedPixels2() {
+        return new SequentialAction(
+                new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_1ST_PIXEL, "stackIntakeServoRight"),
+                new SleepAction(0.1),
+                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_1ST_PIXEL, "stackIntakeServoLeft"),
+//                new SleepAction(0.10),
+//                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_1ST_PIXEL, "stackIntakeServoLeft"),
+                new SleepAction(0.5),
+                new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_2nd_PIXEL, "stackIntakeServoRight"),
+                new SleepAction(0.2),
+                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_2nd_PIXEL, "stackIntakeServoLeft"),
+                new SleepAction(0.4)
+        );
+    }
+
     public Action intakeOneStackedPixels() {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_1ST_PIXEL, "stackIntakeServoRight"),
+                new SleepAction(0.1),
+                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_1ST_PIXEL_1, "stackIntakeServoLeft"),
 //                new SleepAction(0.15),
 //                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_1ST_PIXEL, "stackIntakeServoLeft"),
                 new SleepAction(0.5)

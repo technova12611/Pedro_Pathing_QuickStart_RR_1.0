@@ -343,6 +343,8 @@ public abstract class FarAutoBase extends AutoBase {
                         new SleepAction(0.40),
                         new ActionUtil.RunnableAction(() -> {
                             pidDriveActivated = false;
+                            pidDriveStarted = false;
+                            pidDriveStraight.resetIntegralGain();
                             straightDistance = 0.0;
                             return false;
                         }),
@@ -478,7 +480,10 @@ public abstract class FarAutoBase extends AutoBase {
                         new SleepAction(0.5),
                         new ActionUtil.RunnableAction(() -> {
                             pidDriveActivated = false;
+                            pidDriveStarted = false;
+                            pidDriveStraight.resetIntegralGain();
                             straightDistance = 0.0;
+
                             return false;
                         })
                 )

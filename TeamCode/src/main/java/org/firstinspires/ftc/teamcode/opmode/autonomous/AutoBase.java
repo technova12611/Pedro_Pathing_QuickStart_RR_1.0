@@ -59,7 +59,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
     protected static Pose2d stackPosition;
 
-    private DriveWithPID pidDriveStraight;
+    protected DriveWithPID pidDriveStraight;
     ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
     final public void update() {
@@ -388,7 +388,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
                 double delta_stack_position = avg_y_adj_left - avg_y_adj_right;
 
-                double y_offset = 0.75;
+                double y_offset = 1.05;
                 if(Math.abs(delta_stack_position) <= 0.6 && avg_y_adj_left > 5.0 &&  avg_y_adj_right > 5.0) {
                     adjustment_x = (avg_y_adj_left + avg_y_adj_right)/2 - 0.5;
                 } else if(delta_stack_position < -1.8) {
@@ -422,7 +422,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         String.format("%3.2f", (drive.pose.position.y + adjustment_y)) + "," + adjustment_y + ")"
                 );
 
-                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -58.5, -56.7);
+                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -58.5, -56.5);
 
                 if( 180-Math.abs(Math.toDegrees(drive.pose.heading.toDouble())) > 3.0) {
                     adjustment_y = 0.0;
@@ -549,40 +549,36 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
     protected boolean pidDriveStarted = false;
     protected double straightDistance = 0.0;
 
+    ElapsedTime pidDriverTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     private void pidDriveUpdate() {
 
         if(pidDriveActivated && Math.abs(straightDistance) > 0.0) {
             double slidePivotVoltage = outtake.getSlidePivotServoVoltage();
             if(!pidDriveStarted) {
                 pidDriveStraight.setTargetPosition((int)(straightDistance/ MecanumDrive.PARAMS.inPerTick));
-                pidDriveStraight.update();
                 pidDriveStarted = true;
                 Log.d("backdrop_pidDriveUpdate_logger", "straightDistance: "
                         + straightDistance + " | pidDriveActivated: " + pidDriveActivated
-                        + " | pidDriveStarted: " + pidDriveStarted);
+                        + " | pidDriveStarted: " + pidDriveStarted + " | isBusy: " + pidDriveStraight.isBusy() +
+                        "| drive pose: " + new PoseMessage(drive.pose) );
+
+                pidDriveStraight.update();
             }
 
             if(pidDriveStarted && pidDriveStraight.isBusy()) {
                 pidDriveStraight.update();
-                Log.d("Backdrop_distance_Logger", "Adjustment: " + straightDistance +
+                Log.d("Backdrop_distance_Logger", "Update() called. Adjustment: " + straightDistance +
                         "| slide voltage: " + String.format("%3.2f", slidePivotVoltage));
             }
 
             if(!pidDriveStraight.isBusy()) {
-                Log.d("Backdrop_distance_Logger", "Adjustment: " + straightDistance +
-                        "| ending slide voltage: " + String.format("%3.2f", slidePivotVoltage));
+                Log.d("Backdrop_distance_Logger", "End of Adjustment: " + straightDistance +
+                        "| ending slide voltage: " + String.format("%3.2f", slidePivotVoltage) +
+                         "| end drive pose: " + new PoseMessage(drive.pose) );
 
                 pidDriveActivated = false;
+                pidDriveStraight.resetStartTime();
             }
-
-            // do it again if the backdrop still not touched
-            if(!pidDriveStraight.isBusy() && !outtake.backdropTouched && straightDistance < 0.0) {
-                pidDriveStarted = false;
-            }
-        } else {
-            pidDriveStraight.resetIntegralGain();
-            pidDriveStarted = false;
-            pidDriveActivated = false;
         }
     }
 
@@ -590,21 +586,23 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         return
             new ActionUtil.RunnableAction(() -> {
                 pidDriveActivated = true;
+                pidDriveStarted = false;
                 straightDistance=0.0;
                 double slidePivotVoltage = outtake.getSlidePivotServoVoltage();
                 if(outtake.hasOuttakeReached()) {
                     if(slidePivotVoltage > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX + 0.15) {
-                        straightDistance = 0.6;
+                        straightDistance = 0.65;
                     }
                     else if(slidePivotVoltage > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX) {
-                        straightDistance = 0.3;
+                        straightDistance = 0.35;
                     }
                 } else {
-                    straightDistance = -1.0;
+                    straightDistance = -1.15;
                 }
 
-                Log.d("Backdrop_distance_Logger", "Adjustment: " + straightDistance +
-                        "| starting slide voltage: " + String.format("%3.2f", slidePivotVoltage));
+                Log.d("Backdrop_distance_Logger", "starting Adjustment: " + straightDistance +
+                        "| starting slide voltage: " + String.format("%3.2f", slidePivotVoltage) +
+                        " | drive pose: " + new PoseMessage(drive.pose));
                 return false;
             });
 

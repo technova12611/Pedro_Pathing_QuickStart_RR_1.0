@@ -18,7 +18,7 @@ public class Drone {
 
     // Drone Tilt is Axon Mini Servo
     public static double TILT_INIT = 0.30;
-    public static double TILT_LAUNCH = 0.63;
+    public static double TILT_LAUNCH = 0.65;
 
     final Servo latch;
     final Servo tilt;
@@ -36,7 +36,7 @@ public class Drone {
     public Action scoreDrone() {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(tilt, TILT_LAUNCH, "drone_tilt"),
-                new SleepAction(0.5),
+                new SleepAction(0.75),
                 new ActionUtil.ServoPositionAction(latch, LATCH_SCORED, "drone_latch"),
                 new SleepAction(0.5),
                 new ActionUtil.ServoPositionAction(tilt, TILT_INIT, "drone_tilt"),
