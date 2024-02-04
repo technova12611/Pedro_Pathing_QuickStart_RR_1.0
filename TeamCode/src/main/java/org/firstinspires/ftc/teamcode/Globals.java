@@ -25,6 +25,8 @@ public class Globals {
     public static String FRONT_WEBCAM_NAME = "Webcam 1";
     public static String REAR_WEBCAM_NAME = "Webcam 2";
 
+    public static Side PRELOAD = Side.LEFT;
+
     /**
      * Robot state constants.
      */

@@ -21,18 +21,20 @@ public class RedRightAuto extends NearAutoBase {
            new Pose2d(36.0, -27.0, Math.toRadians(180))
    };
    public static Pose2d[] red_backdrop =  {
-           new Pose2d(48.1, -31.0, Math.toRadians(180)), // 29.5 for left
-           new Pose2d(48.3, -38.0, Math.toRadians(180)),  // 35.0 for left
-           new Pose2d(48.0, -44.1, Math.toRadians(180))  // 41 for left
+           new Pose2d(47.5, -31.0, Math.toRadians(180)), // 29.5 for left
+           new Pose2d(47.5, -38.0, Math.toRadians(180)),  // 35.0 for center
+           new Pose2d(47.5, -44.1, Math.toRadians(180))  // 41 for right
    };
    // 0 = left, 1 = middle, 2 = right
    public static Pose2d red_start = new Pose2d(14.5, -62.0, Math.toRadians(90));
+   public static Pose2d red_start_forward = new Pose2d(14.5, -61.0, Math.toRadians(90));
    public static Pose2d red_parking = new Pose2d(51.0, -61.5, Math.toRadians(180));
    public static Pose2d red_parking_2 = new Pose2d(57.0, -61.5, Math.toRadians(180));
 
    @Override
    protected void onInit() {
       this.spike = red_spike;
+      this.start_forward = red_start_forward;
       this.backdrop = red_backdrop;
       this.start = red_start;
       this.parking = red_parking;

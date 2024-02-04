@@ -48,6 +48,16 @@ public abstract class FarAutoBase extends AutoBase {
 
         // RED SPIKE right or BLUE left
         //--------------------------------------------
+        double waitTime = 0.0;
+        if(doCycle()) {
+            if(SPIKE == 1) {
+                waitTime = 3.5;
+            }
+            else {
+                waitTime = 1.0;
+            }
+        }
+        sched.addAction(new SleepAction(waitTime));
         if ((SPIKE == 2 && getAlliance() == AlliancePosition.RED) ||
                 (SPIKE == 0 && getAlliance() == AlliancePosition.BLUE)) {
 
@@ -269,15 +279,6 @@ public abstract class FarAutoBase extends AutoBase {
 
         // Move to the backdrop side, and potentially add a configurable sleep time
         //-------------------------------------------------------------------------
-        double waitTime = farSideAutoWaitTimeInSeconds;
-        if(doCycle()) {
-            if(SPIKE == 1) {
-                waitTime = 3.5;
-            }
-            else {
-                waitTime = 1.0;
-            }
-        }
 
         sched.addAction(
                 new SequentialAction(
@@ -305,8 +306,6 @@ public abstract class FarAutoBase extends AutoBase {
 
                         relocalizationAction,
                         new MecanumDrive.DrivePoseLoggingAction(drive, "after_localization"),
-
-                        new SleepAction(waitTime),
 
                         new ParallelAction(
                                 new SequentialAction(

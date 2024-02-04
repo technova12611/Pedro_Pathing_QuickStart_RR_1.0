@@ -14,7 +14,7 @@ public class BlueLeftCycleAuto extends NearCycleAutoBase {
     protected void onInit() {
         super.onInit();
         this.start = BlueLeftAuto.blue_start;
-
+        this.start_forward = BlueLeftAuto.blue_start_forward;
         this.backdrop = BlueLeftAuto.blue_backdrop;
         this.spike = BlueLeftAuto.blue_spike;
 

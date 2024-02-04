@@ -15,6 +15,7 @@ public class RedRightCycleAuto extends NearCycleAutoBase {
         super.onInit();
         // 0 = left, 1 = middle, 2 = right
         this.start = RedRightAuto.red_start;
+        this.start_forward = RedRightAuto.red_start_forward;
         this.backdrop = RedRightAuto.red_backdrop;
         this.spike = RedRightAuto.red_spike;
 

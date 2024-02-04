@@ -33,11 +33,10 @@ import org.firstinspires.ftc.teamcode.utils.hardware.MotorWithPID;
 import org.firstinspires.ftc.teamcode.utils.hardware.MotorWithVelocityPID;
 
 @Config
+@Disabled
 @TeleOp(group = "Test")
 public class ServoMotorTest extends LinearOpMode {
-
     public static PIDCoefficients outtakePID = new PIDCoefficients(0.005, 0, 0.0001);
-
     Servo stackIntakeServoLeft;
     Servo stackIntakeServoRight;
     Servo stackIntakeLinkage;

@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
 public abstract class NearCycleAutoBase extends AutoBase {
     // 0 = left, 1 = middle, 2 = right
     public Pose2d start;
+    public Pose2d start_forward;
     public Pose2d[] backdrop ;
     public Pose2d[] spike;
     public Pose2d[] cycleStart;
@@ -55,6 +56,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         // to score yellow pixel on the backdrop
                         new ParallelAction(
                                 drive.actionBuilder(drive.pose)
+                                        .strafeTo(start_forward.position)
                                         .strafeToLinearHeading(backdrop[SPIKE].position, backdrop[SPIKE].heading)
                                         .build(),
 

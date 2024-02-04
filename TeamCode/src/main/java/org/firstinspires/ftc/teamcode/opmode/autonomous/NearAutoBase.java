@@ -21,6 +21,7 @@ public abstract class NearAutoBase extends AutoBase {
    public Pose2d[] backdrop;
    // 0 = left, 1 = middle, 2 = right
    public Pose2d start;
+   public Pose2d start_forward;
    public Pose2d parking;
    public Pose2d parking_2;
 

@@ -2,7 +2,9 @@ package org.firstinspires.ftc.teamcode.opmode.teleops;
 
 import android.util.Log;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.AccelConstraint;
 import com.acmerobotics.roadrunner.Action;
@@ -111,7 +113,9 @@ public class ManualDrive extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
         long start_time = System.currentTimeMillis();
-        telemetry.addLine("Initializing...");
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
+        telemetry.addLine("Initializing ManualDrive ...");
         telemetry.update();
 
         // Init
@@ -144,23 +148,22 @@ public class ManualDrive extends LinearOpMode {
         drone.initialize();
         hang.initialize();
 
-        long current_time = System.currentTimeMillis();
-        telemetry.addLine("Initializing AprilTag: " + (current_time - start_time));
-        telemetry.update();
+//        long current_time = System.currentTimeMillis();
+//        telemetry.addLine("Initializing AprilTag: " + (current_time - start_time));
+//        telemetry.update();
 //        aprilTag.initialize();
 
         pidDriveStrafe = new DriveWithPID(drive, null, DriveWithPID.DriveDirection.STRAFE);
-
         pidDriveStraight = new DriveWithPID(drive, null, DriveWithPID.DriveDirection.STRAIGHT);
+
+        velConstraintOverride = new MinVelConstraint(Arrays.asList(
+                this.drive.kinematics.new WheelVelConstraint(45.0),
+                new AngularVelConstraint(Math.PI / 2)));
 
         // Ready!
         telemetry.addLine("Manual Drive is Ready! Complete in " + (System.currentTimeMillis() - start_time) + " (ms)");
         telemetry.addLine("Drive Pose: " + new PoseMessage(drive.pose));
         telemetry.update();
-
-        velConstraintOverride = new MinVelConstraint(Arrays.asList(
-                this.drive.kinematics.new WheelVelConstraint(45.0),
-                new AngularVelConstraint(Math.PI / 2)));
 
         Long aTimer = System.currentTimeMillis();
         while (opModeInInit() && !isStopRequested()) {
@@ -225,10 +228,11 @@ public class ManualDrive extends LinearOpMode {
             telemetry.addLine(outtake.getServoPositions());
             telemetry.addLine("Intake state: " + intake.intakeState);
             telemetry.addLine(hang.getCurrentPosition());
-            telemetry.addData("Slide current position", outtake.getMotorCurrentPosition());
-            telemetry.addData("Slide target position", outtake.getMotorTargetPosition());
+            telemetry.addData("Slide_current_position", outtake.getMotorCurrentPosition());
+            telemetry.addData("Slide_target_position", outtake.getMotorTargetPosition());
             telemetry.addData("Slide motor busy", outtake.isMotorBusy());
             telemetry.addData("backdrop distance", String.format("%3.2f",outtake.getBackdropDistance()));
+
             telemetry.update();
 
             if (System.currentTimeMillis() - start_time > 80) {
@@ -240,11 +244,7 @@ public class ManualDrive extends LinearOpMode {
                 g1.rumble(300);
             }
 
-            if(secondsLeft == 20 ) {
-                g1.rumble(500);
-            }
-
-            if(secondsLeft == 10 ) {
+            if(secondsLeft == 15 ) {
                 g1.rumble(1000);
             }
         }
@@ -515,9 +515,9 @@ public class ManualDrive extends LinearOpMode {
         }
 
         if (isSlideOut && isAprilTagDetected && AprilTag.yaw != null) {
-            isAprilTagDetected = false;
-            final double yaw = AprilTag.yaw.doubleValue();
-            Log.d("AprilTag_Localization", String.format("%3.2f", yaw));
+//            isAprilTagDetected = false;
+//            final double yaw = AprilTag.yaw.doubleValue();
+//            Log.d("AprilTag_Localization", String.format("%3.2f", yaw));
 
 //            AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);
 //            autoActionSched.addAction(drive.actionBuilder(drive.pose)
@@ -525,12 +525,20 @@ public class ManualDrive extends LinearOpMode {
 //                    .build());
 //
 //            autoActionSched.run();
-            AprilTag.yaw = null;
+//            AprilTag.yaw = null;
         }
 
-        if (Math.abs(g1.right_stick_y) > 0.25 && isSlideOut) {
+        if (Math.abs(g1.right_stick_y) > 0.03 && isSlideOut) {
             sched.queueAction(outtake.moveSliderBlocking(-g1.right_stick_y));
         }
+
+//        if (Math.abs(g1.right_stick_y) > 0.03) {
+//            outtake.slidePIDEnabled = false;
+//            outtake.setSlidePower(-g1.right_stick_y);
+//        } else if (!outtake.slidePIDEnabled) {
+//            outtake.slidePIDEnabled = true;
+//            sched.queueAction(outtake.lockPosition());
+//        }
 
         // Hang arms up/down
         if(g1.dpadUpLong()) {

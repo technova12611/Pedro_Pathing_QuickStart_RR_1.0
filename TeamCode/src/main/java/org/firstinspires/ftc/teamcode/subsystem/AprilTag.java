@@ -24,7 +24,7 @@ public class AprilTag {
     /**
      * The variable to store our instance of the AprilTag processor.
      */
-    private AprilTagProcessor aprilTag;
+    private static AprilTagProcessor aprilTagProc;
 
     /**
      * The variable to store our instance of the vision portal.
@@ -44,11 +44,11 @@ public class AprilTag {
     public void initialize() {
 
         // Create the AprilTag processor the easy way.
-        aprilTag = AprilTagProcessor.easyCreateWithDefaults();
+        aprilTagProc = AprilTagProcessor.easyCreateWithDefaults();
 
         // Create the vision portal the easy way.
         visionPortal = VisionPortal.easyCreateWithDefaults(
-                    hardwareMap.get(WebcamName.class, "Webcam 2"), aprilTag);
+                    hardwareMap.get(WebcamName.class, "Webcam 2"), aprilTagProc);
 
     }
 
@@ -58,8 +58,8 @@ public class AprilTag {
 
     public void update() {
 
-        if(visionPortal != null && aprilTag != null) {
-            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+        if(visionPortal != null && aprilTagProc != null) {
+            List<AprilTagDetection> currentDetections = aprilTagProc.getDetections();
             telemetry.addData("# AprilTags Detected", currentDetections.size());
 
             // Step through the list of detections and display info for each one.
@@ -79,7 +79,7 @@ public class AprilTag {
     }
 
     public Action updatePosition() {
-        return new UpdatePositionAction(this.visionPortal,this.aprilTag);
+        return new UpdatePositionAction(this.visionPortal,this.aprilTagProc);
     }
 
     public static class UpdatePositionAction implements Action {
@@ -141,6 +141,10 @@ public class AprilTag {
 
             return false;
         }
+    }
+
+    public static List<AprilTagDetection> getAprilTagDetections() {
+        return aprilTagProc.getDetections();
     }
 
 }

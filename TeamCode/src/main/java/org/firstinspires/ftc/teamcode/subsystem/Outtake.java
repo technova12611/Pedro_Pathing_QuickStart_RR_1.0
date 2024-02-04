@@ -12,6 +12,7 @@ import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.AnalogInput;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -19,6 +20,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
@@ -32,7 +34,9 @@ import java.util.Map;
 
 @Config
 public class Outtake {
-    public static PIDCoefficients outtakePID = new PIDCoefficients(0.005, 0, 0.0001);
+    public static PIDCoefficients outtakePID = new PIDCoefficients(0.005, 0.000, 0.0001);
+
+    //new PIDCoefficients(0.01, 0.0015, 0.0004)
 
     public static int OUTTAKE_SLIDE_MAX = 2160;
     public static int OUTTAKE_SLIDE_ABOVE_LEVEL_2 = 2150;
@@ -50,7 +54,7 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 1050;
     public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO_2 = 1280;
     public static int OUTTAKE_SLIDE_INIT = 0;
-    public static int OUTTAKE_SLIDE_INCREMENT= 200;
+    public static int OUTTAKE_SLIDE_INCREMENT= 100;
     public static double LATCH_CLOSED = 0.55;
     public static double LATCH_SCORE_1 = 0.415;
     public static double LATCH_SCORE_2 = 0.47;
@@ -116,6 +120,8 @@ public class Outtake {
     public static double OUTTAKE_FIXER_LEVEL_3 = 0.69;
     public static double OUTTAKE_FIXER_LEVEL_3_5 = 0.67;
     public static double OUTTAKE_FIXER_LEVEL_4 = 0.65;
+
+    public static boolean NEED_RESET = false;
 
     final MotorWithPID slide;
     public boolean slidePIDEnabled = true;
@@ -206,7 +212,15 @@ public class Outtake {
     }
 
     public void update() {
-        slide.update();
+        if(slidePIDEnabled) {
+            slide.update();
+        }
+
+        if (NEED_RESET && isSlideDown()) {
+            slide.zeroMotorInternals();
+            slide.resetIntegralGain();
+        }
+
         checkSlidePivotPosition();
 
 //        if (!this.slide.isBusy()) {
@@ -215,6 +229,10 @@ public class Outtake {
 //                resetSlideEncoder();
 //            }
 //        }
+    }
+
+    public boolean isSlideDown() {
+        return Math.abs(slide.getVelocity()) < 3 && slide.getTargetPosition() < 5;
     }
 
     public void setupForSlidingInAuto() {
@@ -227,7 +245,9 @@ public class Outtake {
         Log.d("Outtake_Slide", "Current position:" + OUTTAKE_TELEOPS );
         Log.d("Outtake_Slide", "slide is busy:" + this.slide.isBusy() );
         if(!this.slide.isBusy()) {
-            int multiplier = increment > 0 ? 1 : -1;
+            double multiplier = increment > 0 ? 1 : -1;
+
+            multiplier = multiplier* Range.clip(Math.abs(increment)/0.9 * 3, 0.6,3);
 
             if(!scoreLevel3 && OUTTAKE_TELEOPS > OUTTAKE_SLIDE_MAX - 150 && increment > 0.30) {
                 Log.d("Outtake_Slide", "Target position:" + OUTTAKE_TELEOPS + " | level 3 is enabled");
@@ -237,7 +257,7 @@ public class Outtake {
                 scoreLevel3 = false;
             }
 
-            OUTTAKE_TELEOPS = this.slide.getCurrentPosition() + OUTTAKE_SLIDE_INCREMENT * multiplier;
+            OUTTAKE_TELEOPS = this.slide.getCurrentPosition() + (int)(OUTTAKE_SLIDE_INCREMENT * multiplier);
 
             if(OUTTAKE_TELEOPS >= OUTTAKE_SLIDE_MAX) {
                 OUTTAKE_TELEOPS = OUTTAKE_SLIDE_MAX;
@@ -827,4 +847,15 @@ public class Outtake {
                         "outtake_wire")
         );
     }
+
+    public void setSlidePower(double power) {
+        Log.d("Slide_Power_Logger", "outtake slide power: " + String.format("%3.2f", power));
+        slide.getMotor().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        slide.getMotor().setPower(power);
+    }
+    public Action lockPosition() {
+        int pos = this.slide.getCurrentPosition();
+        return this.slide.setTargetPositionAction(pos);
+    }
+
 }
