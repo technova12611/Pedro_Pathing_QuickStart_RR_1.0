@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmode.autonomous;
 
+import android.util.Size;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.NullAction;
@@ -9,19 +11,28 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
+import org.firstinspires.ftc.teamcode.pipeline.PreloadDetectionPipeline;
+import org.firstinspires.ftc.teamcode.pipeline.PropNearPipeline;
+import org.firstinspires.ftc.teamcode.pipeline.Side;
 import org.firstinspires.ftc.teamcode.subsystem.Outtake;
 import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 @Config
 
-public abstract class FarAutoBase extends AutoBase {
+public abstract class FarAutoBase extends AutoBase implements PreloadPositionDetectionCallback {
     // 0 = left, 1 = middle, 2 = right
     public Pose2d start, parking, moveUp1, stackIntakeAlignment2, stackAlignment, stackIntake1, safeTrussPassStop;
     public Pose2d[] spike, backdrop, cycleScore, backOffFromSpike, backdropAlignment,
             stackIntakeAlignment, stackIntake, crossFieldAlignment, cycleStart, backdropAlignmentCycle;
+
+    public Pose2d preloadDetection;
 
     @Override
     protected Pose2d getStartPose() {
@@ -33,6 +44,7 @@ public abstract class FarAutoBase extends AutoBase {
         super.onInit();
         this.stackPosition = stackIntake1;
         this.sched.setStackAlignmentCallback(this);
+        this.sched.setPreloadPositionCallback(this);
     }
 
     @Override
@@ -312,10 +324,8 @@ public abstract class FarAutoBase extends AutoBase {
                                         new SleepAction(0.5),
                                     drive.actionBuilder(backdropAlignment[SPIKE])
                                             .setReversed(true)
-                                            .strafeToLinearHeading(backdrop[SPIKE].position,
-                                                    backdrop[SPIKE].heading,
-                                                    drive.slowVelConstraint,
-                                                    drive.slowAccelConstraint)
+                                            .strafeToLinearHeading(preloadDetection.position,
+                                                    preloadDetection.heading)
                                             .build(),
                                             new MecanumDrive.DrivePoseLoggingAction(drive, "end_backdrop_position")
                                 ),
@@ -328,10 +338,14 @@ public abstract class FarAutoBase extends AutoBase {
                                         outtake.prepareToScoreCycle(),
                                         new SleepAction(0.2)
                                 )
-                        ),
+                        )
+                ));
+        sched.addAction(new AutoBase.PreloadPositionDetectionAction(drive));
 
+        sched.addAction(
+
+                new SequentialAction(
                         new MecanumDrive.DrivePoseLoggingAction(drive, "start_scoring"),
-
                         getBackdropDistanceAdjustmentAction(),
 
                         outtake.latchScore1(),
@@ -539,4 +553,86 @@ public abstract class FarAutoBase extends AutoBase {
             );
     }
 
+    // use 2 vision ports for the apriltag and yellow preload detection
+    @Override
+    protected void initVisionPortal() {
+        int[] visionPortalViewIDs = VisionPortal.makeMultiPortalView(2,
+                VisionPortal.MultiPortalLayout.HORIZONTAL);
+
+        initBackVisionPortal(visionPortalViewIDs[1]);
+        initFrontVisionPortal(visionPortalViewIDs[1]);
+    }
+
+    private void initFrontVisionPortal(int viewId) {
+        propPipeline = new PropNearPipeline();
+        WebcamName webcam1 = hardwareMap.get(WebcamName.class, "Webcam 1");
+        // Create the vision portal by using a builder.
+        frontVisionPortal = new VisionPortal.Builder()
+                .setCamera(webcam1)
+                .setCameraResolution(new Size(1920, 1080))
+                .addProcessor(propPipeline)
+                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                .setLiveViewContainerId(viewId)
+                .setAutoStopLiveView(false)
+                .build();
+
+        while (!isStopRequested() && frontVisionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)
+        {
+            telemetry.addLine("Waiting for portal: " + viewId
+                    +  " (front camera) to come online");
+            telemetry.update();
+        }
+    }
+
+    private void initBackVisionPortal(int viewId) {
+        aprilTag = new AprilTagProcessor.Builder().build();
+        preloadPipeline = new PreloadDetectionPipeline(aprilTag);
+        preloadPipeline.setTargetAprilTagID(Side.CENTER);
+        WebcamName webcam2 = hardwareMap.get(WebcamName.class, "Webcam 2");
+
+        backVisionPortal = new VisionPortal.Builder()
+                .setCamera(webcam2)
+                .setLiveViewContainerId(viewId)
+                .addProcessors(aprilTag,preloadPipeline)
+                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                .setAutoStopLiveView(false)
+                .build();
+
+        while (!isStopRequested() && backVisionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)
+        {
+            telemetry.addLine("Waiting for portal:"  +  viewId + " (back camera) to come online");
+            telemetry.update();
+        }
+
+        backVisionPortal.setProcessorEnabled(aprilTag, false);
+        backVisionPortal.setProcessorEnabled(preloadPipeline, false);
+    }
+
+    protected void enabledBackPortalProcessors() {
+        backVisionPortal.setProcessorEnabled(aprilTag, true);
+        backVisionPortal.setProcessorEnabled(preloadPipeline, true);
+        preloadPipeline.setTargetAprilTagID(AutoBase.propPosition);
+    }
+
+    public Action strafeToBackdrop() {
+        Vector2d backdrop_position = backdrop[SPIKE].position;
+        if(Globals.COLOR == AlliancePosition.RED && preloadPosition != Side.RIGHT) {
+            backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 2.0);
+        } else if(Globals.COLOR == AlliancePosition.BLUE && preloadPosition != Side.LEFT) {
+            backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 2.0);
+        }
+
+        return
+                new SequentialAction(
+                        // move back to the backdrop
+                        drive.actionBuilder(new Pose2d(preloadDetection.position, preloadDetection.heading))
+                                .setReversed(true)
+                                .strafeToLinearHeading(backdrop_position,preloadDetection.heading,
+                                    this.drive.slowVelConstraint,
+                                    this.drive.slowAccelConstraint)
+                                .build(),
+                        intake.stackIntakeLinkageUp(),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop")
+                );
+    }
 }

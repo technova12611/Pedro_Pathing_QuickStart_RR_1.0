@@ -25,8 +25,8 @@ public class PreloadDetectionPipeline implements VisionProcessor {
 
     private AprilTagProcessor aprilTag;
 
-    public static int leftZoneAverage;
-    public static int rightZoneAverage;
+    public static int leftZoneAverage = 0;
+    public static int rightZoneAverage = 0;
 
     public PreloadDetectionPipeline(AprilTagProcessor aprilTag) {
         this.aprilTag = aprilTag;

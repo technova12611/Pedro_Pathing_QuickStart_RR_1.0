@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
+import org.firstinspires.ftc.teamcode.pipeline.PreloadDetectionPipeline;
 import org.firstinspires.ftc.teamcode.pipeline.PropBasePipeline;
 import org.firstinspires.ftc.teamcode.pipeline.PropFarPipeline;
 import org.firstinspires.ftc.teamcode.pipeline.PropNearPipeline;
@@ -34,10 +35,7 @@ import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 import org.firstinspires.ftc.teamcode.utils.software.DriveWithPID;
 import org.firstinspires.ftc.teamcode.utils.software.MovingArrayList;
 import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-
-import java.util.List;
 
 @Config
 public abstract class AutoBase extends LinearOpMode implements StackPositionCallback, BackdropPositionCallback {
@@ -49,10 +47,13 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
     protected Hang hang;
     protected AutoActionScheduler sched;
     protected PropBasePipeline propPipeline;
-    public static AprilTagProcessor aprilTag;
+    protected AprilTagProcessor aprilTag;
+    protected static PreloadDetectionPipeline preloadPipeline;
 
-    protected VisionPortal portal;
-    public static Side side = Side.RIGHT;
+    protected VisionPortal frontVisionPortal;
+    protected VisionPortal backVisionPortal;
+
+    public static Side propPosition = Side.RIGHT;
     public static int SPIKE = 2;
     private GamePadController g1, g2;
     // configure a wait time to allow partner time to finish the backdrop
@@ -64,6 +65,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
     public static boolean displayDistanceSensor = true;
 
     protected static Pose2d stackPosition;
+    protected static Side preloadPosition = Side.RIGHT;
 
     protected DriveWithPID pidDriveStraight;
     ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
@@ -116,25 +118,14 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
         propPipeline.allianceColor = getAlliance();
 
-        portal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, Globals.FRONT_WEBCAM_NAME))
-                .setCameraResolution(new Size(1920, 1080))
-                .addProcessor(propPipeline)
-                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                .enableLiveView(true)
-                .setAutoStopLiveView(true)
-                .build();
-
-        loopTimer.reset();
-        while (!portal.getCameraState().equals(VisionPortal.CameraState.STREAMING)) {
-            telemetry.addLine(" Please wait, Webcam is streaming ... ");
-            telemetry.update();
-            idle();
-        }
+        // initialize front and back vision portals
+        initVisionPortal();
 
         double webCamReadyTime = loopTimer.milliseconds();
 
-        portal.setProcessorEnabled(propPipeline, true);
+        frontVisionPortal.setProcessorEnabled(propPipeline, true);
+
+        // initialize roadrunner positions
         onInit();
 
         double maxLoopTime = 0.0;
@@ -145,9 +136,9 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             double loopTimeBegin = loopTimer.milliseconds();
             g1.update();
 
-            side = propPipeline.getLocation();
+            propPosition = propPipeline.getLocation();
 
-            SPIKE = side.ordinal();
+            SPIKE = propPosition.ordinal();
             printDescription();
             telemetry.addLine("   ");
             telemetry.addLine(" <----- Team Prop Vision Detection " + "(" + Globals.COLOR + ")" + " -----> ");
@@ -161,6 +152,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             String centerStr = "Center";
 
             if (getAlliance() == AlliancePosition.RED) {
+                preloadPosition = Side.RIGHT;
                 if (getFieldPosition() == FieldPosition.NEAR) {
                     centerStr = "Left";
                     sideStr = "Right";
@@ -168,6 +160,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                     sideStr = "Left";
                 }
             } else {
+                preloadPosition = Side.LEFT;
                 if (getFieldPosition() == FieldPosition.FAR) {
                     sideStr = "Right";
                 }
@@ -175,7 +168,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
             telemetry.addData(centerStr + " color:", "Mean: %3.2f | Max: %3.2f ", propPipeline.meanCenterColor, propPipeline.maxCenterColor);
             telemetry.addData(sideStr + " color:", "Mean: %3.2f | Max: %3.2f ", propPipeline.meanSideColor, propPipeline.maxSideColor);
-            telemetry.addData("Spike Position", side.toString());
+            telemetry.addData("Spike Position", propPosition.toString());
             telemetry.addLine("\n");
 
             if (getFieldPosition() == FieldPosition.FAR) {
@@ -240,7 +233,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         MecanumDrive.autoStartTimestamp = System.currentTimeMillis();
 
         try {
-            portal.close();
+            frontVisionPortal.close();
         } catch (Exception e) {
             // ignore
         }
@@ -288,6 +281,24 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 Log.d("Auto_logger", "End program drive Estimated Pose: " + new PoseMessage(drive.pose));
                 logStartTime = getRuntime();
             }
+            idle();
+        }
+    }
+
+    protected void initVisionPortal() {
+        frontVisionPortal = new VisionPortal.Builder()
+                .setCamera(hardwareMap.get(WebcamName.class, Globals.FRONT_WEBCAM_NAME))
+                .setCameraResolution(new Size(1920, 1080))
+                .addProcessor(propPipeline)
+                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                .enableLiveView(true)
+                .setAutoStopLiveView(true)
+                .build();
+
+        loopTimer.reset();
+        while (!frontVisionPortal.getCameraState().equals(VisionPortal.CameraState.STREAMING)) {
+            telemetry.addLine(" Please wait, Webcam is streaming ... ");
+            telemetry.update();
             idle();
         }
     }
@@ -614,5 +625,24 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 });
     }
 
+    public static class PreloadPositionDetectionAction implements Action {
+        MecanumDrive drive;
+
+        public PreloadPositionDetectionAction(MecanumDrive drive) {
+            this.drive = drive;
+        }
+
+        @Override
+        public boolean run(TelemetryPacket packet) {
+
+            if(AutoBase.preloadPipeline != null) {
+                AutoBase.preloadPosition = AutoBase.preloadPipeline.getPreloadedZone();
+                Log.d("Preload_detection_logger", "Preload LEFT Zone AVG: " + AutoBase.preloadPipeline.leftZoneAverage);
+                Log.d("Preload_detection_logger", "Preload RIGHT Zone AVG: " + AutoBase.preloadPipeline.rightZoneAverage);
+                Log.d("Preload_detection_logger", "Preload zone: " + AutoBase.preloadPipeline.getPreloadedZone());
+            }
+            return false;
+        }
+    }
 }
 

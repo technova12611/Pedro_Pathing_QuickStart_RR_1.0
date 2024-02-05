@@ -9,6 +9,7 @@ import com.acmerobotics.roadrunner.Action;
 
 import org.firstinspires.ftc.teamcode.opmode.autonomous.AutoBase;
 import org.firstinspires.ftc.teamcode.opmode.autonomous.BackdropPositionCallback;
+import org.firstinspires.ftc.teamcode.opmode.autonomous.PreloadPositionDetectionCallback;
 import org.firstinspires.ftc.teamcode.opmode.autonomous.StackPositionCallback;
 
 import java.util.LinkedList;
@@ -28,6 +29,8 @@ public class AutoActionScheduler {
 
    private BackdropPositionCallback backdropCallback;
 
+   private PreloadPositionDetectionCallback preloadPositionCallback;
+
    public AutoActionScheduler(Runnable pidUpdate) {
       this.pidUpdate = pidUpdate;
    }
@@ -42,6 +45,10 @@ public class AutoActionScheduler {
 
    public void setBackdropAlignmentCallback(BackdropPositionCallback backdropCallback) {
       this.backdropCallback = backdropCallback;
+   }
+
+   public void setPreloadPositionCallback(PreloadPositionDetectionCallback preloadPositionCallback) {
+      this.preloadPositionCallback = preloadPositionCallback;
    }
 
    public void run() {
@@ -65,12 +72,16 @@ public class AutoActionScheduler {
          if (!running) {
             actions.remove();
             if(a instanceof AutoBase.StackIntakePositionAction) {
-               Log.d("AutoActionScheduler:", "StackIntakePositionAction finished: " + stackCallback);
-
                if(stackCallback != null) {
-                  Log.d("AutoActionScheduler:", "** Adding a new StackDriveAction " + " started at " + (System.currentTimeMillis()-startTime + "(ms)"));
                   ((LinkedList) actions).addFirst(stackCallback.driveToStack());
                   Log.d("AutoActionScheduler:", "** Added a new StackDriveAction " + " completed at " + (System.currentTimeMillis()-startTime + "(ms)"));
+               }
+            }
+
+            if(a instanceof AutoBase.PreloadPositionDetectionAction) {
+               if(preloadPositionCallback != null) {
+                  ((LinkedList) actions).addFirst(preloadPositionCallback.strafeToBackdrop());
+                  Log.d("AutoActionScheduler:", "** Added a new PreloadPositionDetectionAction " + " completed at " + (System.currentTimeMillis()-startTime + "(ms)"));
                }
             }
             Log.d("AutoActionScheduler:", "Action: " + a + " - " + (++actionOrder) + " finished at " + (System.currentTimeMillis()-startTime + "(ms)"));

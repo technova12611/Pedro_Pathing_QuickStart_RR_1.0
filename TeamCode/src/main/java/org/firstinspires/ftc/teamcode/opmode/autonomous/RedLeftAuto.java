@@ -72,6 +72,8 @@ public class RedLeftAuto extends FarAutoBase {
         this.moveUp1 =  new Pose2d(-38.5, -54.0, Math.toRadians(90));
 
         this.stackIntakeAlignment2 = new Pose2d(-48, -12.0, Math.toRadians(180));
+
+        this.preloadDetection = new Pose2d(38.0, -31.0, Math.toRadians(180));
     }
 
     @Override

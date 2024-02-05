@@ -36,8 +36,6 @@ import java.util.Map;
 public class Outtake {
     public static PIDCoefficients outtakePID = new PIDCoefficients(0.005, 0.000, 0.0001);
 
-    //new PIDCoefficients(0.01, 0.0015, 0.0004)
-
     public static int OUTTAKE_SLIDE_MAX = 2160;
     public static int OUTTAKE_SLIDE_ABOVE_LEVEL_2 = 2150;
     public static int OUTTAKE_SLIDE_BELOW_LEVEL_2 = 1850;
@@ -110,7 +108,7 @@ public class Outtake {
     public static double OUTTAKE_WIRE_VERY_HIGH = 0.35;
 
     public static double OUTTAKE_WIRE_FOR_HANGING_DOWN = 0.73;
-    public static double OUTTAKE_WIRE_FOR_HANGING_UP = 0.38;
+    public static double OUTTAKE_WIRE_FOR_HANGING_UP = 0.39;
 
     public static double OUTTAKE_FIXER_INIT = 0.11;
     public static double OUTTAKE_FIXER_LEVEL_1 = 0.77;
