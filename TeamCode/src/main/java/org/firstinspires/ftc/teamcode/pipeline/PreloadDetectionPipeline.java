@@ -28,8 +28,13 @@ public class PreloadDetectionPipeline implements VisionProcessor {
     public static int leftZoneAverage = 0;
     public static int rightZoneAverage = 0;
 
+    public static int numOfDetections = 0;
+
     public PreloadDetectionPipeline(AprilTagProcessor aprilTag) {
         this.aprilTag = aprilTag;
+        if(Globals.COLOR == AlliancePosition.BLUE) {
+            preloadedZone = Side.LEFT;
+        }
     }
 
     @Override
@@ -39,11 +44,9 @@ public class PreloadDetectionPipeline implements VisionProcessor {
 
     @Override
     public Object processFrame(Mat frame, long captureTimeNanos) {
-        if(Globals.COLOR == AlliancePosition.BLUE) {
-            preloadedZone = Side.LEFT;
-        }
+
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-//        List<AprilTagDetection> currentDetections = AprilTag.getAprilTagDetections();
+        numOfDetections = currentDetections.size();
         if (currentDetections != null) {
             for (AprilTagDetection detection : currentDetections) {
                 if (detection.metadata != null) {
@@ -72,11 +75,11 @@ public class PreloadDetectionPipeline implements VisionProcessor {
                         int exclusionZoneWidth = (int) (tagWidth * 0.43);
                         int exclusionZoneHeight = (int) (tagHeight * 0.43);
 
-                        Rect leftInclusionZone = new Rect(tagCenterX - inclusionZoneWidth, tagCenterY - 180, inclusionZoneWidth, inclusionZoneHeight);
-                        Rect rightInclusionZone = new Rect(tagCenterX, tagCenterY - 180, inclusionZoneWidth, inclusionZoneHeight);
+                        Rect leftInclusionZone = new Rect(tagCenterX - inclusionZoneWidth, tagCenterY - 420, inclusionZoneWidth, inclusionZoneHeight);
+                        Rect rightInclusionZone = new Rect(tagCenterX, tagCenterY - 420, inclusionZoneWidth, inclusionZoneHeight);
 
-                        Rect leftExclusionZone = new Rect(tagCenterX - (int) (inclusionZoneWidth * 0.55), tagCenterY - 140, exclusionZoneWidth, exclusionZoneHeight);
-                        Rect rightExclusionZone = new Rect(tagCenterX + (int) (inclusionZoneWidth * 0.36), tagCenterY - 140, exclusionZoneWidth, exclusionZoneHeight);
+                        Rect leftExclusionZone = new Rect(tagCenterX - (int) (inclusionZoneWidth * 0.55), tagCenterY - 340, exclusionZoneWidth, exclusionZoneHeight);
+                        Rect rightExclusionZone = new Rect(tagCenterX + (int) (inclusionZoneWidth * 0.36), tagCenterY - 340, exclusionZoneWidth, exclusionZoneHeight);
 
                         Imgproc.rectangle(frame, leftInclusionZone, new Scalar(0, 255, 0), 5);
                         Imgproc.rectangle(frame, rightInclusionZone, new Scalar(0, 255, 0), 5);
@@ -87,8 +90,13 @@ public class PreloadDetectionPipeline implements VisionProcessor {
                         leftZoneAverage = meanColor(frame, leftInclusionZone, leftExclusionZone);
                         rightZoneAverage = meanColor(frame, rightInclusionZone, rightExclusionZone);
 
-                        preloadedZone = (leftZoneAverage > rightZoneAverage) ? Side.LEFT : Side.RIGHT;
-                        Globals.PRELOAD = preloadedZone;
+                        if(leftZoneAverage > 50 && rightZoneAverage > 50) {
+                            preloadedZone = (leftZoneAverage > (rightZoneAverage + 50)) ? Side.LEFT : Side.RIGHT;
+                            Globals.PRELOAD = preloadedZone;
+                        }
+
+//                        Log.d("PreloadDetectionPipeline_logger", "leftZoneAverage: " + leftZoneAverage + " | rightZoneAverage: " + rightZoneAverage
+//                        + " | zone:" + preloadedZone);
 
                         break;
                     }
@@ -96,7 +104,7 @@ public class PreloadDetectionPipeline implements VisionProcessor {
             }
         }
 
-        return null;
+        return frame;
     }
 
     @Override

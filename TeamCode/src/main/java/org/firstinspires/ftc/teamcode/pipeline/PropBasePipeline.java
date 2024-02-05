@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
     private final AtomicReference<Bitmap> lastFrame = new AtomicReference<>(Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565));
 
-    private Side location = Side.RIGHT;
+    private Side location = Side.CENTER;
 
     public Rect sideZoneArea;
     public Rect centerZoneArea;
@@ -150,14 +150,14 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
         if(allianceColor == AlliancePosition.BLUE){
             if ( meanSideColor < threshold ||
                     (meanCenterColor - meanSideColor > blueDeltaThreshold &&
-                            meanSideColor < 5.5 && meanCenterColor < 5.5)) {
+                            meanSideColor < 7.0 && meanCenterColor < 7.0)) {
                 // left zone has it
                 location = Side.LEFT;
                 Imgproc.rectangle(frame, sideZoneArea, GREEN, 8);
                 Imgproc.rectangle(frame, centerZoneArea, YELLOW, 3);
             } else if (meanCenterColor < threshold ||
                     (meanSideColor - meanCenterColor > blueDeltaThreshold &&
-                            meanSideColor < 5.5 && meanCenterColor < 5.5)) {
+                            meanSideColor < 7.0 && meanCenterColor < 7.0)) {
                 // center zone has it
                 location = Side.CENTER;
                 Imgproc.rectangle(frame, centerZoneArea, GREEN, 8);
@@ -172,7 +172,7 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
             if ( (meanCenterColor < threshold && meanSideColor >threshold) ||
                     (meanCenterColor < threshold && meanCenterColor < meanSideColor) ||
                     (meanSideColor - meanCenterColor > redDeltaThreshold &&
-                    meanSideColor < 5.5 && meanCenterColor < 5.5) //||
+                    meanSideColor < 7.0 && meanCenterColor < 7.0) //||
 //                    (meanCenterColor < maxCenterColor - threshold )
             ) {
                 // center zone has it
@@ -183,7 +183,7 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
             else if ( (meanSideColor < threshold && meanCenterColor >threshold) ||
                     (meanSideColor < threshold && meanSideColor < meanCenterColor)  ||
                     (meanCenterColor - meanSideColor > redDeltaThreshold
-                    && meanSideColor < 5.5 && meanCenterColor < 5.5) //||
+                    && meanSideColor < 7.0 && meanCenterColor < 7.0) //||
 //                    (meanSideColor < maxSideColor - threshold)
             ) {
                 // left zone has it

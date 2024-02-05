@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmode.autonomous;
 
+import android.util.Log;
 import android.util.Size;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -17,9 +18,8 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 import org.firstinspires.ftc.teamcode.pipeline.PreloadDetectionPipeline;
-import org.firstinspires.ftc.teamcode.pipeline.PropNearPipeline;
 import org.firstinspires.ftc.teamcode.pipeline.Side;
-import org.firstinspires.ftc.teamcode.subsystem.Outtake;
+import org.firstinspires.ftc.teamcode.roadrunner.messages.PoseMessage;
 import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -32,7 +32,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
     public Pose2d[] spike, backdrop, cycleScore, backOffFromSpike, backdropAlignment,
             stackIntakeAlignment, stackIntake, crossFieldAlignment, cycleStart, backdropAlignmentCycle;
 
-    public Pose2d preloadDetection;
+    public Pose2d[] preloadDetection;
 
     @Override
     protected Pose2d getStartPose() {
@@ -63,10 +63,10 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
         double waitTime = 0.0;
         if(doCycle()) {
             if(SPIKE == 1) {
-                waitTime = 3.5;
+                waitTime = 3.0;
             }
             else {
-                waitTime = 1.0;
+                waitTime = 0.0;
             }
         }
         sched.addAction(new SleepAction(waitTime));
@@ -324,8 +324,8 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                         new SleepAction(0.5),
                                     drive.actionBuilder(backdropAlignment[SPIKE])
                                             .setReversed(true)
-                                            .strafeToLinearHeading(preloadDetection.position,
-                                                    preloadDetection.heading)
+                                            .strafeToLinearHeading(preloadDetection[SPIKE].position,
+                                                    preloadDetection[SPIKE].heading)
                                             .build(),
                                             new MecanumDrive.DrivePoseLoggingAction(drive, "end_backdrop_position")
                                 ),
@@ -335,12 +335,17 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                         new SleepAction(0.5),
                                         outtake.extendOuttakeFarLow(),
                                         new SleepAction(0.5),
+                                        new AutoBase.EnableVisionProcessorAction(drive, teamPropPosition),
                                         outtake.prepareToScoreCycle(),
                                         new SleepAction(0.2)
                                 )
                         )
                 ));
+
+        sched.addAction(new SleepAction(0.5));
         sched.addAction(new AutoBase.PreloadPositionDetectionAction(drive));
+
+        sched.addAction(new SleepAction(20.5));
 
         sched.addAction(
 
@@ -370,8 +375,11 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                 )
         );
 
+        Pose2d parking_start = backdrop[SPIKE];
+
         if(doCycle()) {
             cyclePixelFromStack(backdrop[SPIKE]);
+            parking_start = cycleScore[SPIKE];
         }
 
         // prepare for teleops and parking if time
@@ -388,7 +396,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                         new SequentialAction(
                                 new MecanumDrive.DrivePoseLoggingAction(drive, "start_of_parking"),
                                 // to score the purple pixel on the spike
-                                drive.actionBuilder(cycleScore[SPIKE])
+                                drive.actionBuilder(parking_start)
                                         .strafeTo(parking.position)
                                         .build(),
                                 new MecanumDrive.DrivePoseLoggingAction(drive, "end_of_parking")
@@ -559,29 +567,37 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
         int[] visionPortalViewIDs = VisionPortal.makeMultiPortalView(2,
                 VisionPortal.MultiPortalLayout.HORIZONTAL);
 
+        Log.d("initVisionPortal_logger", "Start time: " + System.currentTimeMillis());
+
         initBackVisionPortal(visionPortalViewIDs[1]);
-        initFrontVisionPortal(visionPortalViewIDs[1]);
+        initFrontVisionPortal(visionPortalViewIDs[0]);
+
+        Log.d("initVisionPortal_logger", "End time: " + System.currentTimeMillis());
     }
 
     private void initFrontVisionPortal(int viewId) {
-        propPipeline = new PropNearPipeline();
         WebcamName webcam1 = hardwareMap.get(WebcamName.class, "Webcam 1");
         // Create the vision portal by using a builder.
         frontVisionPortal = new VisionPortal.Builder()
                 .setCamera(webcam1)
                 .setCameraResolution(new Size(1920, 1080))
-                .addProcessor(propPipeline)
+                .addProcessor(teamProPipeline)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .setLiveViewContainerId(viewId)
                 .setAutoStopLiveView(false)
                 .build();
 
+        long startTime = System.currentTimeMillis();
         while (!isStopRequested() && frontVisionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)
         {
             telemetry.addLine("Waiting for portal: " + viewId
                     +  " (front camera) to come online");
             telemetry.update();
         }
+
+        frontVisionPortal.setProcessorEnabled(teamProPipeline, true);
+
+        Log.d("initFrontVisionPortal_logger", "Webcam 1 ID: [" + viewId + "] starting time: " + (System.currentTimeMillis() - startTime));
     }
 
     private void initBackVisionPortal(int viewId) {
@@ -592,26 +608,24 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
 
         backVisionPortal = new VisionPortal.Builder()
                 .setCamera(webcam2)
+                .setCameraResolution(new Size(1920, 1080))
                 .setLiveViewContainerId(viewId)
                 .addProcessors(aprilTag,preloadPipeline)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .setAutoStopLiveView(false)
                 .build();
 
+        long startTime = System.currentTimeMillis();
         while (!isStopRequested() && backVisionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)
         {
             telemetry.addLine("Waiting for portal:"  +  viewId + " (back camera) to come online");
             telemetry.update();
         }
 
+        Log.d("initBackVisionPortal_logger", "Webcam 2 ID: [" + viewId + "] starting time: " + (System.currentTimeMillis() - startTime));
+
         backVisionPortal.setProcessorEnabled(aprilTag, false);
         backVisionPortal.setProcessorEnabled(preloadPipeline, false);
-    }
-
-    protected void enabledBackPortalProcessors() {
-        backVisionPortal.setProcessorEnabled(aprilTag, true);
-        backVisionPortal.setProcessorEnabled(preloadPipeline, true);
-        preloadPipeline.setTargetAprilTagID(AutoBase.propPosition);
     }
 
     public Action strafeToBackdrop() {
@@ -622,17 +636,23 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
             backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 2.0);
         }
 
+        Log.d("strafeToBackdrop_logger", "Preload position: " + preloadPosition +
+                " | Original backdrop pose: " + new PoseMessage(backdrop[SPIKE]) +
+                " | Calculated backdrop pose: " + new PoseMessage(new Pose2d(backdrop_position, backdrop[SPIKE].heading)));
+
         return
-                new SequentialAction(
-                        // move back to the backdrop
-                        drive.actionBuilder(new Pose2d(preloadDetection.position, preloadDetection.heading))
-                                .setReversed(true)
-                                .strafeToLinearHeading(backdrop_position,preloadDetection.heading,
-                                    this.drive.slowVelConstraint,
-                                    this.drive.slowAccelConstraint)
-                                .build(),
-                        intake.stackIntakeLinkageUp(),
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop")
-                );
+            new SequentialAction(
+                    intake.stackIntakeLinkageUp(),
+                    // move back to the backdrop
+                    new MecanumDrive.DrivePoseLoggingAction(drive, "strafe_to_backdrop_begin"),
+//                    drive.actionBuilder(new Pose2d(preloadDetection[SPIKE].position, preloadDetection[SPIKE].heading))
+//                            .setReversed(true)
+//                            .strafeToLinearHeading(backdrop_position,preloadDetection[SPIKE].heading,
+//                                this.drive.slowVelConstraint,
+//                                this.drive.slowAccelConstraint)
+//                            .build(),
+
+                    new MecanumDrive.DrivePoseLoggingAction(drive, "strafe_to_backdrop_end")
+            );
     }
 }

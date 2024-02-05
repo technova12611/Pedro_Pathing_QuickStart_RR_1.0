@@ -562,17 +562,17 @@ public class Outtake {
             // make sure the outtake is pushed too hard on backdrop
             if (slideServoPosition > SLIDE_PIVOT_DUMP - 0.01 && slideServoPosition < SLIDE_PIVOT_DUMP_2) {
                 if (slidePivotVoltageMean > SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME) {
-                    direction = "DOWN";
+                    direction = "EXTREME";
                 }
                 else if (slidePivotVoltageMean > SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX) {
-                    direction = "DOWN";
+                    direction = "SUPER";
                 }
             }
 
             isLogging = true;
         }
 
-        if(isLogging && Math.abs(slidePivotVoltageMean - previousSlidePivotVoltage) > 0.01) {
+        if(isLogging && Math.abs(slidePivotVoltageMean - previousSlidePivotVoltage) > 0.03) {
             Log.d("Slide_Pivot_Logger",
                     "slidePivot " + direction + " servo position:" + String.format("%3.3f",servoPosition)
                             + " | slideServoVoltage: " + String.format("%3.2f",slidePivotVoltageMean));

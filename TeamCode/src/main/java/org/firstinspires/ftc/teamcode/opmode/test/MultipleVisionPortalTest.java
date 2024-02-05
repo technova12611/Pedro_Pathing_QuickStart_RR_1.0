@@ -33,6 +33,7 @@ import android.util.Size;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Globals;
@@ -84,6 +85,7 @@ public class MultipleVisionPortalTest extends LinearOpMode {
     @Override
     public void runOpMode() {
 
+        Globals.COLOR = AlliancePosition.BLUE;
         // Create the AprilTag processor by using a builder.
         aprilTag = new AprilTagProcessor.Builder().build();
         propPipeline = new PropNearPipeline();
@@ -94,7 +96,7 @@ public class MultipleVisionPortalTest extends LinearOpMode {
         webcam2 = hardwareMap.get(WebcamName.class, "Webcam 2");
 
         int[] visionPortalViewIDs = VisionPortal.makeMultiPortalView(2,
-                VisionPortal.MultiPortalLayout.HORIZONTAL);
+                VisionPortal.MultiPortalLayout.VERTICAL);
 
         // Create the vision portal by using a builder.
         frontVisionPortal = new VisionPortal.Builder()
@@ -115,6 +117,7 @@ public class MultipleVisionPortalTest extends LinearOpMode {
 
         rearVisionPortal = new VisionPortal.Builder()
                 .setCamera(webcam2)
+                .setCameraResolution(new Size(1920, 1080))
                 .setLiveViewContainerId(visionPortalViewIDs[1])
                 .addProcessors(aprilTag,preloadPipeline)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
@@ -135,6 +138,10 @@ public class MultipleVisionPortalTest extends LinearOpMode {
         telemetry.addData(">", "Touch Play to start OpMode");
         telemetry.update();
 
+        boolean frontClosed = false;
+        boolean backClosed = false;
+
+        ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         while (opModeInInit() && !isStopRequested()) {
 
             telemetryPipeline();
@@ -145,19 +152,26 @@ public class MultipleVisionPortalTest extends LinearOpMode {
             // Save CPU resources; can resume streaming when needed.
             if (gamepad1.dpad_down) {
                 frontVisionPortal.close();
+                frontClosed = true;
             } else if (gamepad1.dpad_up) {
                 rearVisionPortal.close();
+                backClosed = true;
             }
 
+            telemetry.addLine("Front Portal: " + frontClosed + " | Back Portal: " + backClosed);
+            telemetry.addLine("Front Portal State: " + frontVisionPortal.getCameraState() + " | Back Portal State: " + rearVisionPortal.getCameraState());
+            telemetry.addLine("Loop time (ms): " + String.format("%2.3f", timer.milliseconds()));
+            timer.reset();
             doCameraSwitching();
 
             // Share the CPU.
-            sleep(20);
+            idle();
         }
 
         // Save more CPU resources when camera is no longer needed.
         frontVisionPortal.close();
         rearVisionPortal.close();
+
 
     }   // end runOpMode()
 

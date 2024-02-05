@@ -72,7 +72,7 @@ public class ManualDrive extends LinearOpMode {
     VelConstraint velConstraintOverride;
     AccelConstraint accelConstraintOverride = new ProfileAccelConstraint(-30.0, 30.0);
 
-    double slowModeForHanging = 0.5;
+    double slowModeForHanging = 0.25;
     double slowModeForBackdrop = 0.5;
     boolean isHangingActivated = false;
 
@@ -699,9 +699,8 @@ public class ManualDrive extends LinearOpMode {
                 isDroneLaunched=true;
                 sched.queueAction(drone.scoreDrone());
             } else if(!isHangingActivated) {
-                sched.queueAction(new SleepAction(0.5));
                 sched.queueAction(hang.unblockHook());
-                sched.queueAction(new SleepAction(0.35));
+                sched.queueAction(new SleepAction(0.25));
                 sched.queueAction(outtake.outtakeWireForHanging());
                 isHangingActivated = true;
             } else if(isHangingActivated) {
