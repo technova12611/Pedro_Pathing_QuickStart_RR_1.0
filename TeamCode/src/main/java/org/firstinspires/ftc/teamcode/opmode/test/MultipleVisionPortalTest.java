@@ -82,6 +82,11 @@ public class MultipleVisionPortalTest extends LinearOpMode {
     private VisionPortal frontVisionPortal;
     private VisionPortal rearVisionPortal;
 
+    ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    boolean firstDetection = false;
+
+    double detectionTime = 0.0;
+
     @Override
     public void runOpMode() {
 
@@ -230,6 +235,13 @@ public class MultipleVisionPortalTest extends LinearOpMode {
         }
 
         if(rearVisionPortal.getProcessorEnabled(preloadPipeline)) {
+
+            if(!firstDetection && preloadPipeline.leftZoneAverage > 50 && preloadPipeline.rightZoneAverage > 50) {
+                firstDetection = true;
+                detectionTime = timer.milliseconds();
+            }
+
+            telemetry.addLine( "\nElapsed time: " + detectionTime);
             telemetry.addLine( "\nPRELOAD LEFT AVG: " + preloadPipeline.leftZoneAverage);
             telemetry.addLine( "\nPRELOAD RIGHT AVG: " + preloadPipeline.rightZoneAverage);
             telemetry.addLine( "\nPRELOAD ZONE: " + preloadPipeline.getPreloadedZone());
@@ -258,6 +270,7 @@ public class MultipleVisionPortalTest extends LinearOpMode {
                 frontVisionPortal.setProcessorEnabled(propPipeline, false);
                 rearVisionPortal.setProcessorEnabled(aprilTag, true);
                 rearVisionPortal.setProcessorEnabled(preloadPipeline, true);
+                timer.reset();
             }
             oldLeftBumper = newLeftBumper;
             oldRightBumper = newRightBumper;

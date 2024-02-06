@@ -653,17 +653,21 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 drive.updatePoseEstimate();
                 Log.d("Preload_detection_logger", "Drive Pose: " + new PoseMessage(drive.pose));
                 firstTime = false;
-                counter++;
+                timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
             }
 
-            if(counter > 10) {
+            if(timer.milliseconds() < 750.0 && (AutoBase.preloadPipeline.leftZoneAverage < 20 && AutoBase.preloadPipeline.rightZoneAverage< 20)) {
+                return true;
+            }
+
+            if(counter++ > 5) {
                 double leftMean = preloadLeftZoneList.getMean();
                 double rightMean = preloadRightZoneList.getMean();
 
                 Log.d("Preload_detection_logger", "Preload LEFT Zone MEAN: " + leftMean);
                 Log.d("Preload_detection_logger", "Preload RIGHT Zone MEAN: " + rightMean);
-                if(leftMean > 50 && rightMean > 50) {
-                    AutoBase.preloadPosition = (leftMean > (rightMean +20))? Side.LEFT: Side.RIGHT;
+                if(leftMean > 25 && rightMean > 25) {
+                    AutoBase.preloadPosition = (leftMean > (rightMean +25))? Side.LEFT: Side.RIGHT;
                 }
                 return false;
             }
@@ -672,11 +676,10 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 preloadLeftZoneList.add(AutoBase.preloadPipeline.leftZoneAverage);
                 preloadRightZoneList.add(AutoBase.preloadPipeline.rightZoneAverage);
                 Log.d("Preload_detection_logger", "Count " + counter + " | Number of Detections: " + AutoBase.preloadPipeline.numOfDetections
-                        + "Target ID: " + AutoBase.preloadPipeline.getTargetAprilTagID());
-                AutoBase.preloadPosition = AutoBase.preloadPipeline.getPreloadedZone();
-                Log.d("Preload_detection_logger", "Preload LEFT Zone AVG: " + AutoBase.preloadPipeline.leftZoneAverage);
-                Log.d("Preload_detection_logger", "Preload RIGHT Zone AVG: " + AutoBase.preloadPipeline.rightZoneAverage);
-                Log.d("Preload_detection_logger", "Preload zone: " + AutoBase.preloadPipeline.getPreloadedZone());
+                        + " | Target ID: " + AutoBase.preloadPipeline.getTargetAprilTagID());
+                Log.d("Preload_detection_logger", "Preload LEFT Zone AVG: " + AutoBase.preloadPipeline.leftZoneAverage +
+                                                         " | Preload RIGHT Zone AVG: " + AutoBase.preloadPipeline.rightZoneAverage +
+                                                         " | Preload detected raw zone: " + AutoBase.preloadPipeline.getPreloadedZone());
             }
             return true;
         }

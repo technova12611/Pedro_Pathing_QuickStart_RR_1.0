@@ -90,8 +90,8 @@ public class PreloadDetectionPipeline implements VisionProcessor {
                         leftZoneAverage = meanColor(frame, leftInclusionZone, leftExclusionZone);
                         rightZoneAverage = meanColor(frame, rightInclusionZone, rightExclusionZone);
 
-                        if(leftZoneAverage > 50 && rightZoneAverage > 50) {
-                            preloadedZone = (leftZoneAverage > (rightZoneAverage + 50)) ? Side.LEFT : Side.RIGHT;
+                        if(leftZoneAverage > 20 && rightZoneAverage > 20) {
+                            preloadedZone = (leftZoneAverage > (rightZoneAverage + 30)) ? Side.LEFT : Side.RIGHT;
                             Globals.PRELOAD = preloadedZone;
                         }
 
@@ -137,6 +137,10 @@ public class PreloadDetectionPipeline implements VisionProcessor {
         }
 
         if (Globals.COLOR == AlliancePosition.RED) targetAprilTagID += 3;
+
+        leftZoneAverage = 0;
+        rightZoneAverage = 0;
+
     }
 
     public int meanColor(Mat frame, Rect inclusionRect, Rect exclusionRect) {

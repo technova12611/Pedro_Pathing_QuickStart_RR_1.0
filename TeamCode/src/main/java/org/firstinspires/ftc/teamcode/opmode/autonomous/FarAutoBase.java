@@ -60,13 +60,13 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
 
         // RED SPIKE right or BLUE left
         //--------------------------------------------
-        double waitTime = 0.0;
+        double waitTime = farSideAutoWaitTimeInSeconds;
         if(doCycle()) {
             if(SPIKE == 1) {
-                waitTime = 3.0;
+                waitTime = 2.5;
             }
             else {
-                waitTime = 0.0;
+                waitTime = 1.0;
             }
         }
         sched.addAction(new SleepAction(waitTime));
@@ -331,11 +331,11 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                 ),
 
                                 new SequentialAction(
+                                        new AutoBase.EnableVisionProcessorAction(drive, teamPropPosition),
                                         outtake.prepareToSlide(),
                                         new SleepAction(0.5),
                                         outtake.extendOuttakeFarLow(),
                                         new SleepAction(0.5),
-                                        new AutoBase.EnableVisionProcessorAction(drive, teamPropPosition),
                                         outtake.prepareToScoreCycle(),
                                         new SleepAction(0.2)
                                 )
@@ -344,8 +344,6 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
 
         sched.addAction(new SleepAction(0.5));
         sched.addAction(new AutoBase.PreloadPositionDetectionAction(drive));
-
-        sched.addAction(new SleepAction(20.5));
 
         sched.addAction(
 
@@ -645,12 +643,12 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                     intake.stackIntakeLinkageUp(),
                     // move back to the backdrop
                     new MecanumDrive.DrivePoseLoggingAction(drive, "strafe_to_backdrop_begin"),
-//                    drive.actionBuilder(new Pose2d(preloadDetection[SPIKE].position, preloadDetection[SPIKE].heading))
-//                            .setReversed(true)
-//                            .strafeToLinearHeading(backdrop_position,preloadDetection[SPIKE].heading,
-//                                this.drive.slowVelConstraint,
-//                                this.drive.slowAccelConstraint)
-//                            .build(),
+                    drive.actionBuilder(new Pose2d(preloadDetection[SPIKE].position, preloadDetection[SPIKE].heading))
+                            .setReversed(true)
+                            .strafeToLinearHeading(backdrop_position,preloadDetection[SPIKE].heading,
+                                this.drive.slowVelConstraint,
+                                this.drive.slowAccelConstraint)
+                            .build(),
 
                     new MecanumDrive.DrivePoseLoggingAction(drive, "strafe_to_backdrop_end")
             );
