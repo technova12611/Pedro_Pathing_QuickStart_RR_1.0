@@ -70,10 +70,10 @@ public class DriveWithPID {
         int par_encoderTicks = ((TwoDeadWheelLocalizer) drive.localizer).par.getPositionAndVelocity().position;
         double angle = ((TwoDeadWheelLocalizer) drive.localizer).imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
-        Log.d("DriveWithPID_Logger_1_update", "perp_encoderTicks:" + perp_encoderTicks
-                + "| par_encoderTicks: " + par_encoderTicks
-                + "| angle: " + String.format("%3.2f", Math.toDegrees(angle))
-                + " | startTime: " + this.startTime);
+//        Log.d("DriveWithPID_Logger_1_update", "perp_encoderTicks:" + perp_encoderTicks
+//                + "| par_encoderTicks: " + par_encoderTicks
+//                + "| angle: " + String.format("%3.2f", Math.toDegrees(angle))
+//                + " | startTime: " + this.startTime);
 
         double perp_newPower = Range.clip(this.perp_pidfController.update(perp_encoderTicks), -maxPower, maxPower);
         double par_newPower = Range.clip(this.par_pidfController.update(par_encoderTicks), -maxPower, maxPower);
@@ -85,9 +85,9 @@ public class DriveWithPID {
 
         if (isBusy()) {
             drive.setDrivePowers(new PoseVelocity2d(input, turn_newPower));
-            Log.d("DriveWithPID_Logger_2_update", "perp_newPower: " + String.format("%3.3f",input_y) + ", perp_lastError: " + perp_pidfController.getLastError());
-            Log.d("DriveWithPID_Logger_2_update", "par_newPower: " + String.format("%3.3f",input_x) + ", par_lastError: " + par_pidfController.getLastError());
-            Log.d("DriveWithPID_Logger_2_update", "turn_newPower: " + String.format("%3.3f",turn_newPower) + ", turn_lastError: " + String.format("%3.6f",turn_pidfController.getLastError()));
+//            Log.d("DriveWithPID_Logger_2_update", "perp_newPower: " + String.format("%3.3f",input_y) + ", perp_lastError: " + perp_pidfController.getLastError());
+//            Log.d("DriveWithPID_Logger_2_update", "par_newPower: " + String.format("%3.3f",input_x) + ", par_lastError: " + par_pidfController.getLastError());
+//            Log.d("DriveWithPID_Logger_2_update", "turn_newPower: " + String.format("%3.3f",turn_newPower) + ", turn_lastError: " + String.format("%3.6f",turn_pidfController.getLastError()));
         } else {
             Log.d("DriveWithPID_Logger_3_done",
                     "perp_lastError: " + perp_pidfController.getLastError() +

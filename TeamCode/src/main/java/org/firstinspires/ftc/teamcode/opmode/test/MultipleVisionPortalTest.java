@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode.opmode.test;
 
 import android.util.Size;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -58,8 +59,12 @@ import java.util.List;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
  */
 @TeleOp(name = "2 Vision Portal Test", group = "Concept")
+@Config
 public class MultipleVisionPortalTest extends LinearOpMode {
 
+    public static Side targetAprilTagId = Side.RIGHT;
+
+    public static AlliancePosition allianceColor = AlliancePosition.RED;
     /*
      * Variables used for switching cameras.
      */
@@ -90,12 +95,12 @@ public class MultipleVisionPortalTest extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        Globals.COLOR = AlliancePosition.BLUE;
+        Globals.COLOR = allianceColor;
         // Create the AprilTag processor by using a builder.
         aprilTag = new AprilTagProcessor.Builder().build();
         propPipeline = new PropNearPipeline();
         preloadPipeline = new PreloadDetectionPipeline(aprilTag);
-        preloadPipeline.setTargetAprilTagID(Side.CENTER);
+        preloadPipeline.setTargetAprilTagID(targetAprilTagId);
 
         webcam1 = hardwareMap.get(WebcamName.class, "Webcam 1");
         webcam2 = hardwareMap.get(WebcamName.class, "Webcam 2");
@@ -135,8 +140,8 @@ public class MultipleVisionPortalTest extends LinearOpMode {
             telemetry.update();
         }
 
-        rearVisionPortal.setProcessorEnabled(aprilTag, false);
-        rearVisionPortal.setProcessorEnabled(preloadPipeline, false);
+//        rearVisionPortal.setProcessorEnabled(aprilTag, false);
+//        rearVisionPortal.setProcessorEnabled(preloadPipeline, false);
 
         // Wait for the DS start button to be touched.
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
@@ -245,6 +250,7 @@ public class MultipleVisionPortalTest extends LinearOpMode {
             telemetry.addLine( "\nPRELOAD LEFT AVG: " + preloadPipeline.leftZoneAverage);
             telemetry.addLine( "\nPRELOAD RIGHT AVG: " + preloadPipeline.rightZoneAverage);
             telemetry.addLine( "\nPRELOAD ZONE: " + preloadPipeline.getPreloadedZone());
+            telemetry.addLine( "\nTARGET ID: " + preloadPipeline.getTargetAprilTagID());
         }
 
         telemetry.update();

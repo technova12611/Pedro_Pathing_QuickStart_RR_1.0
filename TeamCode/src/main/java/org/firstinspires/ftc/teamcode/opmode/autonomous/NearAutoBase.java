@@ -44,6 +44,7 @@ public abstract class NearAutoBase extends AutoBase {
                       // to score yellow pixel on the backdrop
                       new ParallelAction(
                       drive.actionBuilder(drive.pose)
+                              .strafeTo(start_forward.position)
                               .strafeToLinearHeading(backdrop[SPIKE].position,
                                       backdrop[SPIKE].heading, drive.slowVelConstraint,drive.slowAccelConstraint)
                               .build(),

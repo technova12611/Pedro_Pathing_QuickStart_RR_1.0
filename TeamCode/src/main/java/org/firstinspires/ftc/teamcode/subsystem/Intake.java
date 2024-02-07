@@ -282,7 +282,7 @@ public class Intake {
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_2nd_PIXEL, "stackIntakeServoRight"),
                 new SleepAction(0.2),
                 new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_2nd_PIXEL, "stackIntakeServoLeft"),
-                new SleepAction(0.4)
+                new SleepAction(0.3)
         );
     }
 

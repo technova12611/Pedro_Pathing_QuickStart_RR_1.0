@@ -54,6 +54,9 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
     protected static VisionPortal backVisionPortal;
 
     public Side teamPropPosition = Side.CENTER;
+
+    private Side prev_teamPropPosition = teamPropPosition;
+
     public int SPIKE = 1;
     private GamePadController g1, g2;
     // configure a wait time to allow partner time to finish the backdrop
@@ -222,6 +225,17 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
             loopTimer.reset();
             telemetry.update();
+
+            drive.pose = getStartPose();
+            if(prev_teamPropPosition != teamPropPosition) {
+                long start_onrun = System.currentTimeMillis();
+                Log.d("Auto_logger", " onRun() starts at " + start_onrun);
+                sched.reset();
+                onRun();
+                Log.d("Auto_logger", " onRun() finished, elapsed time:  " + (System.currentTimeMillis() - start_onrun));
+            }
+
+            prev_teamPropPosition = teamPropPosition;
             idle();
         }
 
@@ -234,13 +248,15 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
         try {
             frontVisionPortal.close();
+            teamProPipeline = null;
+            frontVisionPortal = null;
         } catch (Exception e) {
             // ignore
         }
+        Log.d("Auto_logger", String.format("Front Vision Portal closed at %.3f", getRuntime()));
 
         if (isStopRequested()) return; // exit if stopped
 
-        drive.pose = getStartPose();
         // reset IMU
         // ----------------------------
         try {
@@ -251,16 +267,25 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
         // prepare for the run, build the auto path
         //-------------------------------------------
-        onRun();
+        Log.d("Auto_logger", String.format("onRun() started at %.3f", getRuntime()));
+        if(prev_teamPropPosition != teamPropPosition) {
+            sched.reset();
+            onRun();
+        }
 
-        Log.d("Auto_logger", String.format("!!! Auto program finished onRun() %.3f", getRuntime()));
+        Log.d("Auto_logger", String.format("!!! onRun() finished at %.3f", getRuntime()));
 
         // run the auto path, all the actions are queued
         //-------------------------------
         sched.run();
 
+        Log.d("Auto_logger", String.format("!!! Auto run() finished at %.3f", getRuntime()));
+
         try {
             if(backVisionPortal != null) backVisionPortal.close();
+            aprilTag = null;
+            preloadPipeline = null;
+            backVisionPortal = null;
         } catch (Exception e) {
             // ignore
         }
@@ -414,23 +439,23 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
                 double delta_stack_position = avg_y_adj_left - avg_y_adj_right;
 
-                double y_offset = 1.05;
+                double y_offset = 1.25;
                 if (Math.abs(delta_stack_position) <= 0.6 && avg_y_adj_left > 5.0 && avg_y_adj_right > 5.0) {
                     adjustment_x = (avg_y_adj_left + avg_y_adj_right) / 2 - 0.5;
                 } else if (delta_stack_position < -1.8) {
-                    adjustment_y = -2.25;
+                    adjustment_y = -1.75;
                     adjustment_x = avg_y_adj_right - y_offset;
                 } else if (delta_stack_position < -1.2) {
-                    adjustment_y = -1.25;
+                    adjustment_y = -1.05;
                     adjustment_x = avg_y_adj_right - y_offset;
                 } else if (delta_stack_position < -0.6) {
                     adjustment_y = -0.5;
                     adjustment_x = avg_y_adj_right - y_offset;
                 } else if (delta_stack_position > 1.8) {
-                    adjustment_y = 2.25;
+                    adjustment_y = 1.75;
                     adjustment_x = avg_y_adj_left - y_offset;
                 } else if (delta_stack_position > 1.2) {
-                    adjustment_y = 1.25;
+                    adjustment_y = 1.05;
                     adjustment_x = avg_y_adj_left - y_offset;
                 } else if (delta_stack_position > 0.6) {
                     adjustment_y = 0.5;
@@ -656,11 +681,11 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
             }
 
-            if(timer.milliseconds() < 750.0 && (AutoBase.preloadPipeline.leftZoneAverage < 20 && AutoBase.preloadPipeline.rightZoneAverage< 20)) {
+            if(timer.milliseconds() < 300.0 && (AutoBase.preloadPipeline.leftZoneAverage < 20 && AutoBase.preloadPipeline.rightZoneAverage< 20)) {
                 return true;
             }
 
-            if(counter++ > 5) {
+            if(counter++ > 2) {
                 double leftMean = preloadLeftZoneList.getMean();
                 double rightMean = preloadRightZoneList.getMean();
 
@@ -668,6 +693,14 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 Log.d("Preload_detection_logger", "Preload RIGHT Zone MEAN: " + rightMean);
                 if(leftMean > 25 && rightMean > 25) {
                     AutoBase.preloadPosition = (leftMean > (rightMean +25))? Side.LEFT: Side.RIGHT;
+                }
+
+                try {
+                    backVisionPortal.setProcessorEnabled(aprilTag, false);
+                    backVisionPortal.setProcessorEnabled(preloadPipeline, false);
+                    backVisionPortal.close();
+                } catch(Exception e) {
+                    Log.e("AutoBase_Preload_logger", e.getLocalizedMessage());
                 }
                 return false;
             }

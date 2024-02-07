@@ -63,13 +63,14 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
         double waitTime = farSideAutoWaitTimeInSeconds;
         if(doCycle()) {
             if(SPIKE == 1) {
-                waitTime = 2.5;
+                waitTime = 2.0;
             }
             else {
-                waitTime = 1.0;
+                waitTime = 0.0;
             }
         }
         sched.addAction(new SleepAction(waitTime));
+
         if ((SPIKE == 2 && getAlliance() == AlliancePosition.RED) ||
                 (SPIKE == 0 && getAlliance() == AlliancePosition.BLUE)) {
 
@@ -140,7 +141,6 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                             new MecanumDrive.DrivePoseLoggingAction(drive, "crossFieldAlignment", true)
                     )
             );
-
         }
         // SPIKE is center
         //-----------------------------------
@@ -190,7 +190,6 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                     drive.actionBuilder(stackIntake[SPIKE])
                                             .strafeToLinearHeading(crossFieldAlignment[SPIKE].position, crossFieldAlignment[SPIKE].heading)
                                             .build(),
-
                                     new SequentialAction(
                                             new SleepAction(0.3),
                                             intake.intakeOneStackedPixels()
@@ -327,7 +326,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                             .strafeToLinearHeading(preloadDetection[SPIKE].position,
                                                     preloadDetection[SPIKE].heading)
                                             .build(),
-                                            new MecanumDrive.DrivePoseLoggingAction(drive, "end_backdrop_position")
+                                            new MecanumDrive.DrivePoseLoggingAction(drive, "end_preload_position")
                                 ),
 
                                 new SequentialAction(
@@ -337,24 +336,26 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                         outtake.extendOuttakeFarLow(),
                                         new SleepAction(0.5),
                                         outtake.prepareToScoreCycle(),
-                                        new SleepAction(0.2)
+                                        new SleepAction(0.2),
+                                        new MecanumDrive.DrivePoseLoggingAction(drive, "end_prepare_to_score")
                                 )
                         )
                 ));
 
-        sched.addAction(new SleepAction(0.5));
+        sched.addAction(new MecanumDrive.DrivePoseLoggingAction(drive, "start_preload_detection"));
+        sched.addAction(new SleepAction(0.6));
         sched.addAction(new AutoBase.PreloadPositionDetectionAction(drive));
+        sched.addAction(new MecanumDrive.DrivePoseLoggingAction(drive, "end_preload_detection"));
 
         sched.addAction(
-
                 new SequentialAction(
                         new MecanumDrive.DrivePoseLoggingAction(drive, "start_scoring"),
                         getBackdropDistanceAdjustmentAction(),
 
                         outtake.latchScore1(),
-                        new SleepAction(0.65),
+                        new SleepAction(0.5),
                         outtake.afterScore2(),
-                        new SleepAction(0.3),
+                        new SleepAction(0.15),
                         outtake.latchScore2(),
                         new SleepAction(0.40),
                         new ActionUtil.RunnableAction(() -> {
@@ -383,22 +384,23 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
         // prepare for teleops and parking if time
         //-------------------------------------------------
         sched.addAction(new ParallelAction(
-                        new SequentialAction(
-                                outtake.retractOuttake(),
-                                new SleepAction(0.5),
-                                new MecanumDrive.DrivePoseLoggingAction(drive, "slides_retracted_completed"),
-                                intake.prepareTeleOpsIntake(),
-                                outtake.prepareToTransfer()
-                        ),
 
-                        new SequentialAction(
-                                new MecanumDrive.DrivePoseLoggingAction(drive, "start_of_parking"),
-                                // to score the purple pixel on the spike
-                                drive.actionBuilder(parking_start)
-                                        .strafeTo(parking.position)
-                                        .build(),
-                                new MecanumDrive.DrivePoseLoggingAction(drive, "end_of_parking")
-                        )
+                    new SequentialAction(
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "start_slides_retract"),
+                            outtake.fastRetractOuttake(0.35),
+                            intake.prepareTeleOpsIntake(),
+                            new SleepAction(0.3),
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "slides_retracted_completed")
+                    ),
+
+                    new SequentialAction(
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "start_of_parking"),
+                            // to score the purple pixel on the spike
+                            drive.actionBuilder(parking_start)
+                                    .strafeTo(parking.position)
+                                    .build(),
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "end_of_parking")
+                    )
                 )
         );
 
@@ -410,7 +412,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
         Pose2d stackIntakePosition;
         Vector2d cycleScorePosition = cycleScore[SPIKE].position;
 
-        extendSlideAction = outtake.extendOuttakeCycleTwo();
+        extendSlideAction = outtake.extendOuttakeCycleOne();
         stackIntakePosition = stackIntake1;
 
         sched.addAction(
@@ -491,12 +493,13 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
         sched.addAction(
                 new SequentialAction(
                         // score pixels
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_open_latch_start"),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_adjustment_start"),
                         getBackdropDistanceAdjustmentAction(),
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_adjustment"),
                         outtake.latchScore1(),
-                        new SleepAction(0.30),
+                        new SleepAction(0.45),
                         outtake.latchScore2(),
-                        new SleepAction(0.5),
+                        new SleepAction(0.45),
                         new ActionUtil.RunnableAction(() -> {
                             pidDriveActivated = false;
                             pidDriveStarted = false;
@@ -622,8 +625,8 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
 
         Log.d("initBackVisionPortal_logger", "Webcam 2 ID: [" + viewId + "] starting time: " + (System.currentTimeMillis() - startTime));
 
-        backVisionPortal.setProcessorEnabled(aprilTag, false);
-        backVisionPortal.setProcessorEnabled(preloadPipeline, false);
+//        backVisionPortal.setProcessorEnabled(aprilTag, false);
+//        backVisionPortal.setProcessorEnabled(preloadPipeline, false);
     }
 
     public Action strafeToBackdrop() {
@@ -645,9 +648,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                     new MecanumDrive.DrivePoseLoggingAction(drive, "strafe_to_backdrop_begin"),
                     drive.actionBuilder(new Pose2d(preloadDetection[SPIKE].position, preloadDetection[SPIKE].heading))
                             .setReversed(true)
-                            .strafeToLinearHeading(backdrop_position,preloadDetection[SPIKE].heading,
-                                this.drive.slowVelConstraint,
-                                this.drive.slowAccelConstraint)
+                            .strafeToLinearHeading(backdrop_position,preloadDetection[SPIKE].heading)
                             .build(),
 
                     new MecanumDrive.DrivePoseLoggingAction(drive, "strafe_to_backdrop_end")

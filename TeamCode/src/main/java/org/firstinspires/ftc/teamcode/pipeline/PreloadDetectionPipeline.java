@@ -50,6 +50,16 @@ public class PreloadDetectionPipeline implements VisionProcessor {
         if (currentDetections != null) {
             for (AprilTagDetection detection : currentDetections) {
                 if (detection.metadata != null) {
+                    Log.d("PreloadDetectionPipeline_logger", "Detected_id: " + detection.id + " | targetAprilId: " + targetAprilTagID);
+                    Log.d("PreloadDetectionPipeline_logger",
+                            String.format("==== (ID %d) %s", detection.id, detection.metadata.name));
+                    Log.d("PreloadDetectionPipeline_logger",
+                            String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
+                    Log.d("PreloadDetectionPipeline_logger",
+                            String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
+                    Log.d("PreloadDetectionPipeline_logger",
+                            String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
+
                     if (detection.id == targetAprilTagID) {
                         int leftX = Integer.MAX_VALUE;
                         int rightX = Integer.MIN_VALUE;
@@ -95,8 +105,8 @@ public class PreloadDetectionPipeline implements VisionProcessor {
                             Globals.PRELOAD = preloadedZone;
                         }
 
-//                        Log.d("PreloadDetectionPipeline_logger", "leftZoneAverage: " + leftZoneAverage + " | rightZoneAverage: " + rightZoneAverage
-//                        + " | zone:" + preloadedZone);
+                        Log.d("PreloadDetectionPipeline_logger", "Tag Id " + targetAprilTagID + " | leftZoneAverage: " + leftZoneAverage + " | rightZoneAverage: " + rightZoneAverage
+                        + " | zone:" + preloadedZone);
 
                         break;
                     }
@@ -104,7 +114,7 @@ public class PreloadDetectionPipeline implements VisionProcessor {
             }
         }
 
-        return frame;
+        return null;
     }
 
     @Override
@@ -138,15 +148,15 @@ public class PreloadDetectionPipeline implements VisionProcessor {
 
         if (Globals.COLOR == AlliancePosition.RED) targetAprilTagID += 3;
 
-        leftZoneAverage = 0;
-        rightZoneAverage = 0;
+        leftZoneAverage = 1;
+        rightZoneAverage = 1;
 
     }
 
     public int meanColor(Mat frame, Rect inclusionRect, Rect exclusionRect) {
         if (frame == null) {
             System.out.println("frame is bad");
-            return 0;
+            return -1;
         }
 
         int sum = 0;
@@ -169,7 +179,8 @@ public class PreloadDetectionPipeline implements VisionProcessor {
             }
         }
 
-        return count > 0 ? sum / count : 0;
+        Log.d("PreloadDetectionPipeline_logger", "# of data points: " + count);
+        return count > 0 ? sum / count : -2;
     }
 
 

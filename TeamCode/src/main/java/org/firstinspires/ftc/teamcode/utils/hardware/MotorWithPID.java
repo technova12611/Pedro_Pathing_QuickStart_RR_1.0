@@ -29,6 +29,8 @@ public class MotorWithPID {
     private int maxElapsedTimeZeroPosition = 750;
     private double maxPower = 0;
 
+    private boolean previouslyBusy = false;
+
     private long startTime = System.currentTimeMillis();
 
     public MotorWithPID(DcMotorEx motor, PIDCoefficients pid) {
@@ -50,15 +52,25 @@ public class MotorWithPID {
      * Updates the power sent to the motor according to the pidf controller.
      */
     public void update() {
+
         double newPower = Range.clip(this.pidfController.update(motor.getCurrentPosition(), motor.getVelocity()), -maxPower, maxPower);
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        Log.d("MotorWithPID", "newPower " + newPower + ", lastError " + pidfController.getLastError());
 
-        if(getTargetPosition() == 0 && !isBusy()) {
+        boolean isBusy = isBusy();
+        if(getTargetPosition() == 0 && !isBusy) {
             motor.setPower(0.0);
         } else {
             motor.setPower(newPower);
         }
+
+
+        if(previouslyBusy && !isBusy) {
+            Log.d("MotorWithPID_Logger", "Current position: " + getCurrentPosition() + " | target position: " + getTargetPosition()
+            + "| Elapsed time: " + (System.currentTimeMillis() - startTime));
+        }
+
+        previouslyBusy = isBusy;
     }
 
     /**
@@ -160,6 +172,8 @@ public class MotorWithPID {
     }
 
     public Action setTargetPositionAction(int position, boolean blocking, String motorName) {
+        previouslyBusy = false;
+        startTime = System.currentTimeMillis();
         return new TargetPositionAction(position, blocking, motorName);
     }
 
@@ -183,6 +197,7 @@ public class MotorWithPID {
 
     public void zeroMotorInternals() {
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor.setPower(0.0);
         setCurrentPosition(0);
         setTargetPosition(0);
 

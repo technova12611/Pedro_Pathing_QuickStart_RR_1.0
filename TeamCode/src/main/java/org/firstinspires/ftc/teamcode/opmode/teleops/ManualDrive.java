@@ -546,12 +546,14 @@ public class ManualDrive extends LinearOpMode {
             isFixerServoOut = false;
         }
         else if (g1.dpadUpOnce()) {
-            if(!isFixerServoOut) {
-                sched.queueAction(outtake.moveUpOuttakeFixerServo());
-            } else {
-                sched.queueAction(outtake.moveUpOuttakeFixerServoSlowly());
+            if(!isSlideOut) {
+                if (!isFixerServoOut) {
+                    sched.queueAction(outtake.moveUpOuttakeFixerServo());
+                } else {
+                    sched.queueAction(outtake.moveUpOuttakeFixerServoSlowly());
+                }
+                isFixerServoOut = true;
             }
-            isFixerServoOut = true;
 //            sched.queueAction(outtake.moveUpOuttakeFixerServoSlowly());
 //            sched.queueAction(aprilTag.updatePosition());
         }
@@ -628,7 +630,7 @@ public class ManualDrive extends LinearOpMode {
             if (isHangingActivated) {
                 sched.queueAction(hang.hangSlowly());
             }
-            else {
+            else if(!isSlideOut){
                 sched.queueAction(outtake.moveDownOuttakeFixerServoSlowly());
             }
         }
@@ -736,18 +738,18 @@ public class ManualDrive extends LinearOpMode {
         if (g1.start() && g1.guide()) {
             sched.queueAction(outtake.resetSliderPosition());
         } else if (g1.guideOnce()) {
-            if (isHangingActivated) {
-                Log.d("Hang_drop_down", "Hang current position: " + hang.getCurrentPosition());
-                hang.dropdownFromHang();
-                long startTime = System.currentTimeMillis();
-                while (hang.isMotorBusy() && (System.currentTimeMillis() - startTime) < 2000) {
-                    idle();
-                }
-
-                Log.d("Hang_drop_down", "Hang after position: " + hang.getCurrentPosition());
-            } else {
-                sched.queueAction(outtake.reverseDump());
-            }
+//            if (isHangingActivated) {
+//                Log.d("Hang_drop_down", "Hang current position: " + hang.getCurrentPosition());
+//                hang.dropdownFromHang();
+//                long startTime = System.currentTimeMillis();
+//                while (hang.isMotorBusy() && (System.currentTimeMillis() - startTime) < 2000) {
+//                    idle();
+//                }
+//
+//                Log.d("Hang_drop_down", "Hang after position: " + hang.getCurrentPosition());
+//            } else {
+//                sched.queueAction(outtake.reverseDump());
+//            }
         }
     }
 

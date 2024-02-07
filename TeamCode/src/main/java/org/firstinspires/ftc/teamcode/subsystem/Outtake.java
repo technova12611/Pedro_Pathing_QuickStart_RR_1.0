@@ -53,6 +53,8 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO_2 = 1280;
     public static int OUTTAKE_SLIDE_INIT = 0;
     public static int OUTTAKE_SLIDE_INCREMENT= 100;
+    public static int OUTTAKE_SLIDE_DECREMENT= 60;
+
     public static double LATCH_CLOSED = 0.55;
     public static double LATCH_SCORE_1 = 0.415;
     public static double LATCH_SCORE_2 = 0.47;
@@ -69,7 +71,7 @@ public class Outtake {
 
     public static double OUTTAKE_PIVOT_DUMP_VERY_HIGH = 0.62;
 
-    public static double SLIDE_PIVOT_INIT = 0.43;
+    public static double SLIDE_PIVOT_INIT = 0.442;
     public static double SLIDE_PIVOT_SLIDING = 0.52;
 
     public static double SLIDE_PIVOT_DUMP_0 = 0.22;
@@ -247,21 +249,31 @@ public class Outtake {
 
             multiplier = multiplier* Range.clip(Math.abs(increment)/0.9 * 3, 0.6,3);
 
+            boolean adjustSlideServos = false;
             if(!scoreLevel3 && OUTTAKE_TELEOPS > OUTTAKE_SLIDE_MAX - 150 && increment > 0.30) {
                 Log.d("Outtake_Slide", "Target position:" + OUTTAKE_TELEOPS + " | level 3 is enabled");
                 scoreLevel3 = true;
                 return this.prepareToScoreLevel3();
             } else if(OUTTAKE_TELEOPS < OUTTAKE_SLIDE_MAX -150){
+
+                if(scoreLevel3) adjustSlideServos = true;
                 scoreLevel3 = false;
             }
 
-            OUTTAKE_TELEOPS = this.slide.getCurrentPosition() + (int)(OUTTAKE_SLIDE_INCREMENT * multiplier);
+            if(multiplier > 0) {
+                OUTTAKE_TELEOPS = this.slide.getCurrentPosition() + (int) (OUTTAKE_SLIDE_INCREMENT * multiplier);
+            } else {
+                OUTTAKE_TELEOPS = this.slide.getCurrentPosition() + (int) (OUTTAKE_SLIDE_DECREMENT * multiplier);
+            }
 
             if(OUTTAKE_TELEOPS >= OUTTAKE_SLIDE_MAX) {
                 OUTTAKE_TELEOPS = OUTTAKE_SLIDE_MAX;
             }
             Log.d("Outtake_Slide", "New position:" + OUTTAKE_TELEOPS + " | Current position: " + this.slide.getCurrentPosition() + " | increment: " + increment);
 
+            if(adjustSlideServos) {
+                return new SequentialAction(prepareToScore(), extendOuttakeTeleOps());
+            }
             return extendOuttakeTeleOps();
         }
         return new OuttakeLatchStateAction(OuttakeLatchState.CLOSED);
@@ -269,7 +281,11 @@ public class Outtake {
 
     public Action resetSliderPosition() {
         return new SequentialAction(
-                this.slide.setTargetPositionAction(-150),
+                this.slide.setTargetPositionAction(500),
+                new SleepAction(0.2),
+                prepareToSlide(),
+                new SleepAction(0.3),
+                this.slide.setTargetPositionAction(-250),
                 new SleepAction(0.5),
                 this.slide.zeroMotorInternalsAction("OuttakeSlideMotor"));
     }
@@ -317,9 +333,11 @@ public class Outtake {
             }
         }
 
-        String servoPositions = "SlidePivot voltage: " + String.format("%.2f", slideServoVoltage) +
-        " | OuttakePivot voltage: " + String.format("%.2f", outtakeServoVoltage);
-        Log.d("SlidePivot_Dump_Logger", servoPositions);
+        if(!isAuto) {
+            String servoPositions = "SlidePivot voltage: " + String.format("%.2f", slideServoVoltage) +
+                    " | OuttakePivot voltage: " + String.format("%.2f", outtakeServoVoltage);
+            Log.d("SlidePivot_Dump_Logger", servoPositions);
+        }
 
         return new SequentialAction(
 //                new ActionUtil.ServoPositionAction(slidePivot, slidePivotPosition, "slidePivot"),
@@ -368,10 +386,12 @@ public class Outtake {
             }
         }
 
-        String servoPositions = "SlidePivot voltage: " + String.format("%.2f", slideServoVoltage) +
-                " | OuttakePivot voltage: " + String.format("%.2f", outtakeServoVoltage);
+        if(!isAuto) {
+            String servoPositions = "SlidePivot voltage: " + String.format("%.2f", slideServoVoltage) +
+                    " | OuttakePivot voltage: " + String.format("%.2f", outtakeServoVoltage);
 
-        Log.d("SlidePivot_Dump_Logger", servoPositions);
+            Log.d("SlidePivot_Dump_Logger", servoPositions);
+        }
 
         return new SequentialAction(
 //                new ActionUtil.ServoPositionAction(slidePivot, slidePivotPosition, "slidePivot"),

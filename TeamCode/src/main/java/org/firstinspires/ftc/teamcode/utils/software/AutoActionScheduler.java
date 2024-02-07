@@ -96,4 +96,10 @@ public class AutoActionScheduler {
    public boolean isEmpty() {
       return actions.isEmpty();
    }
+
+   public void reset() {
+      while (actions.peek() != null && !Thread.currentThread().isInterrupted()) {
+         actions.remove();
+      }
+   }
 }

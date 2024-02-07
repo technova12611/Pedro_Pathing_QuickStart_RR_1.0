@@ -32,7 +32,7 @@ public class RedLeftAuto extends FarAutoBase {
                 new Pose2d(47.9, -39.7, Math.toRadians(180))
         };
 
-        this.parking = new Pose2d(46.0, -20.0, Math.toRadians(180));
+        this.parking = new Pose2d(45.0, -24.0, Math.toRadians(180));
 
         this.backOffFromSpike = new Pose2d[] {
                 new Pose2d(-34.5, -48.5, Math.toRadians(90)),

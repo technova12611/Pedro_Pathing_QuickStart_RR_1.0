@@ -29,7 +29,7 @@ public class RedRightAuto extends NearAutoBase {
    public static Pose2d red_start = new Pose2d(14.5, -62.0, Math.toRadians(90));
    public static Pose2d red_start_forward = new Pose2d(14.5, -61.0, Math.toRadians(90));
    public static Pose2d red_parking = new Pose2d(51.0, -61.5, Math.toRadians(180));
-   public static Pose2d red_parking_2 = new Pose2d(57.0, -61.5, Math.toRadians(180));
+   public static Pose2d red_parking_2 = new Pose2d(57.0, -61.0, Math.toRadians(180));
 
    @Override
    protected void onInit() {
