@@ -153,6 +153,7 @@ public class MotorWithPID {
         @Override
         public boolean run(TelemetryPacket packet) {
             Log.d("MotorWithPID_Logger", "Reset motor encoder: " + motorName);
+            resetIntegralGain();
             zeroMotorInternals();
             return false;
         }
@@ -196,12 +197,10 @@ public class MotorWithPID {
     }
 
     public void zeroMotorInternals() {
-        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor.setPower(0.0);
-        setCurrentPosition(0);
+        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         setTargetPosition(0);
-
-//        Log.d("MotorWithPID_Logger","internalOffset: " + internalOffset);
+        setCurrentPosition(0);
     }
 
     public Action zeroMotorInternalsAction(String motorName) {

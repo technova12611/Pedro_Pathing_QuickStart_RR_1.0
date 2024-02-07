@@ -343,7 +343,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                 ));
 
         sched.addAction(new MecanumDrive.DrivePoseLoggingAction(drive, "start_preload_detection"));
-        sched.addAction(new SleepAction(0.6));
+        sched.addAction(new SleepAction(0.8));
         sched.addAction(new AutoBase.PreloadPositionDetectionAction(drive));
         sched.addAction(new MecanumDrive.DrivePoseLoggingAction(drive, "end_preload_detection"));
 

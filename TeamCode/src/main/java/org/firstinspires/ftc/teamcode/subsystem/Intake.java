@@ -43,7 +43,7 @@ public class Intake {
     public static double STACK_INTAKE_RIGHT_2nd_PIXEL = 1.0;
 
     public static double STACK_INTAKE_LINKAGE_INIT = 0.95;
-    public static double STACK_INTAKE_LINKAGE_DOWN = 0.489;
+    public static double STACK_INTAKE_LINKAGE_DOWN = 0.48;
     public static double STACK_INTAKE_LINKAGE_UP = 0.89;
 
     public static double AUTO_INTAKE_REVERSE_TIME = 2500;

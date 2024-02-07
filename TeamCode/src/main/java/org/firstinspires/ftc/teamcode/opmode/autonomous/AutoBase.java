@@ -47,8 +47,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
     protected Hang hang;
     protected AutoActionScheduler sched;
     protected PropBasePipeline teamProPipeline;
-    protected static AprilTagProcessor aprilTag;
-    protected static PreloadDetectionPipeline preloadPipeline;
+    protected AprilTagProcessor aprilTag;
+    protected PreloadDetectionPipeline preloadPipeline;
 
     protected VisionPortal frontVisionPortal;
     protected static VisionPortal backVisionPortal;
@@ -142,7 +142,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             SPIKE = teamPropPosition.ordinal();
             printDescription();
             telemetry.addLine("   ");
-            telemetry.addLine(" <----- Team Prop Vision Detection " + "(" + Globals.COLOR + ")" + " -----> ");
+            telemetry.addLine(" <----- Team Prop Vision Detection " + "(" + Globals.COLOR + ", " + getFieldPosition() + ")" + " -----> ");
             telemetry.addLine(" Check if the right alliance program is running ... ");
             telemetry.addLine(" Wait a few seconds to capture the Maximum color value ");
             telemetry.addLine(" before placing the team prop on the field ");
@@ -342,7 +342,6 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
      * define the different starting pose for each locations
      * RED Right, RED Left, BLUE Right, BLUE Left. All have different Starting Posees.
      *
-     * @return
      */
     protected abstract Pose2d getStartPose();
 
@@ -657,7 +656,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 });
     }
 
-    public static class PreloadPositionDetectionAction implements Action {
+    public class PreloadPositionDetectionAction implements Action {
         MecanumDrive drive;
 
         MovingArrayList preloadLeftZoneList = new MovingArrayList(5);
@@ -673,7 +672,6 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
         @Override
         public boolean run(TelemetryPacket packet) {
-
             if(firstTime) {
                 drive.updatePoseEstimate();
                 Log.d("Preload_detection_logger", "Drive Pose: " + new PoseMessage(drive.pose));
@@ -681,7 +679,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
             }
 
-            if(timer.milliseconds() < 300.0 && (AutoBase.preloadPipeline.leftZoneAverage < 20 && AutoBase.preloadPipeline.rightZoneAverage< 20)) {
+            if(timer.milliseconds() < 200.0 && (preloadPipeline.leftZoneAverage < 20 || preloadPipeline.rightZoneAverage< 20)) {
                 return true;
             }
 
@@ -705,20 +703,20 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 return false;
             }
 
-            if(AutoBase.preloadPipeline != null) {
-                preloadLeftZoneList.add(AutoBase.preloadPipeline.leftZoneAverage);
-                preloadRightZoneList.add(AutoBase.preloadPipeline.rightZoneAverage);
-                Log.d("Preload_detection_logger", "Count " + counter + " | Number of Detections: " + AutoBase.preloadPipeline.numOfDetections
-                        + " | Target ID: " + AutoBase.preloadPipeline.getTargetAprilTagID());
-                Log.d("Preload_detection_logger", "Preload LEFT Zone AVG: " + AutoBase.preloadPipeline.leftZoneAverage +
-                                                         " | Preload RIGHT Zone AVG: " + AutoBase.preloadPipeline.rightZoneAverage +
-                                                         " | Preload detected raw zone: " + AutoBase.preloadPipeline.getPreloadedZone());
+            if(preloadPipeline != null) {
+                preloadLeftZoneList.add(preloadPipeline.leftZoneAverage);
+                preloadRightZoneList.add(preloadPipeline.rightZoneAverage);
+                Log.d("Preload_detection_logger", "Count " + counter + " | Number of Detections: " + preloadPipeline.numOfDetections
+                        + " | Target ID: " + preloadPipeline.getTargetAprilTagID());
+                Log.d("Preload_detection_logger", "Preload LEFT Zone AVG: " + preloadPipeline.leftZoneAverage +
+                                                         " | Preload RIGHT Zone AVG: " + preloadPipeline.rightZoneAverage +
+                                                         " | Preload detected raw zone: " + preloadPipeline.getPreloadedZone());
             }
             return true;
         }
     }
 
-    public static class EnableVisionProcessorAction implements Action {
+    public class EnableVisionProcessorAction implements Action {
         MecanumDrive drive;
 
         Side spikeLocation;
@@ -731,7 +729,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         public boolean run(TelemetryPacket packet) {
             drive.updatePoseEstimate();
             Log.d("Enabled_Vision_Processor_logger", "Drive Pose: " + new PoseMessage(drive.pose));
-            if(AutoBase.preloadPipeline != null) {
+            if(preloadPipeline != null) {
                 backVisionPortal.setProcessorEnabled(aprilTag, true);
                 backVisionPortal.setProcessorEnabled(preloadPipeline, true);
                 preloadPipeline.setTargetAprilTagID(spikeLocation);

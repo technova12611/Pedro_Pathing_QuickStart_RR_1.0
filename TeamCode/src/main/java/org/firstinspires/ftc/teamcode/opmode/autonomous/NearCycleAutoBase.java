@@ -69,10 +69,9 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_position"),
                         //new MecanumDrive.UpdateDrivePoseAction(drive, this.visionPortal2, this.aprilTag),
 
-                        new ParallelAction(
-                            outtake.prepareToScore(),
-                            getBackdropDistanceAdjustmentAction()
-                        ),
+                        outtake.prepareToScore(),
+                        new SleepAction(0.30),
+                        getBackdropDistanceAdjustmentAction(),
                         outtake.latchScore1(),
                         new SleepAction(0.50),
                         intake.stackIntakeLinkageDown(),
@@ -254,7 +253,9 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         outtake.latchScore1(),
                     new SleepAction(0.45),
                     outtake.latchScore2(),
-                    new SleepAction(0.45),
+                    new SleepAction(0.25),
+                        outtake.afterScore2(),
+                        new SleepAction(0.25),
                     new ActionUtil.RunnableAction(() -> {
                         pidDriveActivated = false;
                         pidDriveStarted = false;
