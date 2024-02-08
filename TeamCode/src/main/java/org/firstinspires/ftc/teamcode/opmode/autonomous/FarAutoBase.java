@@ -586,6 +586,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .setLiveViewContainerId(viewId)
                 .setAutoStopLiveView(false)
+                .enableLiveView(false)
                 .build();
 
         long startTime = System.currentTimeMillis();
@@ -614,6 +615,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                 .addProcessors(aprilTag,preloadPipeline)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .setAutoStopLiveView(false)
+                .enableLiveView(false)
                 .build();
 
         long startTime = System.currentTimeMillis();

@@ -122,7 +122,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
         sched.addAction(new ParallelAction(
                         new SequentialAction(
                                 new MecanumDrive.DrivePoseLoggingAction(drive, "start_of_retracting"),
-                                outtake.fastRetractOuttake(0.3),
+                                outtake.fastRetractOuttake(0.5),
                                 new SleepAction(0.5),
                                 intake.prepareTeleOpsIntake(),
                                 outtake.prepareToTransfer(),

@@ -55,7 +55,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
     public Side teamPropPosition = Side.CENTER;
 
-    private Side prev_teamPropPosition = teamPropPosition;
+    private Side prev_teamPropPosition = null;
 
     public int SPIKE = 1;
     private GamePadController g1, g2;
@@ -227,15 +227,19 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             telemetry.update();
 
             drive.pose = getStartPose();
-            if(prev_teamPropPosition != teamPropPosition) {
+            if(prev_teamPropPosition == null || prev_teamPropPosition != teamPropPosition) {
                 long start_onrun = System.currentTimeMillis();
-                Log.d("Auto_logger", " onRun() starts at " + start_onrun);
                 sched.reset();
+
+                Log.d("Auto_logger", " onRun() starts for " + getAlliance() + "-" + getFieldPosition() + "-" + teamPropPosition + " | actions: " + sched.size() + " | Prev_Prop_Position: " + prev_teamPropPosition);
                 onRun();
-                Log.d("Auto_logger", " onRun() finished, elapsed time:  " + (System.currentTimeMillis() - start_onrun));
+
+                prev_teamPropPosition = teamPropPosition;
+
+                Log.d("Auto_logger", " onRun() finished, elapsed time:  "
+                        + (System.currentTimeMillis() - start_onrun) + " | actions: " + sched.size());
             }
 
-            prev_teamPropPosition = teamPropPosition;
             idle();
         }
 
@@ -267,8 +271,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
         // prepare for the run, build the auto path
         //-------------------------------------------
-        Log.d("Auto_logger", String.format("onRun() started at %.3f", getRuntime()));
-        if(prev_teamPropPosition != teamPropPosition) {
+        Log.d("Auto_logger", String.format("onRun() started at %.3f", getRuntime()) + " | actions: " + sched.size());
+        if(prev_teamPropPosition != teamPropPosition || sched.isEmpty()) {
             sched.reset();
             onRun();
         }
@@ -283,6 +287,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
         try {
             if(backVisionPortal != null) backVisionPortal.close();
+
             aprilTag = null;
             preloadPipeline = null;
             backVisionPortal = null;
@@ -322,8 +327,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 .setCameraResolution(new Size(1920, 1080))
                 .addProcessor(teamProPipeline)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                .enableLiveView(true)
-                .setAutoStopLiveView(true)
+                .enableLiveView(false)
+ //               .setAutoStopLiveView(true)
                 .build();
 
         while (!frontVisionPortal.getCameraState().equals(VisionPortal.CameraState.STREAMING)) {

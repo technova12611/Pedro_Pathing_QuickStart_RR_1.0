@@ -46,7 +46,7 @@ public class Outtake {
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
     public static int OUTTAKE_SLIDE_MID = 1250;
     public static int OUTTAKE_SLIDE_CYCLES_ONE = 980;
-    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1380;
+    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1280;
     public static int OUTTAKE_SLIDE_FAR_LOW = 930;
     public static int OUTTAKE_SLIDE_LOW = 810;
     public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 1050;
@@ -293,20 +293,17 @@ public class Outtake {
     public Action retractOuttake() {
         double sleepTime = 0.7;
         if(!isAuto) {
-            sleepTime = 0.7;
+            sleepTime = 0.6;
         }
 
         return new SequentialAction(
                 prepareToSlide(),
                 new SleepAction(sleepTime),
- //               latchClosed(),
                 new ParallelAction(
                     outtakeWireDown(),
                         new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
                     this.slide.setTargetPositionAction(OUTTAKE_SLIDE_INIT, "outtakeSlide")
-                )//,
-//                new SleepAction(0.5),
-//                prepareToTransfer()
+                )
         );
     }
 

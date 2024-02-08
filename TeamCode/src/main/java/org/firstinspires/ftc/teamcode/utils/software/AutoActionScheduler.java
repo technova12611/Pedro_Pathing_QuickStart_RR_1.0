@@ -102,4 +102,8 @@ public class AutoActionScheduler {
          actions.remove();
       }
    }
+
+   public int size() {
+      return actions.size();
+   }
 }

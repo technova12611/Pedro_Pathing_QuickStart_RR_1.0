@@ -89,7 +89,7 @@ public class Intake {
             totalPixelCount = 1;
             pixelsCount = 1;
 
-            INTAKE_SPEED = 950;
+            INTAKE_SPEED = 975;
 
             isAuto = true;
         }
@@ -100,7 +100,7 @@ public class Intake {
 
             pixelsCount = 0;
 
-            INTAKE_SPEED = 920;
+            INTAKE_SPEED = 925;
         }
 
         intakeState = IntakeState.OFF;
@@ -280,9 +280,9 @@ public class Intake {
 //                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_1ST_PIXEL, "stackIntakeServoLeft"),
                 new SleepAction(0.5),
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_2nd_PIXEL, "stackIntakeServoRight"),
-                new SleepAction(0.2),
+                new SleepAction(0.25),
                 new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_2nd_PIXEL, "stackIntakeServoLeft"),
-                new SleepAction(0.3)
+                new SleepAction(0.35)
         );
     }
 
