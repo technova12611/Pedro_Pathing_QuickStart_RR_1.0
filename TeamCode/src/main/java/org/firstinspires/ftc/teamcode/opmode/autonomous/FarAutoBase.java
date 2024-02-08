@@ -343,7 +343,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                 ));
 
         sched.addAction(new MecanumDrive.DrivePoseLoggingAction(drive, "start_preload_detection"));
-        sched.addAction(new SleepAction(0.8));
+        sched.addAction(new SleepAction(1.0));
         sched.addAction(new AutoBase.PreloadPositionDetectionAction(drive));
         sched.addAction(new MecanumDrive.DrivePoseLoggingAction(drive, "end_preload_detection"));
 
@@ -585,8 +585,8 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                 .addProcessor(teamProPipeline)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .setLiveViewContainerId(viewId)
-                .setAutoStopLiveView(false)
-                .enableLiveView(false)
+ //               .setAutoStopLiveView(false)
+ //               .enableLiveView(ENABLE_LIVE_VIEW)
                 .build();
 
         long startTime = System.currentTimeMillis();
@@ -614,8 +614,8 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                 .setLiveViewContainerId(viewId)
                 .addProcessors(aprilTag,preloadPipeline)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                .setAutoStopLiveView(false)
-                .enableLiveView(false)
+//                .setAutoStopLiveView(false)
+//                .enableLiveView(ENABLE_LIVE_VIEW)
                 .build();
 
         long startTime = System.currentTimeMillis();
@@ -627,8 +627,6 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
 
         Log.d("initBackVisionPortal_logger", "Webcam 2 ID: [" + viewId + "] starting time: " + (System.currentTimeMillis() - startTime));
 
-//        backVisionPortal.setProcessorEnabled(aprilTag, false);
-//        backVisionPortal.setProcessorEnabled(preloadPipeline, false);
     }
 
     public Action strafeToBackdrop() {

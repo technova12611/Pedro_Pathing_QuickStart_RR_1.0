@@ -30,8 +30,8 @@ public class StackIntakeTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        intake = new Intake(hardwareMap);
-        outtake = new Outtake(hardwareMap);
+        intake = new Intake(hardwareMap, true);
+        outtake = new Outtake(hardwareMap, true);
         intake.initialize(false);
         outtake.initialize();
 

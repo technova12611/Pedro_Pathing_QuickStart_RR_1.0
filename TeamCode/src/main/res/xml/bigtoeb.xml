@@ -13,9 +13,9 @@
             <Servo name="hangHookBlocker" port="3" />
             <Servo name="outtakeFixerServo" port="4" />
             <Servo name="outtakeWireServo" port="5" />
-            <LynxEmbeddedIMU name="imu" port="0" bus="0" />
-            <REV_VL53L0X_RANGE_SENSOR name="stackDistance2" port="0" bus="1" />
             <REV_VL53L0X_RANGE_SENSOR name="stackDistance" port="0" bus="3" />
+            <REV_VL53L0X_RANGE_SENSOR name="stackDistance2" port="0" bus="1" />
+            <LynxEmbeddedIMU name="imu" port="0" bus="0" />
         </LynxModule>
         <LynxModule name="Control Hub" port="173">
             <goBILDA5202SeriesMotor name="leftFront" port="0" />

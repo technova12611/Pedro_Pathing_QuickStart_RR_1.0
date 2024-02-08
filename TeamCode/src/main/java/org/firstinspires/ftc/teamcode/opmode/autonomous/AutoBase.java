@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.pipeline.AlliancePosition;
 import org.firstinspires.ftc.teamcode.pipeline.FieldPosition;
 import org.firstinspires.ftc.teamcode.pipeline.PreloadDetectionPipeline;
@@ -39,6 +40,8 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 @Config
 public abstract class AutoBase extends LinearOpMode implements StackPositionCallback, BackdropPositionCallback {
+
+    public static boolean ENABLE_LIVE_VIEW = false;
     protected MecanumDrive drive;
     protected Outtake outtake;
     protected Intake intake;
@@ -93,8 +96,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         g2 = new GamePadController(gamepad2);
 
         this.drive = new MecanumDrive(hardwareMap, Memory.LAST_POSE);
-        this.intake = new Intake(hardwareMap);
-        this.outtake = new Outtake(hardwareMap);
+        this.intake = new Intake(hardwareMap, true);
+        this.outtake = new Outtake(hardwareMap, true);
         this.drone = new Drone(hardwareMap);
         this.hang = new Hang(hardwareMap);
 
@@ -137,8 +140,9 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             double loopTimeBegin = loopTimer.milliseconds();
             g1.update();
 
+            telemetry.addLine("IMU: " + String.format("%3.5f", drive.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)));
+            
             teamPropPosition = teamProPipeline.getLocation();
-
             SPIKE = teamPropPosition.ordinal();
             printDescription();
             telemetry.addLine("   ");
@@ -227,7 +231,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             telemetry.update();
 
             drive.pose = getStartPose();
-            if(prev_teamPropPosition == null || prev_teamPropPosition != teamPropPosition) {
+            if (prev_teamPropPosition == null || prev_teamPropPosition != teamPropPosition) {
                 long start_onrun = System.currentTimeMillis();
                 sched.reset();
 
@@ -266,13 +270,13 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         try {
             drive.imu.resetYaw();
         } catch (Exception e) {
-            //
+            Log.d("Auto_logger", "IMU reset failed. " + e.getMessage());
         }
 
         // prepare for the run, build the auto path
         //-------------------------------------------
         Log.d("Auto_logger", String.format("onRun() started at %.3f", getRuntime()) + " | actions: " + sched.size());
-        if(prev_teamPropPosition != teamPropPosition || sched.isEmpty()) {
+        if (prev_teamPropPosition != teamPropPosition || sched.isEmpty()) {
             sched.reset();
             onRun();
         }
@@ -286,7 +290,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         Log.d("Auto_logger", String.format("!!! Auto run() finished at %.3f", getRuntime()));
 
         try {
-            if(backVisionPortal != null) backVisionPortal.close();
+            if (backVisionPortal != null) backVisionPortal.close();
 
             aprilTag = null;
             preloadPipeline = null;
@@ -307,18 +311,6 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
         Log.d("Auto_logger", "End path drive Estimated Pose: " + new PoseMessage(drive.pose));
 
-        double logStartTime = getRuntime();
-        while (opModeIsActive()) {
-            drive.updatePoseEstimate();
-            Globals.drivePose = drive.pose;
-            if (getRuntime() - logStartTime > 5.0) {
-                Log.d("Auto_logger", "End program drive Estimated Pose: "
-                        + new PoseMessage(drive.pose) + " at "
-                        + String.format("%3.3f",getRuntime()));
-                logStartTime = getRuntime();
-            }
-            idle();
-        }
     }
 
     protected void initVisionPortal() {
@@ -327,7 +319,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 .setCameraResolution(new Size(1920, 1080))
                 .addProcessor(teamProPipeline)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                .enableLiveView(false)
+                .enableLiveView(ENABLE_LIVE_VIEW)
  //               .setAutoStopLiveView(true)
                 .build();
 
@@ -694,14 +686,14 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
                 Log.d("Preload_detection_logger", "Preload LEFT Zone MEAN: " + leftMean);
                 Log.d("Preload_detection_logger", "Preload RIGHT Zone MEAN: " + rightMean);
-                if(leftMean > 25 && rightMean > 25) {
+                if( (leftMean > 25 && rightMean > 25) || leftMean > 120 || rightMean > 120) {
                     AutoBase.preloadPosition = (leftMean > (rightMean +25))? Side.LEFT: Side.RIGHT;
                 }
 
                 try {
-                    backVisionPortal.setProcessorEnabled(aprilTag, false);
-                    backVisionPortal.setProcessorEnabled(preloadPipeline, false);
-                    backVisionPortal.close();
+                    //backVisionPortal.setProcessorEnabled(aprilTag, false);
+                    //backVisionPortal.setProcessorEnabled(preloadPipeline, false);
+                    //backVisionPortal.close();
                 } catch(Exception e) {
                     Log.e("AutoBase_Preload_logger", e.getLocalizedMessage());
                 }

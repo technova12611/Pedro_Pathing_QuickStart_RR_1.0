@@ -65,7 +65,7 @@ public class Intake {
 
     private long lastPixelDetectedTime = 0;
 
-    public Intake(HardwareMap hardwareMap) {
+    public Intake(HardwareMap hardwareMap, boolean isAuto) {
         this.intakeMotor = HardwareCreator.createMotor(hardwareMap, "intake_for_perp");
         this.intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -76,8 +76,12 @@ public class Intake {
 
         beamBreakerActive = hardwareMap.get(DigitalChannel.class, "beamBreaker1");
         beamBreakerPassive = hardwareMap.get(DigitalChannel.class, "beamBreaker2");
-        stackDistance = (Rev2mDistanceSensor)hardwareMap.get(DistanceSensor.class, "stackDistance");
-        stackDistance2 = (Rev2mDistanceSensor)hardwareMap.get(DistanceSensor.class, "stackDistance2");
+        this.isAuto = isAuto;
+
+        if(isAuto) {
+            stackDistance = (Rev2mDistanceSensor) hardwareMap.get(DistanceSensor.class, "stackDistance");
+            stackDistance2 = (Rev2mDistanceSensor) hardwareMap.get(DistanceSensor.class, "stackDistance2");
+        }
     }
 
     private boolean isAuto = false;

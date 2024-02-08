@@ -41,9 +41,9 @@ public class RedLeftAuto extends FarAutoBase {
         };
 
         this.stackIntakeAlignment = new Pose2d[] {
-                new Pose2d(-34.5, -12.05, Math.toRadians(90)),
+                new Pose2d(-34.5, -12.35, Math.toRadians(90)),
                 new Pose2d(-48.5, -36.25, Math.toRadians(180)),
-                new Pose2d(-49.0, -12.05, Math.toRadians(180))
+                new Pose2d(-49.0, -12.35, Math.toRadians(180))
         };
 
         this.stackIntake = new Pose2d[] {
@@ -64,9 +64,9 @@ public class RedLeftAuto extends FarAutoBase {
         };
 
         cycleScore = new Pose2d[] {
-                new Pose2d(47.3, -35.0, Math.toRadians(180)),
-                new Pose2d(47.3, -31.0, Math.toRadians(180)),
-                new Pose2d(47.3, -30.0, Math.toRadians(180))
+                new Pose2d(47.7, -35.0, Math.toRadians(180)),
+                new Pose2d(47.7, -31.0, Math.toRadians(180)),
+                new Pose2d(47.7, -30.0, Math.toRadians(180))
         };
 
         this.moveUp1 =  new Pose2d(-38.5, -54.0, Math.toRadians(90));
@@ -75,8 +75,8 @@ public class RedLeftAuto extends FarAutoBase {
 
         this.preloadDetection = new Pose2d[]{
                 new Pose2d(38.0, -31.0, Math.toRadians(180)),
-                new Pose2d(38.0, -33.0, Math.toRadians(180)),
-                new Pose2d(38.0, -36.0, Math.toRadians(180)),
+                new Pose2d(38.0, -34.0, Math.toRadians(180)),
+                new Pose2d(38.0, -38.0, Math.toRadians(180)),
         };
     }
 

@@ -70,13 +70,13 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         //new MecanumDrive.UpdateDrivePoseAction(drive, this.visionPortal2, this.aprilTag),
 
                         outtake.prepareToScore(),
-                        new SleepAction(0.30),
+                        new SleepAction(0.25),
                         getBackdropDistanceAdjustmentAction(),
                         outtake.latchScore1(),
                         new SleepAction(0.50),
                         intake.stackIntakeLinkageDown(),
                         outtake.afterScore(),
-                        new SleepAction(0.3),
+                        new SleepAction(0.2),
                         new ActionUtil.RunnableAction(() -> {
                             pidDriveActivated = false;
                             straightDistance = 0.0;
@@ -122,7 +122,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
         sched.addAction(new ParallelAction(
                         new SequentialAction(
                                 new MecanumDrive.DrivePoseLoggingAction(drive, "start_of_retracting"),
-                                outtake.fastRetractOuttake(0.5),
+                                outtake.fastRetractOuttake(0.4),
                                 new SleepAction(0.5),
                                 intake.prepareTeleOpsIntake(),
                                 outtake.prepareToTransfer(),
@@ -251,9 +251,9 @@ public abstract class NearCycleAutoBase extends AutoBase {
                     new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_open_latch_start"),
                         getBackdropDistanceAdjustmentAction(),
                         outtake.latchScore1(),
-                    new SleepAction(0.45),
+                    new SleepAction(0.4),
                     outtake.latchScore2(),
-                    new SleepAction(0.25),
+                    new SleepAction(0.2),
                         outtake.afterScore2(),
                         new SleepAction(0.25),
                     new ActionUtil.RunnableAction(() -> {

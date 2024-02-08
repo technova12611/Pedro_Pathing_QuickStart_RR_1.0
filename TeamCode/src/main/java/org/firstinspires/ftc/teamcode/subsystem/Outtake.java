@@ -48,7 +48,7 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_CYCLES_ONE = 980;
     public static int OUTTAKE_SLIDE_CYCLES_TWO = 1280;
     public static int OUTTAKE_SLIDE_FAR_LOW = 930;
-    public static int OUTTAKE_SLIDE_LOW = 810;
+    public static int OUTTAKE_SLIDE_LOW = 830;
     public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 1050;
     public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO_2 = 1350;
     public static int OUTTAKE_SLIDE_INIT = 0;
@@ -148,7 +148,7 @@ public class Outtake {
     public FixerServoPosition fixerServoPosition = FixerServoPosition.LEVEL_0;
     private MovingArrayList slidePivotVoltages = new MovingArrayList(10);
 
-    public Outtake(HardwareMap hardwareMap) {
+    public Outtake(HardwareMap hardwareMap, boolean isAuto) {
         if (Memory.outtakeSlide != null) { // Preserve motor zero position
             this.slide = Memory.outtakeSlide;
             isAuto = false;
@@ -167,7 +167,9 @@ public class Outtake {
         this.slidePivotVoltage = hardwareMap.get(AnalogInput.class, "slidePivotVoltage");
         this.outtakePivotVoltage = hardwareMap.get(AnalogInput.class, "outtakePivotVoltage");
 
-        backdropDistance = (Rev2mDistanceSensor)hardwareMap.get(DistanceSensor.class, "backdropDistance");
+        if(isAuto) {
+            backdropDistance = (Rev2mDistanceSensor) hardwareMap.get(DistanceSensor.class, "backdropDistance");
+        }
     }
 
     public enum OuttakeLatchState {

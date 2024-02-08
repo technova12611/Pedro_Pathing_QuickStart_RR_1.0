@@ -32,7 +32,7 @@ public final class PIDStrafeTest extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, Math.PI));
-        Outtake outtake = new Outtake(hardwareMap);
+        Outtake outtake = new Outtake(hardwareMap, false);
         outtake.initialize();
 
         TwoDeadWheelLocalizer localizer = (TwoDeadWheelLocalizer)drive.localizer;

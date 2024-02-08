@@ -47,7 +47,7 @@ public class DriveWithPID {
             this.pid = pid;
         }
 
-        this.perp_pidfController = new PIDFController(this.pid, 0, 0, 0, f);
+        this.perp_pidfController = new PIDFController(this.pid, 0, 0, 0);
         this.direction = direction;
 
         if(direction == DriveDirection.STRAFE) {

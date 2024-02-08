@@ -37,6 +37,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
+import org.firstinspires.ftc.teamcode.roadrunner.LazyImu;
 import org.firstinspires.ftc.teamcode.roadrunner.Localizer;
 import org.firstinspires.ftc.teamcode.roadrunner.messages.DriveCommandMessage;
 import org.firstinspires.ftc.teamcode.roadrunner.messages.MecanumCommandMessage;
@@ -72,11 +73,11 @@ public final class MecanumDrive {
         // path profile parameters (in inches)
         public double maxWheelVel = 55;
         public double minProfileAccel = -40;
-        public double maxProfileAccel = 61.0;
+        public double maxProfileAccel = 60.0;
 
-        public double maxWheelVelHighSpeed = 71;
+        public double maxWheelVelHighSpeed = 73.5;
         public double minProfileAccelHighSpeed = -55;
-        public double maxProfileAccelHighSpeed = 72.5;
+        public double maxProfileAccelHighSpeed = 73.5;
 
         // turn profile parameters (in radians)
         public double maxAngVel = Math.PI; // shared with path
@@ -121,7 +122,10 @@ public final class MecanumDrive {
 
     public final VoltageSensor voltageSensor;
 
+//    private final LazyImu lazyImu;
+
     public final IMU imu;
+
 
     public final Localizer localizer;
     public Pose2d pose;
@@ -158,6 +162,10 @@ public final class MecanumDrive {
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+//        lazyImu = new LazyImu(hardwareMap, "imu", new RevHubOrientationOnRobot(
+//                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT, RevHubOrientationOnRobot.UsbFacingDirection.DOWN));
+//        imu = lazyImu.get();
 
         imu = hardwareMap.get(IMU.class, "imu");
 //        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
@@ -198,9 +206,7 @@ public final class MecanumDrive {
     public final class FollowTrajectoryAction implements Action {
         public final TimeTrajectory timeTrajectory;
         private double beginTs = -1;
-
         private final double[] xPoints, yPoints;
-
         public FollowTrajectoryAction(TimeTrajectory t) {
             timeTrajectory = t;
 

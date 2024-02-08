@@ -40,8 +40,8 @@ public class WolfDriveTest extends LinearOpMode {
         baseDrive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
         drive = new WolfDrive(baseDrive);
 
-        intake = new Intake(hardwareMap);
-        outtake = new Outtake(hardwareMap);
+        intake = new Intake(hardwareMap, false);
+        outtake = new Outtake(hardwareMap, false);
         outtake.isAuto = false;
         intake.initialize(false);
         outtake.initialize();

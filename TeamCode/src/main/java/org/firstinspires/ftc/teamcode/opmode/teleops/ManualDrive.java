@@ -125,8 +125,8 @@ public class ManualDrive extends LinearOpMode {
         g2.update();
         sched = new ActionScheduler();
         drive = new MecanumDrive(hardwareMap, Memory.LAST_POSE);
-        intake = new Intake(hardwareMap);
-        outtake = new Outtake(hardwareMap);
+        intake = new Intake(hardwareMap, false);
+        outtake = new Outtake(hardwareMap, false);
         hang = new Hang(hardwareMap);
         drone = new Drone(hardwareMap);
 //        aprilTag = new AprilTag(hardwareMap, telemetry);
@@ -190,35 +190,35 @@ public class ManualDrive extends LinearOpMode {
 
             move();
             long current_time_0 = System.currentTimeMillis();
-            logLoopTime("Move() elapsed time: " + (current_time_0 - start_time));
+            logLoopTime("Move() elapsed time: ", (current_time_0 - start_time));
 
             subsystemControls();
             long current_time_1 = System.currentTimeMillis();
-            logLoopTime("subsystemControls() elapsed time: " + (current_time_1 - current_time_0));
+            logLoopTime("subsystemControls() elapsed time: ", (current_time_1 - current_time_0));
 
             pixelDetection();
             long current_time_2 = System.currentTimeMillis();
-            logLoopTime("pixelDetection() elapsed time: " + (current_time_2 - current_time_1));
+            logLoopTime("pixelDetection() elapsed time: ", (current_time_2 - current_time_1));
 
             drive.updatePoseEstimate();
             long current_time_3 = System.currentTimeMillis();
-            logLoopTime("updatePoseEstimate() elapsed time: " + (current_time_3 - current_time_2));
+            logLoopTime("updatePoseEstimate() elapsed time: ", (current_time_3 - current_time_2));
 
             outtake.update();
             long current_time_4 = System.currentTimeMillis();
-            logLoopTime("outtake.update() elapsed time: " + (current_time_4 - current_time_3));
+            logLoopTime("outtake.update() elapsed time: ", (current_time_4 - current_time_3));
 
             intake.update();
             long current_time_5 = System.currentTimeMillis();
-            logLoopTime("intake.update() elapsed time: " + (current_time_5 - current_time_4));
+            logLoopTime("intake.update() elapsed time: ", (current_time_5 - current_time_4));
 
             sched.update();
             long current_time_6 = System.currentTimeMillis();
-            logLoopTime("sched.update() elapsed time: " + (current_time_6 - current_time_5));
+            logLoopTime("sched.update() elapsed time: ", (current_time_6 - current_time_5));
 
             backdropTouchedDetection();
             long current_time_7 = System.currentTimeMillis();
-            logLoopTime("backdropTouchedDetection elapsed time: " + (current_time_7 - current_time_6));
+            logLoopTime("backdropTouchedDetection elapsed time: ", (current_time_7 - current_time_6));
 
             telemetry.addData("Time left: ", smartGameTimer.formattedString() + " (" + smartGameTimer.status() + ")" + " Loop time: " +
                     (System.currentTimeMillis() - start_time) + " (ms)");
@@ -779,9 +779,9 @@ public class ManualDrive extends LinearOpMode {
         sched.queueAction(outtake.retractOuttake());
     }
 
-    private void logLoopTime(String msg) {
-        if (logLoopTime) {
-            Log.d("Loop_Logger", msg);
+    private void logLoopTime(String msg, long elapsedTime) {
+        if (logLoopTime || elapsedTime > 50) {
+            Log.d("Loop_Logger", msg + " " + elapsedTime);
         }
     }
 //    private class AutoDriveStraightAction implements Action {

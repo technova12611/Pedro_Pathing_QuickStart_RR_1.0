@@ -45,8 +45,8 @@ public final class AutoPathTest extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         drive = new MecanumDrive(hardwareMap, starting);
-        intake = new Intake(hardwareMap);
-        outtake = new Outtake(hardwareMap);
+        intake = new Intake(hardwareMap, false);
+        outtake = new Outtake(hardwareMap, false);
         this.drone = new Drone(hardwareMap);
         this.sched = new AutoActionScheduler(this::update);
 

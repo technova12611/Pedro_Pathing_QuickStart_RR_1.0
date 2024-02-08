@@ -30,7 +30,7 @@ public class MotorWithVelocityPID {
     public MotorWithVelocityPID(DcMotorEx motor, PIDCoefficients pid, Function2<Double, Double, Double> f) {
         this.motor = motor;
         this.pid = pid;
-        this.pidfController = new PIDFController(pid, 0, 0, 0, f);
+        this.pidfController = new PIDFController(pid, 0, 0, 0);
 
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }

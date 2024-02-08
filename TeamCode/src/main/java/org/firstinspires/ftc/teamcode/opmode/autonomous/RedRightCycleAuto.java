@@ -32,12 +32,12 @@ public class RedRightCycleAuto extends NearCycleAutoBase {
         this.backdropAlignment = new Pose2d(38.0, -11.0, Math.toRadians(180));
 
         cycleScore = new Pose2d[] {
-                new Pose2d(48.3, -35.0, Math.toRadians(180)),
-                new Pose2d(48.1, -31.0, Math.toRadians(180)),
-                new Pose2d(48.1, -31.0, Math.toRadians(180))
+                new Pose2d(48.5, -35.0, Math.toRadians(180)),
+                new Pose2d(48.5, -31.0, Math.toRadians(180)),
+                new Pose2d(48.5, -31.0, Math.toRadians(180))
         };
 
-        this.parking = new Pose2d(44.1, -20.0, Math.toRadians(180));
+        this.parking = new Pose2d(46.1, -20.0, Math.toRadians(180));
     }
 
     protected AlliancePosition getAlliance() {

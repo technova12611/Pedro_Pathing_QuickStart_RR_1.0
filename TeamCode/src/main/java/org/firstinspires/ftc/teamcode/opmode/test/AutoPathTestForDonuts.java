@@ -43,8 +43,8 @@ public final class AutoPathTestForDonuts extends LinearOpMode {
 
         drive = new MecanumDrive(hardwareMap, starting);
 
-        intake = new Intake(hardwareMap);
-        outtake = new Outtake(hardwareMap);
+        intake = new Intake(hardwareMap, false);
+        outtake = new Outtake(hardwareMap, false);
 
         this.sched = new AutoActionScheduler(this::update);
 
