@@ -114,21 +114,21 @@ public class Outtake {
     public static double OUTTAKE_WIRE_FOR_HANGING_UP = 0.39;
 
     public static double OUTTAKE_FIXER_INIT = 0.11;
-    public static double OUTTAKE_FIXER_LEVEL_1 = 0.77;
+    public static double OUTTAKE_FIXER_LEVEL_1 = 0.76;
     public static double OUTTAKE_FIXER_LEVEL_1_5 = 0.75;
     public static double OUTTAKE_FIXER_LEVEL_2 = 0.73;
     public static double OUTTAKE_FIXER_LEVEL_2_5 = 0.71;
     public static double OUTTAKE_FIXER_LEVEL_3 = 0.69;
     public static double OUTTAKE_FIXER_LEVEL_3_5 = 0.67;
-    public static double OUTTAKE_FIXER_LEVEL_4_5 = 0.63;
-    public static double OUTTAKE_FIXER_LEVEL_5_5 = 0.60;
-    public static double OUTTAKE_FIXER_LEVEL_6_5 = 0.56;
-    public static double OUTTAKE_FIXER_LEVEL_7_5 = 0.53;
     public static double OUTTAKE_FIXER_LEVEL_4 = 0.65;
-    public static double OUTTAKE_FIXER_LEVEL_5 = 0.62;
-    public static double OUTTAKE_FIXER_LEVEL_6 = 0.58;
-    public static double OUTTAKE_FIXER_LEVEL_7 = 0.55;
-    public static double OUTTAKE_FIXER_LEVEL_8 = 0.50;
+    public static double OUTTAKE_FIXER_LEVEL_4_5 = 0.63;
+    public static double OUTTAKE_FIXER_LEVEL_5 = 0.61;
+    public static double OUTTAKE_FIXER_LEVEL_5_5 = 0.59;
+    public static double OUTTAKE_FIXER_LEVEL_6 = 0.57;
+    public static double OUTTAKE_FIXER_LEVEL_6_5 = 0.55;
+    public static double OUTTAKE_FIXER_LEVEL_7 = 0.53;
+    public static double OUTTAKE_FIXER_LEVEL_7_5 = 0.51;
+    public static double OUTTAKE_FIXER_LEVEL_8 = 0.49;
 
     public static boolean NEED_RESET = false;
 
@@ -176,9 +176,8 @@ public class Outtake {
         this.slidePivotVoltage = hardwareMap.get(AnalogInput.class, "slidePivotVoltage");
         this.outtakePivotVoltage = hardwareMap.get(AnalogInput.class, "outtakePivotVoltage");
 
-        if(isAuto) {
-            backdropDistance = (Rev2mDistanceSensor) hardwareMap.get(DistanceSensor.class, "backdropDistance");
-        }
+        backdropDistance = (Rev2mDistanceSensor) hardwareMap.get(DistanceSensor.class, "backdropDistance");
+
     }
 
     public enum OuttakeLatchState {
@@ -302,7 +301,7 @@ public class Outtake {
     }
 
     public Action retractOuttake() {
-        double sleepTime = 0.7;
+        double sleepTime = 0.8;
         if(!isAuto) {
             sleepTime = 0.6;
         }
@@ -754,7 +753,7 @@ public class Outtake {
 
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(outtakeFixerServo,
-                        outtakeFixerServo.getPosition() - 0.015,
+                        outtakeFixerServo.getPosition() - 0.02,
                         "outtakeFixerServo")
         );
     }

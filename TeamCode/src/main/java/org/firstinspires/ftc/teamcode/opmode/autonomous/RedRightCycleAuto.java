@@ -25,7 +25,7 @@ public class RedRightCycleAuto extends NearCycleAutoBase {
                 new Pose2d(spike[2].position.x, -11.0, Math.toRadians(180))
         };
 
-        this.stackAlignment = new Pose2d(-46.0, -11.0, Math.toRadians(180.85));
+        this.stackAlignment = new Pose2d(-43.9, -11.0, Math.toRadians(180.85));
         this.stackIntake1 = new Pose2d(-57.2, -12.0, Math.toRadians(180));
         this.stackIntake2 = new Pose2d(-58.2, -11.0, Math.toRadians(180));
         this.safeTrussPassStop = new Pose2d(-49.0, -11.0, Math.toRadians(180));
@@ -37,7 +37,7 @@ public class RedRightCycleAuto extends NearCycleAutoBase {
                 new Pose2d(48.5, -31.0, Math.toRadians(180))
         };
 
-        this.parking = new Pose2d(46.1, -20.0, Math.toRadians(180));
+        this.parking = new Pose2d(47.0, -24.0, Math.toRadians(180));
     }
 
     protected AlliancePosition getAlliance() {

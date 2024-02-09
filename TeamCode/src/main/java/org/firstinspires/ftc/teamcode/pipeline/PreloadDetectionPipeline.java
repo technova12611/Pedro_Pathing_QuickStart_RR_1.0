@@ -146,7 +146,7 @@ public class PreloadDetectionPipeline implements VisionProcessor {
                 break;
         }
 
-//        if (Globals.COLOR == AlliancePosition.RED) targetAprilTagID += 3;
+        if (Globals.COLOR == AlliancePosition.RED) targetAprilTagID += 3;
 
         leftZoneAverage = 1;
         rightZoneAverage = 1;

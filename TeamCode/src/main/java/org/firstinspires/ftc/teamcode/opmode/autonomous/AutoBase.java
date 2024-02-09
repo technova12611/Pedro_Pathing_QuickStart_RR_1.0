@@ -204,8 +204,9 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             double loopTimeForAfterProp = loopTimer.milliseconds();
 
             if (displayDistanceSensor) {
-                telemetry.addLine(" Stack Distance sensor Left (in): " + String.format("%3.2f", intake.getStackDistanceLeft()));
-                telemetry.addLine(" Stack Distance sensor Right (in): " + String.format("%3.2f", intake.getStackDistanceRight()));
+                telemetry.addLine(" Distance sensor: Left: " + String.format("%3.2f", intake.getStackDistanceLeft()) +
+                                " | Right: " + String.format("%3.2f", intake.getStackDistanceRight()) +
+                                " | Back: "+ String.format("%3.2f", outtake.getBackdropDistance()));
             }
 
             double loopTimeForDistance = loopTimer.milliseconds();
@@ -405,7 +406,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
                 return false;
             }
-            if (counter > 5) {
+            if (counter > 4) {
                 drive.updatePoseEstimate();
                 double delta;
                 if (drive.pose.heading.toDouble() > 0) {
@@ -439,19 +440,19 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 if (Math.abs(delta_stack_position) <= 0.6 && avg_y_adj_left > 5.0 && avg_y_adj_right > 5.0) {
                     adjustment_x = (avg_y_adj_left + avg_y_adj_right) / 2 - 0.5;
                 } else if (delta_stack_position < -1.8) {
-                    adjustment_y = -1.75;
+                    adjustment_y = -1.95;
                     adjustment_x = avg_y_adj_right - y_offset;
                 } else if (delta_stack_position < -1.2) {
-                    adjustment_y = -1.05;
+                    adjustment_y = -1.25;
                     adjustment_x = avg_y_adj_right - y_offset;
                 } else if (delta_stack_position < -0.6) {
                     adjustment_y = -0.5;
                     adjustment_x = avg_y_adj_right - y_offset;
                 } else if (delta_stack_position > 1.8) {
-                    adjustment_y = 1.75;
+                    adjustment_y = 1.95;
                     adjustment_x = avg_y_adj_left - y_offset;
                 } else if (delta_stack_position > 1.2) {
-                    adjustment_y = 1.05;
+                    adjustment_y = 1.25;
                     adjustment_x = avg_y_adj_left - y_offset;
                 } else if (delta_stack_position > 0.6) {
                     adjustment_y = 0.5;
@@ -468,7 +469,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         String.format("%3.2f", (drive.pose.position.y + adjustment_y)) + "," + adjustment_y + ")"
                 );
 
-                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -58.5, -56.5);
+                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -58.25, -56.25);
 
                 if (180 - Math.abs(Math.toDegrees(drive.pose.heading.toDouble())) > 3.0) {
                     adjustment_y = 0.0;
@@ -577,7 +578,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 return false;
             }
             double distance = outtake.getBackdropDistance();
-            if (distance < 28.5 && distance > 23.0) {
+            if (distance < 32.5 && distance > 22.0) {
                 backdropDistanceList.add(distance);
             }
 
@@ -643,7 +644,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                             straightDistance = 0.35;
                         }
                     } else {
-                        straightDistance = -1.15;
+                        straightDistance = -1.45;
                     }
 
                     Log.d("Backdrop_distance_Logger", "starting Adjustment: " + straightDistance +

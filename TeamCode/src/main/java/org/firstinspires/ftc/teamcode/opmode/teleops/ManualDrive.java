@@ -50,7 +50,7 @@ public class ManualDrive extends LinearOpMode {
     public static double SLOW_TURN_SPEED = 0.3;
     public static double SLOW_DRIVE_SPEED = 0.3;
 
-    public static double STRAFE_DISTANCE = 1.5;
+    public static double STRAFE_DISTANCE = 1.25;
     private SmartGameTimer smartGameTimer;
     private GamePadController g1, g2;
     private MecanumDrive drive;
@@ -546,8 +546,14 @@ public class ManualDrive extends LinearOpMode {
 
         // Hang arms up/down
         if(g1.dpadUpLong()) {
-            sched.queueAction(outtake.resetOuttakeFixerServo());
-            isFixerServoOut = false;
+            if(isFixerServoOut) {
+                sched.queueAction(outtake.resetOuttakeFixerServo());
+                isFixerServoOut = false;
+            }
+
+            if (isHangingActivated) {
+                sched.queueAction(hang.hang());
+            }
         }
         else if (g1.dpadUpOnce()) {
             if(!isSlideOut && !isDroneLaunched) {
@@ -558,8 +564,6 @@ public class ManualDrive extends LinearOpMode {
                 }
                 isFixerServoOut = true;
             }
-//            sched.queueAction(outtake.moveUpOuttakeFixerServoSlowly());
-//            sched.queueAction(aprilTag.updatePosition());
         }
 
         if (g1.dpadDownLong()) {
@@ -568,12 +572,12 @@ public class ManualDrive extends LinearOpMode {
             }
             else if(isFixerServoOut) {
 
-                double forwardDistance =-1.0;
+                double forwardDistance =-1.05;
                 drive.updatePoseEstimate();
 
                 int level = outtake.getFixerServoLevel().level;
-                int nextLevel1 = level + 5;
-                int nextLevel2 = level + 10;
+                int nextLevel1 = level + 10;
+                int nextLevel2 = level + 15;
                 if(nextLevel1 > Outtake.FixerServoPosition.MAX_FIXER_LEVEL) {
                     nextLevel1 = Outtake.FixerServoPosition.MAX_FIXER_LEVEL;
                 }
@@ -650,14 +654,17 @@ public class ManualDrive extends LinearOpMode {
             autoActionSched.run();
         }
 
+        int multiplier = (Globals.RUN_AUTO) ? 1 : -1;
+
+        if(g1.dpadLeftLong() || g1.dpadRightLong() ) {
+            multiplier = multiplier*2;
+        }
         // move left and right by one slot
-        if ((g1.dpadLeftOnce() || g1.dpadRightOnce()) && !pidDriveStrafe.isBusy()) {
+        if ((g1.dpadLeft() || g1.dpadRight()) && !pidDriveStrafe.isBusy()) {
 
-            int multiplier = (Globals.RUN_AUTO) ? 1 : -1;
+            double strafeDistance = (g1.dpadLeft() ? STRAFE_DISTANCE : -STRAFE_DISTANCE) * multiplier;
 
-            double strafeDistance = (g1.dpadLeftOnce() ? STRAFE_DISTANCE : -STRAFE_DISTANCE) * multiplier;
-
-            Log.d("DriveWithPID_Logger_0_Teleops", "Pose before strafe: " + new PoseMessage(this.drive.pose) + " | target=" + strafeDistance);
+            Log.d("DriveWithPID_Logger_0_Teleops", "Pose before strafe: " + new PoseMessage(this.drive.pose) + " | target=" + strafeDistance + " | multiplier=" + multiplier);
             start_y = drive.pose.position.y;
 
             AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);

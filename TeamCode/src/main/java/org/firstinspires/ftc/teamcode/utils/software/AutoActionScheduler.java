@@ -55,7 +55,7 @@ public class AutoActionScheduler {
 
       long startTime = System.currentTimeMillis();
 
-      Log.d("AutoActionScheduler:","Action scheduler started ... | " + startTime);
+//      Log.d("AutoActionScheduler:","Action scheduler started ... | " + startTime);
 
       while (actions.peek() != null && !Thread.currentThread().isInterrupted()) {
          TelemetryPacket packet = new TelemetryPacket();
@@ -74,23 +74,23 @@ public class AutoActionScheduler {
             if(a instanceof AutoBase.StackIntakePositionAction) {
                if(stackCallback != null) {
                   ((LinkedList) actions).addFirst(stackCallback.driveToStack());
-                  Log.d("AutoActionScheduler:", "** Added a new StackDriveAction " + " completed at " + (System.currentTimeMillis()-startTime + "(ms)"));
+//                  Log.d("AutoActionScheduler:", "** Added a new StackDriveAction " + " completed at " + (System.currentTimeMillis()-startTime + "(ms)"));
                }
             }
 
             if(a instanceof AutoBase.PreloadPositionDetectionAction) {
                if(preloadPositionCallback != null) {
                   ((LinkedList) actions).addFirst(preloadPositionCallback.strafeToBackdrop());
-                  Log.d("AutoActionScheduler:", "** Added a new PreloadPositionDetectionAction " + " completed at " + (System.currentTimeMillis()-startTime + "(ms)"));
+//                  Log.d("AutoActionScheduler:", "** Added a new PreloadPositionDetectionAction " + " completed at " + (System.currentTimeMillis()-startTime + "(ms)"));
                }
             }
-            Log.d("AutoActionScheduler:", "Action: " + a + " - " + (++actionOrder) + " finished at " + (System.currentTimeMillis()-startTime + "(ms)"));
+//            Log.d("AutoActionScheduler:", "Action: " + a + " - " + (++actionOrder) + " finished at " + (System.currentTimeMillis()-startTime + "(ms)"));
          }
       }
 
       autoRunElapsedTime = System.currentTimeMillis() - startTime;
 
-      Log.d("AutoActionScheduler:","Action scheduler completed at " + (System.currentTimeMillis()-startTime) + " (ms)");
+//      Log.d("AutoActionScheduler:","Action scheduler completed at " + (System.currentTimeMillis()-startTime) + " (ms)");
    }
 
    public boolean isEmpty() {

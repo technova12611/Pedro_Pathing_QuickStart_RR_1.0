@@ -14,20 +14,22 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.TwoDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.utils.control.PIDCoefficients;
 import org.firstinspires.ftc.teamcode.utils.control.PIDFController;
+import org.firstinspires.ftc.teamcode.wolfdrive.WolfDrive;
 
 import kotlin.jvm.functions.Function2;
 public class DriveWithPID {
     private MecanumDrive drive;
-    public static PIDCoefficients pid = new PIDCoefficients(0.00085,0.0, 0.00005);
+    WolfDrive wolfDrive;
+    public static PIDCoefficients perp_pid = new PIDCoefficients(0.00099,0.0, 0.00005);
     public static PIDCoefficients par_pid = new PIDCoefficients(0.0011,0.0, 0.00002);
     public static PIDCoefficients turn_pid = new PIDCoefficients(6.0,0.0, 0.00001);
-    private PIDFController perp_pidfController = new PIDFController(pid, 0.0, 0.0);
+    private PIDFController perp_pidfController = new PIDFController(perp_pid, 0.0, 0.0);
     private PIDFController par_pidfController = new PIDFController(par_pid, 0.0, 0.0);
     private PIDFController turn_pidfController = new PIDFController(turn_pid, 0.0, 0.0);
     private int targetPosition = 0;
     private int internalOffset = 0;
     private int tolerance = 25;
-    private long maxElapsedTime = 500;
+    private long maxElapsedTime = 525;
     private double maxPower = 0.6;
     private DriveDirection direction;
     private Long startTime = null;
@@ -43,11 +45,12 @@ public class DriveWithPID {
 
     public DriveWithPID(MecanumDrive drive, PIDCoefficients pid, DriveDirection direction, Function2<Double, Double, Double> f) {
         this.drive = drive;
+        wolfDrive = new WolfDrive(this.drive);
         if(pid != null) {
-            this.pid = pid;
+            this.perp_pid = pid;
         }
 
-        this.perp_pidfController = new PIDFController(this.pid, 0, 0, 0);
+        this.perp_pidfController = new PIDFController(this.perp_pid, 0, 0, 0);
         this.direction = direction;
 
         if(direction == DriveDirection.STRAFE) {
@@ -73,7 +76,7 @@ public class DriveWithPID {
 //        Log.d("DriveWithPID_Logger_1_update", "perp_encoderTicks:" + perp_encoderTicks
 //                + "| par_encoderTicks: " + par_encoderTicks
 //                + "| angle: " + String.format("%3.2f", Math.toDegrees(angle))
-//                + " | startTime: " + this.startTime);
+//                + " | startTime: " + this.startTime + " | ElapsedTime:" + (System.currentTimeMillis() - this.startTime));
 
         double perp_newPower = Range.clip(this.perp_pidfController.update(perp_encoderTicks), -maxPower, maxPower);
         double par_newPower = Range.clip(this.par_pidfController.update(par_encoderTicks), -maxPower, maxPower);
@@ -84,30 +87,29 @@ public class DriveWithPID {
         Vector2d input = new Vector2d(input_x, input_y);
 
         if (isBusy()) {
-            drive.setDrivePowers(new PoseVelocity2d(input, turn_newPower));
-//            Log.d("DriveWithPID_Logger_2_update", "perp_newPower: " + String.format("%3.3f",input_y) + ", perp_lastError: " + perp_pidfController.getLastError());
-//            Log.d("DriveWithPID_Logger_2_update", "par_newPower: " + String.format("%3.3f",input_x) + ", par_lastError: " + par_pidfController.getLastError());
-//            Log.d("DriveWithPID_Logger_2_update", "turn_newPower: " + String.format("%3.3f",turn_newPower) + ", turn_lastError: " + String.format("%3.6f",turn_pidfController.getLastError()));
+//            if(direction == DriveDirection.STRAFE) {
+//                PoseVelocity2d currentVel = drive.updatePoseEstimate();
+//                wolfDrive.trackPosition(drive.pose);
+//                wolfDrive.driveWithCorrection(new PoseVelocity2d(input, turn_newPower), currentVel);
+//            }
+//            else {
+                drive.setDrivePowers(new PoseVelocity2d(input, turn_newPower));
+//            }
+
+//            Log.d("DriveWithPID_Logger_2_update", "perp_newPower: " + String.format("%3.3f",input_y) + ", perp_lastError: " + perp_pidfController.getLastError()
+//            + "| par_newPower: " + String.format("%3.3f",input_x) + ", par_lastError: " + par_pidfController.getLastError()
+//            + "| turn_newPower: " + String.format("%3.3f",turn_newPower) + ", turn_lastError: " + String.format("%3.6f",turn_pidfController.getLastError()));
+
         } else {
-            Log.d("DriveWithPID_Logger_3_done",
-                    "perp_lastError: " + perp_pidfController.getLastError() +
+            Log.d("DriveWithPID_Logger_3_done", "Target_Position: " + this.targetPosition +
+                    " | perp_lastError: " + perp_pidfController.getLastError() +
                           ", par_lastError: " + par_pidfController.getLastError() +
-                          ", turn_lastError: " + String.format("%3.6f",turn_pidfController.getLastError())
+                          ", turn_lastError: " + String.format("%3.6f",turn_pidfController.getLastError()) +
+                            " | ElapsedTime:" + (System.currentTimeMillis() - this.startTime)
             );
 
             drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0.0,0.0), 0.0));
         }
-    }
-
-    /**
-     * Update the PID values in the controller.
-     * Note that it is not possible to replace f after instantiation
-     * @param newPID the new pid values to use
-     */
-    public void setPIDCoefficients(PIDCoefficients newPID) {
-        this.pid.kP = newPID.kP;
-        this.pid.kI = newPID.kI;
-        this.pid.kD = newPID.kD;
     }
 
     /**
@@ -140,8 +142,8 @@ public class DriveWithPID {
             this.turn_pidfController.setTargetPosition(((TwoDeadWheelLocalizer) drive.localizer).imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
         }
         this.setStartTime();
-        Log.d("DriveWithPID_Logger_0_1_set", "position: " + position + ", this.targetPosition: "
-                + this.targetPosition + ", this.internalOffset:" + this.internalOffset + " | start_time:" + startTime);
+        Log.d("DriveWithPID_Logger_0_1_set", "position: " + position + ", TargetPosition: "
+                + this.targetPosition + ", InternalOffset:" + this.internalOffset + " | start_time:" + startTime);
     }
 
     private class TargetPositionAction implements Action {

@@ -33,7 +33,7 @@ public class Intake {
     public static double STACK_INTAKE_LEFT_PRELOAD = 0.16;
     public static double STACK_INTAKE_LEFT_1ST_PIXEL_1 = 0.07;
     public static double STACK_INTAKE_LEFT_2nd_PIXEL_1 = 0.62;
-    public static double STACK_INTAKE_LEFT_1ST_PIXEL = 0.61;
+    public static double STACK_INTAKE_LEFT_1ST_PIXEL = 0.60;
     public static double STACK_INTAKE_LEFT_2nd_PIXEL = 1.0;
 
     public static double STACK_INTAKE_RIGHT_INIT = 0.0;
@@ -284,9 +284,9 @@ public class Intake {
 //                new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_1ST_PIXEL, "stackIntakeServoLeft"),
                 new SleepAction(0.5),
                 new ActionUtil.ServoPositionAction(stackIntakeServoRight, STACK_INTAKE_RIGHT_2nd_PIXEL, "stackIntakeServoRight"),
-                new SleepAction(0.25),
+                new SleepAction(0.15),
                 new ActionUtil.ServoPositionAction(stackIntakeServoLeft, STACK_INTAKE_LEFT_2nd_PIXEL, "stackIntakeServoLeft"),
-                new SleepAction(0.35)
+                new SleepAction(0.45)
         );
     }
 
