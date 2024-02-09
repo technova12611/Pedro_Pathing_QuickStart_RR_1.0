@@ -141,7 +141,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             g1.update();
 
             telemetry.addLine("IMU: " + String.format("%3.5f", drive.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)));
-            
+
             teamPropPosition = teamProPipeline.getLocation();
             SPIKE = teamPropPosition.ordinal();
             printDescription();

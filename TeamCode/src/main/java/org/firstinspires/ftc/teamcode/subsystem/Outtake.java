@@ -5,6 +5,7 @@ import android.util.Log;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.NullAction;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.SequentialAction;
@@ -119,7 +120,15 @@ public class Outtake {
     public static double OUTTAKE_FIXER_LEVEL_2_5 = 0.71;
     public static double OUTTAKE_FIXER_LEVEL_3 = 0.69;
     public static double OUTTAKE_FIXER_LEVEL_3_5 = 0.67;
+    public static double OUTTAKE_FIXER_LEVEL_4_5 = 0.63;
+    public static double OUTTAKE_FIXER_LEVEL_5_5 = 0.60;
+    public static double OUTTAKE_FIXER_LEVEL_6_5 = 0.56;
+    public static double OUTTAKE_FIXER_LEVEL_7_5 = 0.53;
     public static double OUTTAKE_FIXER_LEVEL_4 = 0.65;
+    public static double OUTTAKE_FIXER_LEVEL_5 = 0.62;
+    public static double OUTTAKE_FIXER_LEVEL_6 = 0.58;
+    public static double OUTTAKE_FIXER_LEVEL_7 = 0.55;
+    public static double OUTTAKE_FIXER_LEVEL_8 = 0.50;
 
     public static boolean NEED_RESET = false;
 
@@ -278,7 +287,7 @@ public class Outtake {
             }
             return extendOuttakeTeleOps();
         }
-        return new OuttakeLatchStateAction(OuttakeLatchState.CLOSED);
+        return new NullAction();
     }
 
     public Action resetSliderPosition() {
@@ -793,12 +802,20 @@ public class Outtake {
         LEVEL_2 (20, OUTTAKE_FIXER_LEVEL_2),
         LEVEL_3 (30, OUTTAKE_FIXER_LEVEL_3),
         LEVEL_4 (40, OUTTAKE_FIXER_LEVEL_4),
+        LEVEL_5 (50, OUTTAKE_FIXER_LEVEL_5),
+        LEVEL_6 (60, OUTTAKE_FIXER_LEVEL_6),
+        LEVEL_7 (70, OUTTAKE_FIXER_LEVEL_7),
+        LEVEL_8 (80, OUTTAKE_FIXER_LEVEL_8),
         LEVEL_1_5 (15, OUTTAKE_FIXER_LEVEL_1_5),
         LEVEL_2_5 (25, OUTTAKE_FIXER_LEVEL_2_5),
-        LEVEL_3_5 (35, OUTTAKE_FIXER_LEVEL_3_5);
+        LEVEL_3_5 (35, OUTTAKE_FIXER_LEVEL_3_5),
+        LEVEL_4_5 (45, OUTTAKE_FIXER_LEVEL_4_5),
+        LEVEL_5_5 (55, OUTTAKE_FIXER_LEVEL_5_5),
+        LEVEL_6_5 (65, OUTTAKE_FIXER_LEVEL_6_5),
+        LEVEL_7_5 (75, OUTTAKE_FIXER_LEVEL_7_5);
 
         private static final Map<Integer, FixerServoPosition> BY_NUMBER = new HashMap<>();
-        public static int MAX_FIXER_LEVEL = 40;
+        public static int MAX_FIXER_LEVEL = 80;
 
         static {
             for (FixerServoPosition e : values()) {

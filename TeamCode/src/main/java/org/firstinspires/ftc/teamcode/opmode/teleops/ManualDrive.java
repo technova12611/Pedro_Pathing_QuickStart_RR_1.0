@@ -50,7 +50,7 @@ public class ManualDrive extends LinearOpMode {
     public static double SLOW_TURN_SPEED = 0.3;
     public static double SLOW_DRIVE_SPEED = 0.3;
 
-    public static double STRAFE_DISTANCE = 2.25;
+    public static double STRAFE_DISTANCE = 1.5;
     private SmartGameTimer smartGameTimer;
     private GamePadController g1, g2;
     private MecanumDrive drive;
@@ -72,7 +72,7 @@ public class ManualDrive extends LinearOpMode {
     VelConstraint velConstraintOverride;
     AccelConstraint accelConstraintOverride = new ProfileAccelConstraint(-30.0, 30.0);
 
-    double slowModeForHanging = 0.25;
+    double slowModeForHanging = 0.35;
     double slowModeForBackdrop = 0.5;
     boolean isHangingActivated = false;
 
@@ -440,6 +440,10 @@ public class ManualDrive extends LinearOpMode {
         }
 
         telemetry.addData("drive_power", "input_x: %3.2f | input_y: %3.2f | speed: %3.2f", input_x, input_y, speed);
+
+        if(outtake.backdropTouched && Math.abs(input_turn) > 0.0) {
+            Log.d("ManualDrive_logger", "turn_power: " + String.format("%3.2f", input_turn));
+        }
     }
 
     boolean isSlideOut = false;
@@ -546,7 +550,7 @@ public class ManualDrive extends LinearOpMode {
             isFixerServoOut = false;
         }
         else if (g1.dpadUpOnce()) {
-            if(!isSlideOut) {
+            if(!isSlideOut && !isDroneLaunched) {
                 if (!isFixerServoOut) {
                     sched.queueAction(outtake.moveUpOuttakeFixerServo());
                 } else {
@@ -562,28 +566,7 @@ public class ManualDrive extends LinearOpMode {
             if (isHangingActivated) {
                 sched.queueAction(hang.hang());
             }
-            if(isFixerServoOut) {
-//
-//                AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);
-//
-//                int level = outtake.getFixerServoLevel().level;
-//                int nextLevel = level + 15;
-//                if(nextLevel > Outtake.FixerServoPosition.MAX_FIXER_LEVEL) {
-//                    nextLevel = Outtake.FixerServoPosition.MAX_FIXER_LEVEL;
-//                }
-//
-//                double nextLevelPosition = outtake.getFixerServoPositionByLevel(nextLevel);
-//                Log.d("AutoDrive_Logger", "nextLevel:" + nextLevel + " nextLevelPosition: " + String.format("%3.2f", nextLevelPosition));
-//
-//                double increment = 0.0;
-//                if(level == 10) {
-//                    increment = -0.003;
-//                }
-//                autoActionSched.addAction(
-//                        new AutoDriveStraightAction(drive, -0.2, outtake.getOuttakeFixerServo(), increment, nextLevelPosition, 150)
-//                    );
-//
-//                autoActionSched.run();
+            else if(isFixerServoOut) {
 
                 double forwardDistance =-1.0;
                 drive.updatePoseEstimate();
