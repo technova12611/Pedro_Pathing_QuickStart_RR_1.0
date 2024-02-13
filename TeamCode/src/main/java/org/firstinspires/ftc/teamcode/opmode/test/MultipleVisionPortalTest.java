@@ -45,6 +45,7 @@ import org.firstinspires.ftc.teamcode.pipeline.PreloadDetectionPipeline;
 import org.firstinspires.ftc.teamcode.pipeline.PropBasePipeline;
 import org.firstinspires.ftc.teamcode.pipeline.PropNearPipeline;
 import org.firstinspires.ftc.teamcode.pipeline.Side;
+import org.firstinspires.ftc.teamcode.pipeline.StackDetectionPipeline;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.VisionPortal.CameraState;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -59,7 +60,7 @@ import java.util.List;
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
  */
-@TeleOp(name = "2 Vision Portal Test", group = "Concept")
+@TeleOp(name = "Multiple Vision Portals Test", group = "Concept")
 @Config
 public class MultipleVisionPortalTest extends LinearOpMode {
 
@@ -82,6 +83,8 @@ public class MultipleVisionPortalTest extends LinearOpMode {
 
     private PreloadDetectionPipeline preloadPipeline;
 
+    private StackDetectionPipeline stackPipeline;
+
     /**
      * The variable to store our instance of the vision portal.
      */
@@ -103,6 +106,8 @@ public class MultipleVisionPortalTest extends LinearOpMode {
         preloadPipeline = new PreloadDetectionPipeline(aprilTag);
         preloadPipeline.setTargetAprilTagID(targetAprilTagId);
 
+        stackPipeline = new StackDetectionPipeline();
+
         webcam1 = hardwareMap.get(WebcamName.class, "Webcam 1");
         webcam2 = hardwareMap.get(WebcamName.class, "Webcam 2");
 
@@ -112,8 +117,8 @@ public class MultipleVisionPortalTest extends LinearOpMode {
         // Create the vision portal by using a builder.
         frontVisionPortal = new VisionPortal.Builder()
                 .setCamera(webcam1)
-                .setCameraResolution(new Size(1920, 1080))
-                .addProcessor(propPipeline)
+                .setCameraResolution(new Size(800, 600))
+                .addProcessors(propPipeline)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .setLiveViewContainerId(visionPortalViewIDs[0])
                 .setAutoStopLiveView(false)
@@ -128,7 +133,7 @@ public class MultipleVisionPortalTest extends LinearOpMode {
 
         rearVisionPortal = new VisionPortal.Builder()
                 .setCamera(webcam2)
-                .setCameraResolution(new Size(1920, 1080))
+                .setCameraResolution(new Size(800, 600))
                 .setLiveViewContainerId(visionPortalViewIDs[1])
                 .addProcessors(aprilTag,preloadPipeline)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
@@ -215,6 +220,11 @@ public class MultipleVisionPortalTest extends LinearOpMode {
             telemetry.addData(sideStr + " color:", "Mean: %3.2f | Max: %3.2f ", propPipeline.meanSideColor, propPipeline.maxSideColor);
             telemetry.addData("Spike Position", side.toString());
             telemetry.addLine("\n");
+            telemetry.addLine("Pixel contour: " + stackPipeline.getClosestPixelContour());
+            telemetry.addLine("Tape contour: " + stackPipeline.getClosestTapeContour());
+            telemetry.addLine("Strafe adjustment: " + stackPipeline.getStrafeCorrection());
+
+            telemetry.addLine("\n");
         }
 
         if(rearVisionPortal.getProcessorEnabled(aprilTag)) {
@@ -271,10 +281,12 @@ public class MultipleVisionPortalTest extends LinearOpMode {
             boolean newRightBumper = gamepad1.right_bumper;
             if (newLeftBumper && !oldLeftBumper) {
                 frontVisionPortal.setProcessorEnabled(propPipeline, true);
+//                frontVisionPortal.setProcessorEnabled(stackPipeline, true);
                 rearVisionPortal.setProcessorEnabled(aprilTag, false);
                 rearVisionPortal.setProcessorEnabled(preloadPipeline, false);
             } else if (newRightBumper && !oldRightBumper) {
                 frontVisionPortal.setProcessorEnabled(propPipeline, false);
+ //               frontVisionPortal.setProcessorEnabled(stackPipeline, false);
                 rearVisionPortal.setProcessorEnabled(aprilTag, true);
                 rearVisionPortal.setProcessorEnabled(preloadPipeline, true);
                 timer.reset();

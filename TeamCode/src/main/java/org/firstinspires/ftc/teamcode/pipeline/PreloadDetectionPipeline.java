@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.pipeline;
 import android.graphics.Canvas;
 import android.util.Log;
 
+import com.acmerobotics.dashboard.config.Config;
+
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
 import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.teamcode.subsystem.AprilTag;
@@ -17,6 +19,7 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.List;
 
+@Config
 public class PreloadDetectionPipeline implements VisionProcessor {
 
     private int targetAprilTagID = 0;
@@ -29,6 +32,9 @@ public class PreloadDetectionPipeline implements VisionProcessor {
     public static int rightZoneAverage = 0;
 
     public static int numOfDetections = 0;
+
+    public static int inclusion_y_offset = 215;
+    public static int exclusion_y_offset = 175;
 
     public PreloadDetectionPipeline(AprilTagProcessor aprilTag) {
         this.aprilTag = aprilTag;
@@ -49,18 +55,18 @@ public class PreloadDetectionPipeline implements VisionProcessor {
         numOfDetections = currentDetections.size();
         if (currentDetections != null) {
             for (AprilTagDetection detection : currentDetections) {
-                if (detection.metadata != null) {
-                    Log.d("PreloadDetectionPipeline_logger", "Detected_id: " + detection.id + " | targetAprilId: " + targetAprilTagID);
-                    Log.d("PreloadDetectionPipeline_logger",
-                            String.format("==== (ID %d) %s", detection.id, detection.metadata.name));
-                    Log.d("PreloadDetectionPipeline_logger",
-                            String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
-                    Log.d("PreloadDetectionPipeline_logger",
-                            String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
-                    Log.d("PreloadDetectionPipeline_logger",
-                            String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
-
                     if (detection.id == targetAprilTagID) {
+                        if (detection.metadata != null) {
+                            Log.d("PreloadDetectionPipeline_logger", "Detected_id: " + detection.id + " | targetAprilId: " + targetAprilTagID + " | Alliance Color: " + Globals.COLOR);
+                            Log.d("PreloadDetectionPipeline_logger",
+                                    String.format("==== (ID %d) %s", detection.id, detection.metadata.name));
+                            Log.d("PreloadDetectionPipeline_logger",
+                                    String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
+                            Log.d("PreloadDetectionPipeline_logger",
+                                    String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
+                            Log.d("PreloadDetectionPipeline_logger",
+                                    String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
+
                         int leftX = Integer.MAX_VALUE;
                         int rightX = Integer.MIN_VALUE;
                         int topY = Integer.MIN_VALUE;
@@ -85,11 +91,11 @@ public class PreloadDetectionPipeline implements VisionProcessor {
                         int exclusionZoneWidth = (int) (tagWidth * 0.43);
                         int exclusionZoneHeight = (int) (tagHeight * 0.43);
 
-                        Rect leftInclusionZone = new Rect(tagCenterX - inclusionZoneWidth, tagCenterY - 420, inclusionZoneWidth, inclusionZoneHeight);
-                        Rect rightInclusionZone = new Rect(tagCenterX, tagCenterY - 420, inclusionZoneWidth, inclusionZoneHeight);
+                        Rect leftInclusionZone = new Rect(tagCenterX - inclusionZoneWidth, tagCenterY - inclusion_y_offset, inclusionZoneWidth, inclusionZoneHeight);
+                        Rect rightInclusionZone = new Rect(tagCenterX, tagCenterY - inclusion_y_offset, inclusionZoneWidth, inclusionZoneHeight);
 
-                        Rect leftExclusionZone = new Rect(tagCenterX - (int) (inclusionZoneWidth * 0.55), tagCenterY - 340, exclusionZoneWidth, exclusionZoneHeight);
-                        Rect rightExclusionZone = new Rect(tagCenterX + (int) (inclusionZoneWidth * 0.36), tagCenterY - 340, exclusionZoneWidth, exclusionZoneHeight);
+                        Rect leftExclusionZone = new Rect(tagCenterX - (int) (inclusionZoneWidth * 0.55), tagCenterY - exclusion_y_offset, exclusionZoneWidth, exclusionZoneHeight);
+                        Rect rightExclusionZone = new Rect(tagCenterX + (int) (inclusionZoneWidth * 0.36), tagCenterY - exclusion_y_offset, exclusionZoneWidth, exclusionZoneHeight);
 
                         Imgproc.rectangle(frame, leftInclusionZone, new Scalar(0, 255, 0), 5);
                         Imgproc.rectangle(frame, rightInclusionZone, new Scalar(0, 255, 0), 5);
@@ -146,10 +152,13 @@ public class PreloadDetectionPipeline implements VisionProcessor {
                 break;
         }
 
-        if (Globals.COLOR == AlliancePosition.RED) targetAprilTagID += 3;
+//        if (Globals.COLOR == AlliancePosition.RED) targetAprilTagID += 3;
 
         leftZoneAverage = 1;
         rightZoneAverage = 1;
+        if(Globals.COLOR == AlliancePosition.BLUE) {
+            preloadedZone = Side.LEFT;
+        }
 
     }
 

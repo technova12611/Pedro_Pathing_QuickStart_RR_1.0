@@ -50,9 +50,9 @@ public class BlueRightAuto extends FarAutoBase {
       };
 
       this.stackIntake = new Pose2d[] {
-              new Pose2d(-58.0, 11.0, Math.toRadians(-180)),
-              new Pose2d(-58.0, 35.0, Math.toRadians(-180)),
-              new Pose2d(-58.0, 11.0, Math.toRadians(-180))
+              new Pose2d(-57.7, 11.0, Math.toRadians(-180)),
+              new Pose2d(-57.7, 35.0, Math.toRadians(-180)),
+              new Pose2d(-57.7, 11.0, Math.toRadians(-180))
       };
       this.crossFieldAlignment = new Pose2d[] {
               new Pose2d(-46.5, 11.0, Math.toRadians(-180)),

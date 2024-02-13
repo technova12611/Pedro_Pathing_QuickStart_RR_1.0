@@ -33,6 +33,7 @@ public class DriveWithPID {
     private double maxPower = 0.6;
     private DriveDirection direction;
     private Long startTime = null;
+
     public enum DriveDirection {
         STRAIGHT,
         STRAFE,
@@ -73,10 +74,12 @@ public class DriveWithPID {
         int par_encoderTicks = ((TwoDeadWheelLocalizer) drive.localizer).par.getPositionAndVelocity().position;
         double angle = ((TwoDeadWheelLocalizer) drive.localizer).imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
+        long startTimeLocal = this.startTime==null?System.currentTimeMillis():this.startTime;
+
 //        Log.d("DriveWithPID_Logger_1_update", "perp_encoderTicks:" + perp_encoderTicks
 //                + "| par_encoderTicks: " + par_encoderTicks
 //                + "| angle: " + String.format("%3.2f", Math.toDegrees(angle))
-//                + " | startTime: " + this.startTime + " | ElapsedTime:" + (System.currentTimeMillis() - this.startTime));
+//                + " | startTime: " + startTimeLocal + " | ElapsedTime:" + (System.currentTimeMillis() - startTimeLocal));
 
         double perp_newPower = Range.clip(this.perp_pidfController.update(perp_encoderTicks), -maxPower, maxPower);
         double par_newPower = Range.clip(this.par_pidfController.update(par_encoderTicks), -maxPower, maxPower);
@@ -105,7 +108,7 @@ public class DriveWithPID {
                     " | perp_lastError: " + perp_pidfController.getLastError() +
                           ", par_lastError: " + par_pidfController.getLastError() +
                           ", turn_lastError: " + String.format("%3.6f",turn_pidfController.getLastError()) +
-                            " | ElapsedTime:" + (System.currentTimeMillis() - this.startTime)
+                            " | ElapsedTime:" + (System.currentTimeMillis() - startTimeLocal)
             );
 
             drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0.0,0.0), 0.0));

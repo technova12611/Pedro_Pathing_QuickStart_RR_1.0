@@ -63,15 +63,17 @@ public abstract class NearCycleAutoBase extends AutoBase {
 
                                 new SequentialAction(
                                         new SleepAction(1.0),
-                                        outtake.extendOuttakeLow()
+                                        outtake.extendOuttakeLow(),
+                                        new SleepAction(1.1),
+                                        outtake.prepareToScore()
                                 )
                         ),
 
                         new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_position"),
                         //new MecanumDrive.UpdateDrivePoseAction(drive, this.visionPortal2, this.aprilTag),
 
-                        outtake.prepareToScore(),
-                        new SleepAction(0.2),
+//                        outtake.prepareToScore(),
+                        new SleepAction(0.1),
                         getBackdropDistanceAdjustmentAction(),
                         outtake.latchScore1(),
                         new SleepAction(0.50),
@@ -182,8 +184,8 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                 intake.prepareTeleOpsIntake(),
                                 drive.actionBuilder(startingPosition) //spike[SPIKE]
                                         .strafeToLinearHeading(cycleStartPose.position, cycleStartPose.heading,
-                                                this.drive.highSpeedVelConstraint,
-                                                this.drive.highSpeedAccelConstraint)
+                                                this.drive.defaultVelConstraint,
+                                                this.drive.defaultAccelConstraint)
                                         .strafeToLinearHeading(stackAlignmentPosition.position,stackAlignment.heading,
                                                 this.drive.highSpeedVelConstraint, this.drive.highSpeedAccelConstraint)
                                         .build(),

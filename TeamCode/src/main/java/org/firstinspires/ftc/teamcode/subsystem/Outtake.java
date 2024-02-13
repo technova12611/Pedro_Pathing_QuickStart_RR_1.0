@@ -47,18 +47,18 @@ public class Outtake {
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
     public static int OUTTAKE_SLIDE_MID = 1250;
     public static int OUTTAKE_SLIDE_CYCLES_ONE = 980;
-    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1280;
+    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1320;
     public static int OUTTAKE_SLIDE_FAR_LOW = 930;
     public static int OUTTAKE_SLIDE_LOW = 830;
     public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 1050;
-    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO_2 = 1350;
+    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO_2 = 1380;
     public static int OUTTAKE_SLIDE_INIT = 0;
-    public static int OUTTAKE_SLIDE_INCREMENT= 100;
-    public static int OUTTAKE_SLIDE_DECREMENT= 60;
+    public static int OUTTAKE_SLIDE_INCREMENT= 80;
+    public static int OUTTAKE_SLIDE_DECREMENT= 50;
 
     public static double LATCH_CLOSED = 0.55;
     public static double LATCH_SCORE_1 = 0.415;
-    public static double LATCH_SCORE_2 = 0.47;
+    public static double LATCH_SCORE_2 = 0.48;
 
     public static double OUTTAKE_PIVOT_REVERSE_DUMP = 0.01;
     public static double OUTTAKE_PIVOT_INIT = 0.19;
@@ -80,7 +80,7 @@ public class Outtake {
 
     public static double SLIDE_PIVOT_DUMP_1 = 0.248;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.68;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.62;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.60;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN_0 = 2.52;
 
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX = 2.82;
@@ -602,7 +602,8 @@ public class Outtake {
         if(isLogging && Math.abs(slidePivotVoltageMean - previousSlidePivotVoltage) > 0.03) {
             Log.d("Slide_Pivot_Logger",
                     "slidePivot " + direction + " servo position:" + String.format("%3.3f",servoPosition)
-                            + " | slideServoVoltage: " + String.format("%3.2f",slidePivotVoltageMean));
+                            + " | slideServoVoltage: " + String.format("%3.2f",slidePivotVoltageMean) +
+                    " | back Distance: " + String.format("%3.2f",getBackdropDistance()));
             slidePivotlEapsedTimer.reset();
         }
 

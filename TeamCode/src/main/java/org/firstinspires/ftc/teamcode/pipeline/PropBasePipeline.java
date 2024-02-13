@@ -32,20 +32,20 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
 
     private Mat finalMat = new Mat();
 
-    public static int blueLeftX = 710;
-    public static int blueLeftY = 80;
+    public static int blueLeftX = 280;
+    public static int blueLeftY = 40;
 
-    public static int blueCenterX = 1255;
-    public static int blueCenterY = 0;
+    public static int blueCenterX = 545;
+    public static int blueCenterY = 20;
 
-    public static int redLeftX = 330;
-    public static int redLeftY = 70;
+    public static int redLeftX = 110;
+    public static int redLeftY = 25;
 
-    public static int redRightX = 1600;
-    public static int redRightY = 80;
+    public static int redCenterX = 410;
+    public static int redCenterY = 10;
 
-    public static int width = 180;
-    public static int height = 180;
+    public static int width = 128;
+    public static int height = 128;
 
     public static double blueThreshold = 1.5;
     public static double redThreshold = 1.5;
@@ -106,8 +106,8 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
         frame.copyTo(finalMat);
         Imgproc.GaussianBlur(finalMat, finalMat, new Size(5, 5), 0.0);
 
-        sideZoneArea = new Rect(allianceColor == AlliancePosition.RED? redRightX : blueLeftX,
-                allianceColor == AlliancePosition.RED? redRightY : blueLeftY, width, height);
+        sideZoneArea = new Rect(allianceColor == AlliancePosition.RED? redCenterX : blueLeftX,
+                allianceColor == AlliancePosition.RED? redCenterY : blueLeftY, width, height);
         centerZoneArea = new Rect(Globals.COLOR == AlliancePosition.RED?redLeftX:blueCenterX,
                 allianceColor == AlliancePosition.RED?redLeftY:blueCenterY, width, height);
 
@@ -187,12 +187,12 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
 //                    (meanSideColor < maxSideColor - threshold)
             ) {
                 // left zone has it
-                location = Side.RIGHT;
+                location = Side.CENTER;
                 Imgproc.rectangle(frame, sideZoneArea, GREEN,8);
                 Imgproc.rectangle(frame, centerZoneArea, YELLOW, 3);
             } else {
                 // right zone has it
-                location = Side.CENTER;
+                location = Side.RIGHT;
                 Imgproc.rectangle(frame, sideZoneArea, YELLOW, 3);
                 Imgproc.rectangle(frame, centerZoneArea, YELLOW, 3);
             }

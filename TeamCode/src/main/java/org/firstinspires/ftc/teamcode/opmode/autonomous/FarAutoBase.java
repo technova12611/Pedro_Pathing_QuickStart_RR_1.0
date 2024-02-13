@@ -415,6 +415,11 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
         extendSlideAction = outtake.extendOuttakeCycleOne();
         stackIntakePosition = stackIntake1;
 
+        double sleepTime = 0.2;
+        if(SPIKE > 0) {
+            sleepTime = 0.4;
+        }
+
         sched.addAction(
                 new SequentialAction(
                         // to strafe to cycle start teleops
@@ -497,9 +502,11 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                         getBackdropDistanceAdjustmentAction(),
                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_adjustment"),
                         outtake.latchScore1(),
-                        new SleepAction(0.45),
+                        new SleepAction(0.5),
                         outtake.latchScore2(),
-                        new SleepAction(0.45),
+                        new SleepAction(0.4),
+                        outtake.afterScore2(),
+                        new SleepAction(sleepTime),
                         new ActionUtil.RunnableAction(() -> {
                             pidDriveActivated = false;
                             pidDriveStarted = false;
@@ -510,6 +517,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                         })
                 )
         );
+
 
         sched.addAction(
                 new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_end")
@@ -581,7 +589,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
         // Create the vision portal by using a builder.
         frontVisionPortal = new VisionPortal.Builder()
                 .setCamera(webcam1)
-                .setCameraResolution(new Size(1920, 1080))
+                .setCameraResolution(new Size(800, 600))
                 .addProcessor(teamProPipeline)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .setLiveViewContainerId(viewId)
@@ -610,7 +618,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
 
         backVisionPortal = new VisionPortal.Builder()
                 .setCamera(webcam2)
-                .setCameraResolution(new Size(1920, 1080))
+                .setCameraResolution(new Size(800, 600))
                 .setLiveViewContainerId(viewId)
                 .addProcessors(aprilTag,preloadPipeline)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
@@ -632,9 +640,9 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
     public Action strafeToBackdrop() {
         Vector2d backdrop_position = backdrop[SPIKE].position;
         if(Globals.COLOR == AlliancePosition.RED && preloadPosition != Side.RIGHT) {
-            backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 2.0);
+            backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.25);
         } else if(Globals.COLOR == AlliancePosition.BLUE && preloadPosition != Side.LEFT) {
-            backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 2.0);
+            backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.25);
         }
 
         Log.d("strafeToBackdrop_logger", "Preload position: " + preloadPosition +

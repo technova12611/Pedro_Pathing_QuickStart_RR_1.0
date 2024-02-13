@@ -21,6 +21,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.Globals;
@@ -91,11 +92,15 @@ public class ManualDrive extends LinearOpMode {
 
     Boolean isFixerServoOut = Boolean.FALSE;
 
+    Boolean startFixedReset = null;
+
     private DriveWithPID pidDriveStrafe;
 
     private DriveWithPID pidDriveStraight;
 
     private WolfDrive wolfDrive;
+
+    private ElapsedTime fixerDriveTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
     Gamepad.LedEffect redEffect = new Gamepad.LedEffect.Builder()
             .addStep(1, 0, 0, 750) // Show red for 250ms
@@ -249,6 +254,7 @@ public class ManualDrive extends LinearOpMode {
             }
         }
 
+        Log.d("ManualDrive_Logger", " --- Total Pixels: " + this.intake.totalPixelCount + " ---");
         Log.d("ManualDrive_Logger", " --- Program ended at " + System.currentTimeMillis() + " ---");
 
         // On termination
@@ -418,13 +424,25 @@ public class ManualDrive extends LinearOpMode {
             }
         }
 
-        if (input_x > 0.35) {
+        if (input_x > 0.5) {
             if (isSlideOut && Intake.pixelsCount == 0 && pixelScored) {
                 retractSlide();
-            } else if (isFixerServoOut) {
-                isFixerServoOut = false;
-                sched.queueAction(outtake.resetOuttakeFixerServo());
+            } else if (isFixerServoOut && input_x > 0.65) {
+                Log.d("ManualDrive_logger", " input_x: " + String.format("%3.2f", input_x) + " | g1.left_stick_y: " + g1.left_stick_y +
+                        " | Elapsed time: " + fixerDriveTimer.milliseconds());
+                if(startFixedReset == null) {
+                    fixerDriveTimer.reset();
+                    startFixedReset = Boolean.TRUE;
+                }
+
+                if(startFixedReset && fixerDriveTimer.milliseconds() > 120.0) {
+                    startFixedReset = null;
+                    isFixerServoOut = false;
+                    sched.queueAction(outtake.resetOuttakeFixerServo());
+                }
             }
+        } else {
+            startFixedReset = null;
         }
 
         if(Math.abs(input_y) > 0.1 && isSlideOut && outtake.hasOuttakeReached()) {
@@ -559,6 +577,7 @@ public class ManualDrive extends LinearOpMode {
             if(!isSlideOut && !isDroneLaunched) {
                 if (!isFixerServoOut) {
                     sched.queueAction(outtake.moveUpOuttakeFixerServo());
+                    startFixedReset = null;
                 } else {
                     sched.queueAction(outtake.moveUpOuttakeFixerServoSlowly());
                 }
@@ -572,7 +591,7 @@ public class ManualDrive extends LinearOpMode {
             }
             else if(isFixerServoOut) {
 
-                double forwardDistance =-1.05;
+                double forwardDistance =-0.85;
                 drive.updatePoseEstimate();
 
                 int level = outtake.getFixerServoLevel().level;

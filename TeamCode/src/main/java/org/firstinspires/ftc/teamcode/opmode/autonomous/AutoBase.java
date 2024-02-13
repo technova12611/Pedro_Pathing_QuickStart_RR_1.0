@@ -317,7 +317,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
     protected void initVisionPortal() {
         frontVisionPortal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, Globals.FRONT_WEBCAM_NAME))
-                .setCameraResolution(new Size(1920, 1080))
+                .setCameraResolution(new Size(800, 600))
                 .addProcessor(teamProPipeline)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .enableLiveView(ENABLE_LIVE_VIEW)
@@ -564,7 +564,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
                 double base_distance = 26.0;
 
-                double adjustment = Range.clip((base_distance - avg_distance) * 0.5, -1.25, 1.25);
+                double adjustment = Range.clip((base_distance - avg_distance) * 0.7, -1.5, 1.5);
 
                 Pose2d currentPose = drive.pose;
                 drive.pose = new Pose2d(currentPose.position.plus(new Vector2d(adjustment, 0)), currentPose.heading);
@@ -578,7 +578,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 return false;
             }
             double distance = outtake.getBackdropDistance();
-            if (distance < 32.5 && distance > 22.0) {
+            if (distance < 32.5 && distance > 21.0) {
                 backdropDistanceList.add(distance);
             }
 
@@ -602,13 +602,19 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
         if (pidDriveActivated && Math.abs(straightDistance) > 0.0) {
             double slidePivotVoltage = outtake.getSlidePivotServoVoltage();
+            double backDistance = outtake.getBackdropDistance();
+
+            if(backDistance > 10.5) {
+                backDistance = 0.0;
+            }
+
             if (!pidDriveStarted) {
                 pidDriveStraight.setTargetPosition((int) (straightDistance / MecanumDrive.PARAMS.inPerTick));
                 pidDriveStarted = true;
                 Log.d("backdrop_pidDriveUpdate_logger", "straightDistance: "
                         + straightDistance + " | pidDriveActivated: " + pidDriveActivated
                         + " | pidDriveStarted: " + pidDriveStarted + " | isBusy: " + pidDriveStraight.isBusy() +
-                        "| drive pose: " + new PoseMessage(drive.pose));
+                        " | drive pose: " + new PoseMessage(drive.pose));
 
                 pidDriveStraight.update();
             }
@@ -616,13 +622,27 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             if (pidDriveStarted && pidDriveStraight.isBusy()) {
                 pidDriveStraight.update();
                 Log.d("Backdrop_distance_Logger", "Update() called. Adjustment: " + straightDistance +
-                        "| slide voltage: " + String.format("%3.2f", slidePivotVoltage));
+                        " | slide voltage: " + String.format("%3.2f", slidePivotVoltage) +
+                        " | back distance: " + String.format("%3.2f", backDistance));
+
+                if(Math.abs(slidePivotVoltage - Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_MIN) <= 0.05 || backDistance < 8.35 ) {
+                    pidDriveStraight.resetStartTime();
+                    pidDriveStraight.update();
+
+                    Log.d("Backdrop_distance_Logger", "END of pid drive. Adjustment: " + straightDistance +
+                            " | slide voltage: " + String.format("%3.2f", slidePivotVoltage) +
+                            " | back distance: " + String.format("%3.2f", backDistance) +
+                            " | isBusy(): " + pidDriveStraight.isBusy()
+
+                    );
+                }
             }
 
             if (!pidDriveStraight.isBusy()) {
                 Log.d("Backdrop_distance_Logger", "End of Adjustment: " + straightDistance +
-                        "| ending slide voltage: " + String.format("%3.2f", slidePivotVoltage) +
-                        "| end drive pose: " + new PoseMessage(drive.pose));
+                        " | ending slide voltage: " + String.format("%3.2f", slidePivotVoltage) +
+                        " | end drive pose: " + new PoseMessage(drive.pose) +
+                        " | back distance: " + String.format("%3.2f", outtake.getBackdropDistance()));
 
                 pidDriveActivated = false;
                 pidDriveStraight.resetStartTime();
@@ -637,17 +657,33 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                     pidDriveStarted = false;
                     straightDistance = 0.0;
                     double slidePivotVoltage = outtake.getSlidePivotServoVoltage();
+                    double backDistance = outtake.getBackdropDistance();
+
+                    if(backDistance > 11.5) {
+                        backDistance = 0.0;
+                    }
+                    double backDistance1 = outtake.getBackdropDistance();
+
+                    if(backDistance1 > 11.5) {
+                        backDistance1 = 0.0;
+                    } else if(backDistance != 0.0){
+                        backDistance = (backDistance+backDistance1)/2.0;
+                    }
+
                     if (outtake.hasOuttakeReached()) {
-                        if (slidePivotVoltage > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX + 0.15) {
+                        if (slidePivotVoltage > (Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX + 0.15)) {
                             straightDistance = 0.65;
                         } else if (slidePivotVoltage > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX) {
                             straightDistance = 0.35;
                         }
-                    } else {
-                        straightDistance = -1.45;
+                    } else if(backDistance > 8.25) {
+                        straightDistance = -1.25;
+                    } else if(backDistance > 7.75) {
+                        straightDistance = -0.85;
                     }
 
                     Log.d("Backdrop_distance_Logger", "starting Adjustment: " + straightDistance +
+                            "| back distance: " + String.format("%3.2f", backDistance) +
                             "| starting slide voltage: " + String.format("%3.2f", slidePivotVoltage) +
                             " | drive pose: " + new PoseMessage(drive.pose));
                     return false;
