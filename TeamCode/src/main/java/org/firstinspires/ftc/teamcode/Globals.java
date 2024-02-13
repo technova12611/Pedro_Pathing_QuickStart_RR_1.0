@@ -20,6 +20,8 @@ public class Globals {
     public static boolean IS_USING_IMU = true;
     public static boolean USING_DASHBOARD = false;
 
+    public static int OUTTAKE_SLIDE_POSITION = 0;
+
     public static boolean RUN_AUTO = false;
 
     public static String FRONT_WEBCAM_NAME = "Webcam 1";

@@ -203,8 +203,15 @@ public class Outtake {
         }
     }
 
-    public void prepTeleop() {
-        this.slide.getMotor().setPower(-0.2);
+    public Action prepTeleop(int position) {
+        if(position > 300) {
+            return resetSliderPosition();
+        }
+        else {
+            this.slide.getMotor().setPower(-0.2);
+            return new NullAction();
+                    //resetSlideEncoderAction();
+        }
     }
 
     public void finishPrepTeleop() {

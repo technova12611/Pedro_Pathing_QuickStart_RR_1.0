@@ -55,7 +55,8 @@ public class MotorWithPID {
 
         double newPower = Range.clip(this.pidfController.update(motor.getCurrentPosition(), motor.getVelocity()), -maxPower, maxPower);
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-//        Log.d("MotorWithPID", "newPower " + newPower + ", lastError " + pidfController.getLastError());
+        Log.d("MotorWithPID", "newPower " + newPower + ", lastError " + pidfController.getLastError() +
+        " | Current position: " + getCurrentPosition() + " | target position: " + getTargetPosition());
 
         boolean isBusy = isBusy();
         if(getTargetPosition() == 0 && !isBusy) {
@@ -63,7 +64,6 @@ public class MotorWithPID {
         } else {
             motor.setPower(newPower);
         }
-
 
         if(previouslyBusy && !isBusy) {
             Log.d("MotorWithPID_Logger", "Current position: " + getCurrentPosition() + " | target position: " + getTargetPosition()

@@ -145,7 +145,9 @@ public class ManualDrive extends LinearOpMode {
         }
         outtake.isAuto = false;
         Globals.RUN_AUTO = false;
-        outtake.prepTeleop();
+
+        Log.d("ManualDrive_Logger", "Robot init Pose: " + new PoseMessage(drive.pose));
+        Log.d("ManualDrive_Logger", "Slide Position: " + Globals.OUTTAKE_SLIDE_POSITION);
 
         intake.initialize(false);
         // Init opmodes
@@ -170,11 +172,18 @@ public class ManualDrive extends LinearOpMode {
         telemetry.addLine("Drive Pose: " + new PoseMessage(drive.pose));
         telemetry.update();
 
+        Action sliderAction = outtake.prepTeleop(Globals.OUTTAKE_SLIDE_POSITION);
+
+        sched.queueAction(sliderAction);
+        sched.update();
+
         Long aTimer = System.currentTimeMillis();
         while (opModeInInit() && !isStopRequested()) {
-            if (aTimer != null && (System.currentTimeMillis() - aTimer > 1000)) {
+            if (aTimer != null && (System.currentTimeMillis() - aTimer > 600)) {
                 outtake.finishPrepTeleop();
-                outtake.resetSlideEncoder();
+                if(Globals.OUTTAKE_SLIDE_POSITION < 30) {
+                    outtake.resetSlideEncoder();
+                }
                 aTimer = null;
             }
             idle();
@@ -185,6 +194,10 @@ public class ManualDrive extends LinearOpMode {
         resetRuntime();
         g1.reset();
         g2.reset();
+
+
+
+        Globals.OUTTAKE_SLIDE_POSITION = 0;
 
         // Main loop
         while (!isStopRequested() && opModeIsActive()) {

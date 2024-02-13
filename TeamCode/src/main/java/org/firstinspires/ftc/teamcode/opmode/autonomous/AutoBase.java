@@ -287,6 +287,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         // run the auto path, all the actions are queued
         //-------------------------------
         sched.run();
+        Globals.OUTTAKE_SLIDE_POSITION = outtake.getMotorCurrentPosition();
 
         Log.d("Auto_logger", String.format("!!! Auto run() finished at %.3f", getRuntime()));
 
@@ -310,7 +311,9 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         Memory.LAST_POSE = drive.pose;
         Globals.drivePose = drive.pose;
 
+        Log.d("Auto_logger", "Outtake Slide end position: " + Globals.OUTTAKE_SLIDE_POSITION);
         Log.d("Auto_logger", "End path drive Estimated Pose: " + new PoseMessage(drive.pose));
+        Log.d("Auto_logger", "\n");
 
     }
 
@@ -439,19 +442,19 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 double y_offset = 1.25;
                 if (Math.abs(delta_stack_position) <= 0.6 && avg_y_adj_left > 5.0 && avg_y_adj_right > 5.0) {
                     adjustment_x = (avg_y_adj_left + avg_y_adj_right) / 2 - 0.5;
-                } else if (delta_stack_position < -1.8) {
-                    adjustment_y = -1.95;
+                } else if (delta_stack_position < -2.0) {
+                    adjustment_y = -2.05;
                     adjustment_x = avg_y_adj_right - y_offset;
-                } else if (delta_stack_position < -1.2) {
+                } else if (delta_stack_position < -1.5) {
                     adjustment_y = -1.25;
                     adjustment_x = avg_y_adj_right - y_offset;
                 } else if (delta_stack_position < -0.6) {
                     adjustment_y = -0.5;
                     adjustment_x = avg_y_adj_right - y_offset;
-                } else if (delta_stack_position > 1.8) {
-                    adjustment_y = 1.95;
+                } else if (delta_stack_position > 2.0) {
+                    adjustment_y = 2.05;
                     adjustment_x = avg_y_adj_left - y_offset;
-                } else if (delta_stack_position > 1.2) {
+                } else if (delta_stack_position > 1.5) {
                     adjustment_y = 1.25;
                     adjustment_x = avg_y_adj_left - y_offset;
                 } else if (delta_stack_position > 0.6) {
@@ -625,7 +628,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         " | slide voltage: " + String.format("%3.2f", slidePivotVoltage) +
                         " | back distance: " + String.format("%3.2f", backDistance));
 
-                if(Math.abs(slidePivotVoltage - Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_MIN) <= 0.05 || backDistance < 8.35 ) {
+                if(Math.abs(slidePivotVoltage - Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_MIN) <= 0.03 || backDistance < 6.35 ) {
                     pidDriveStraight.resetStartTime();
                     pidDriveStraight.update();
 
@@ -676,16 +679,18 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         } else if (slidePivotVoltage > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX) {
                             straightDistance = 0.35;
                         }
-                    } else if(backDistance > 8.25) {
+                    } else if(backDistance > 7.5) {
                         straightDistance = -1.25;
-                    } else if(backDistance > 7.75) {
-                        straightDistance = -0.85;
+                    } else if(backDistance > 6.75) {
+                        straightDistance = -0.75;
+                    } else {
+                        straightDistance = -0.6;
                     }
 
-                    Log.d("Backdrop_distance_Logger", "starting Adjustment: " + straightDistance +
-                            "| back distance: " + String.format("%3.2f", backDistance) +
-                            "| starting slide voltage: " + String.format("%3.2f", slidePivotVoltage) +
-                            " | drive pose: " + new PoseMessage(drive.pose));
+                    Log.d("Backdrop_distance_Logger", " --- Starting Adjustment: " + straightDistance +
+                            " | back distance: " + String.format("%3.2f", backDistance) +
+                            " | starting slide voltage: " + String.format("%3.2f", slidePivotVoltage) +
+                            " | drive pose: " + new PoseMessage(drive.pose) + " ---");
                     return false;
                 });
     }
@@ -728,8 +733,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 }
 
                 try {
-                    //backVisionPortal.setProcessorEnabled(aprilTag, false);
-                    //backVisionPortal.setProcessorEnabled(preloadPipeline, false);
+                    backVisionPortal.setProcessorEnabled(aprilTag, false);
+                    backVisionPortal.setProcessorEnabled(preloadPipeline, false);
                     //backVisionPortal.close();
                 } catch(Exception e) {
                     Log.e("AutoBase_Preload_logger", e.getLocalizedMessage());
