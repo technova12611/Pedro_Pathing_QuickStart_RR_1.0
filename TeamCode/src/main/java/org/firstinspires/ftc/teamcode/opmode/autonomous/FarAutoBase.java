@@ -640,9 +640,9 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
     public Action strafeToBackdrop() {
         Vector2d backdrop_position = backdrop[SPIKE].position;
         if(Globals.COLOR == AlliancePosition.RED && preloadPosition != Side.RIGHT) {
-            backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.25);
+            backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.4);
         } else if(Globals.COLOR == AlliancePosition.BLUE && preloadPosition != Side.LEFT) {
-            backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.25);
+            backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.4);
         }
 
         Log.d("strafeToBackdrop_logger", "Preload position: " + preloadPosition +

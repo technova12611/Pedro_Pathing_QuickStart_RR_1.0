@@ -666,9 +666,9 @@ public class ManualDrive extends LinearOpMode {
         && g1.left_stick_x == 0.0 && g1.left_stick_y == 0.0 ) {
             autoBackdropDistance = true;
 
-            double forwardDistance =0.5;
+            double forwardDistance =0.42;
             if(outtake.getSlidePivotServoVoltage() > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME) {
-                forwardDistance =1.0;
+                forwardDistance =0.7;
             }
 
             Log.d("DriveWithPID_Logger_0_Teleops", "Pose before straight forward: " + new PoseMessage(this.drive.pose) + " | target=" + forwardDistance);

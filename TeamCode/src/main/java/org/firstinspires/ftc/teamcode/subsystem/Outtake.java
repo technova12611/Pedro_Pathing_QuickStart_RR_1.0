@@ -47,18 +47,18 @@ public class Outtake {
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
     public static int OUTTAKE_SLIDE_MID = 1250;
     public static int OUTTAKE_SLIDE_CYCLES_ONE = 980;
-    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1320;
-    public static int OUTTAKE_SLIDE_FAR_LOW = 930;
+    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1380;
+    public static int OUTTAKE_SLIDE_FAR_LOW = 970;
     public static int OUTTAKE_SLIDE_LOW = 830;
     public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 1050;
-    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO_2 = 1380;
+    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO_2 = 1420;
     public static int OUTTAKE_SLIDE_INIT = 0;
     public static int OUTTAKE_SLIDE_INCREMENT= 80;
     public static int OUTTAKE_SLIDE_DECREMENT= 50;
 
     public static double LATCH_CLOSED = 0.55;
     public static double LATCH_SCORE_1 = 0.415;
-    public static double LATCH_SCORE_2 = 0.48;
+    public static double LATCH_SCORE_2 = 0.49;
 
     public static double OUTTAKE_PIVOT_REVERSE_DUMP = 0.01;
     public static double OUTTAKE_PIVOT_INIT = 0.19;
@@ -263,8 +263,7 @@ public class Outtake {
         Log.d("Outtake_Slide", "slide is busy:" + this.slide.isBusy() );
         if(!this.slide.isBusy()) {
             double multiplier = increment > 0 ? 1 : -1;
-
-            multiplier = multiplier* Range.clip(Math.abs(increment)/0.9 * 3, 0.6,3);
+            multiplier = multiplier* Range.clip(Math.abs(increment) * 3, 0.6,3);
 
             boolean adjustSlideServos = false;
             if(!scoreLevel3 && OUTTAKE_TELEOPS > OUTTAKE_SLIDE_MAX - 150 && increment > 0.30) {
@@ -272,7 +271,6 @@ public class Outtake {
                 scoreLevel3 = true;
                 return this.prepareToScoreLevel3();
             } else if(OUTTAKE_TELEOPS < OUTTAKE_SLIDE_MAX -150){
-
                 if(scoreLevel3) adjustSlideServos = true;
                 scoreLevel3 = false;
             }

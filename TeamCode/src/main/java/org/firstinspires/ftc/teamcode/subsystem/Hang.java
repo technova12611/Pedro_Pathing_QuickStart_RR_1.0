@@ -1,10 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
-import android.util.Log;
-
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.ParallelAction;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -18,8 +15,7 @@ import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 public class Hang {
     public static int HANG_POSITION_MAX = 5500;
     public static int HANG_POSITION = 1350;
-    public static int HANG_INREMENTAL_CHANGE_POSITION = 300;
-
+    public static int HANG_INCREMENTAL_CHANGE_POSITION = 180;
     public static int DROPDOWN_AFTER_HANG_POSITION = 500;
 
     public static double HOOK_BLOCKER_BLOCK = 0.81;
@@ -48,7 +44,7 @@ public class Hang {
     }
 
     public Action hangSlowly() {
-        int position = this.hangMotor.getCurrentPosition() + HANG_INREMENTAL_CHANGE_POSITION;
+        int position = this.hangMotor.getCurrentPosition() + HANG_INCREMENTAL_CHANGE_POSITION;
         return new ActionUtil.DcMotorExRTPAction(hangMotor, Range.clip(position, 0, HANG_POSITION_MAX), 0.9);
     }
 

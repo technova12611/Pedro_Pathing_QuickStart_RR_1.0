@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.pipeline;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.util.Log;
 
 import com.acmerobotics.dashboard.config.Config;
 
@@ -42,19 +43,19 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
     public static int redLeftY = 25;
 
     public static int redCenterX = 410;
-    public static int redCenterY = 10;
+    public static int redCenterY = 0;
 
-    public static int width = 128;
+    public static int width = 150;
     public static int height = 128;
 
-    public static double blueThreshold = 1.5;
-    public static double redThreshold = 1.5;
+    public static double blueThreshold = 1.75;
+    public static double redThreshold = 1.75;
 
     public static double threshold = 0.0;
 
-    public static double redDeltaThreshold = 2.0;
+    public static double redDeltaThreshold = 0.6;
 
-    public static double blueDeltaThreshold = 2.0;
+    public static double blueDeltaThreshold = 1.5;
 
     public double sideColor = 0.0;
     public double centerColor = 0.0;
@@ -106,10 +107,10 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
         frame.copyTo(finalMat);
         Imgproc.GaussianBlur(finalMat, finalMat, new Size(5, 5), 0.0);
 
-        sideZoneArea = new Rect(allianceColor == AlliancePosition.RED? redCenterX : blueLeftX,
-                allianceColor == AlliancePosition.RED? redCenterY : blueLeftY, width, height);
-        centerZoneArea = new Rect(Globals.COLOR == AlliancePosition.RED?redLeftX:blueCenterX,
-                allianceColor == AlliancePosition.RED?redLeftY:blueCenterY, width, height);
+        sideZoneArea = new Rect(allianceColor == AlliancePosition.RED? redLeftX : blueLeftX,
+                allianceColor == AlliancePosition.RED? redLeftY : blueLeftY, width, height);
+        centerZoneArea = new Rect(Globals.COLOR == AlliancePosition.RED?redCenterX:blueCenterX,
+                allianceColor == AlliancePosition.RED?redCenterY:blueCenterY, width, height);
 
         Mat sideZone = finalMat.submat(sideZoneArea);
         Mat centerZone = finalMat.submat(centerZoneArea);
@@ -176,7 +177,7 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
 //                    (meanCenterColor < maxCenterColor - threshold )
             ) {
                 // center zone has it
-                location = Side.LEFT;
+                location = Side.CENTER;
                 Imgproc.rectangle(frame, centerZoneArea, GREEN, 8);
                 Imgproc.rectangle(frame, sideZoneArea, YELLOW, 3);
             }
@@ -187,16 +188,22 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
 //                    (meanSideColor < maxSideColor - threshold)
             ) {
                 // left zone has it
-                location = Side.CENTER;
+                location = Side.LEFT;
                 Imgproc.rectangle(frame, sideZoneArea, GREEN,8);
                 Imgproc.rectangle(frame, centerZoneArea, YELLOW, 3);
-            } else {
+            } else if (Math.abs(meanCenterColor - meanSideColor) < 0.35){
                 // right zone has it
                 location = Side.RIGHT;
                 Imgproc.rectangle(frame, sideZoneArea, YELLOW, 3);
                 Imgproc.rectangle(frame, centerZoneArea, YELLOW, 3);
+            } else {
+                location = Side.CENTER;
+                Imgproc.rectangle(frame, centerZoneArea, GREEN, 8);
+                Imgproc.rectangle(frame, sideZoneArea, YELLOW, 3);
             }
         }
+
+        //Log.d("PropDetection_logger", "meanCenter: " + meanCenterColor + " | " + meanSideColor);
 
         sideZone.release();
         centerZone.release();

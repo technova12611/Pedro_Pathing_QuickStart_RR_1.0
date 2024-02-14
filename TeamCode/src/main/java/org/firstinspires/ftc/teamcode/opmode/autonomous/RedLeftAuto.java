@@ -23,11 +23,11 @@ public class RedLeftAuto extends FarAutoBase {
         this.start = new Pose2d(-38.5, -62.0, Math.toRadians(90));
         this.spike = new Pose2d[] {
                 new Pose2d(-46.5, -45.0, Math.toRadians(90)),
-                new Pose2d(-42.6, -36.2, Math.toRadians(90)),
+                new Pose2d(-42.0, -36.2, Math.toRadians(90)),
                 new Pose2d(-35.2, -36.2, Math.toRadians(25))
         };
         this.backdrop = new Pose2d[] {
-                new Pose2d(48.1, -29.3, Math.toRadians(180)),
+                new Pose2d(48.1, -29.0, Math.toRadians(180)),
                 new Pose2d(48.1, -34.0, Math.toRadians(180)),
                 new Pose2d(47.9, -39.7, Math.toRadians(180))
         };
@@ -35,7 +35,7 @@ public class RedLeftAuto extends FarAutoBase {
         this.parking = new Pose2d(45.0, -24.0, Math.toRadians(180));
 
         this.backOffFromSpike = new Pose2d[] {
-                new Pose2d(-34.5, -48.5, Math.toRadians(90)),
+                new Pose2d(-34.9, -48.5, Math.toRadians(90)),
                 new Pose2d(-38.5, -43.5, Math.toRadians(90)),
                 new Pose2d(-39.2, -45.0, Math.toRadians(90))
         };
@@ -53,7 +53,7 @@ public class RedLeftAuto extends FarAutoBase {
         };
         this.crossFieldAlignment = new Pose2d[] {
                 new Pose2d(-46.5, -11.75, Math.toRadians(180)),
-                new Pose2d(-38.5, -36.0, Math.toRadians(180)),
+                new Pose2d(-38.5, -35.7, Math.toRadians(180)),
                 new Pose2d(-46.5, -11.75, Math.toRadians(180))
         };
 
@@ -64,9 +64,9 @@ public class RedLeftAuto extends FarAutoBase {
         };
 
         cycleScore = new Pose2d[] {
-                new Pose2d(47.7, -35.0, Math.toRadians(180)),
-                new Pose2d(47.7, -31.0, Math.toRadians(180)),
-                new Pose2d(47.7, -30.0, Math.toRadians(180))
+                new Pose2d(48.3, -35.0, Math.toRadians(180)),
+                new Pose2d(48.3, -31.0, Math.toRadians(180)),
+                new Pose2d(48.3, -30.0, Math.toRadians(180))
         };
 
         this.moveUp1 =  new Pose2d(-38.5, -54.0, Math.toRadians(90));

@@ -144,6 +144,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
             teamPropPosition = teamProPipeline.getLocation();
             SPIKE = teamPropPosition.ordinal();
+
+            telemetry.addLine("Team Prop Position: " +  teamPropPosition);
             printDescription();
             telemetry.addLine("   ");
             telemetry.addLine(" <----- Team Prop Vision Detection " + "(" + Globals.COLOR + ", " + getFieldPosition() + ")" + " -----> ");
@@ -158,11 +160,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
             if (getAlliance() == AlliancePosition.RED) {
                 preloadPosition = Side.RIGHT;
-                if (getFieldPosition() == FieldPosition.NEAR) {
-                    centerStr = "Left";
+                if (getFieldPosition() == FieldPosition.FAR) {
                     sideStr = "Right";
-                } else {
-                    sideStr = "Left";
                 }
             } else {
                 preloadPosition = Side.LEFT;
@@ -277,6 +276,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         // prepare for the run, build the auto path
         //-------------------------------------------
         Log.d("Auto_logger", String.format("onRun() started at %.3f", getRuntime()) + " | actions: " + sched.size());
+        Log.d("Auto_logger", "Team Prop position: " + teamPropPosition + " | SPIKE:" + SPIKE);
+
         if (prev_teamPropPosition != teamPropPosition || sched.isEmpty()) {
             sched.reset();
             onRun();
@@ -448,7 +449,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 } else if (delta_stack_position < -1.5) {
                     adjustment_y = -1.25;
                     adjustment_x = avg_y_adj_right - y_offset;
-                } else if (delta_stack_position < -0.6) {
+                } else if (delta_stack_position < -0.75) {
                     adjustment_y = -0.5;
                     adjustment_x = avg_y_adj_right - y_offset;
                 } else if (delta_stack_position > 2.0) {
@@ -457,7 +458,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 } else if (delta_stack_position > 1.5) {
                     adjustment_y = 1.25;
                     adjustment_x = avg_y_adj_left - y_offset;
-                } else if (delta_stack_position > 0.6) {
+                } else if (delta_stack_position > 0.75) {
                     adjustment_y = 0.5;
                     adjustment_x = avg_y_adj_left - y_offset;
                 }
@@ -628,7 +629,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         " | slide voltage: " + String.format("%3.2f", slidePivotVoltage) +
                         " | back distance: " + String.format("%3.2f", backDistance));
 
-                if(Math.abs(slidePivotVoltage - Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_MIN) <= 0.03 || backDistance < 6.35 ) {
+                if(Math.abs(slidePivotVoltage - Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_MIN) <= 0.03 || backDistance < 6.5 ) {
                     pidDriveStraight.resetStartTime();
                     pidDriveStraight.update();
 
@@ -673,18 +674,27 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         backDistance = (backDistance+backDistance1)/2.0;
                     }
 
+                    double backDistance2 = outtake.getBackdropDistance();
+                    if(backDistance2 > 11.5) {
+                        backDistance2 = 0.0;
+                    } else if(backDistance != 0.0){
+                        backDistance = (backDistance+backDistance2)/2.0;
+                    }
+
                     if (outtake.hasOuttakeReached()) {
-                        if (slidePivotVoltage > (Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX + 0.15)) {
-                            straightDistance = 0.65;
+                        if (slidePivotVoltage > (Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX + 0.10)) {
+                            straightDistance = 0.75;
                         } else if (slidePivotVoltage > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX) {
                             straightDistance = 0.35;
                         }
+                    } else if(backDistance > 8.1) {
+                        straightDistance = -1.5;
                     } else if(backDistance > 7.5) {
-                        straightDistance = -1.25;
-                    } else if(backDistance > 6.75) {
-                        straightDistance = -0.75;
+                        straightDistance = -0.85;
+                    } else if(backDistance > 7.0) {
+                        straightDistance = -0.40;
                     } else {
-                        straightDistance = -0.6;
+                        straightDistance = -0.5;
                     }
 
                     Log.d("Backdrop_distance_Logger", " --- Starting Adjustment: " + straightDistance +

@@ -55,8 +55,8 @@ public class MotorWithPID {
 
         double newPower = Range.clip(this.pidfController.update(motor.getCurrentPosition(), motor.getVelocity()), -maxPower, maxPower);
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        Log.d("MotorWithPID", "newPower " + newPower + ", lastError " + pidfController.getLastError() +
-        " | Current position: " + getCurrentPosition() + " | target position: " + getTargetPosition());
+//        Log.d("MotorWithPID", "newPower " + newPower + ", lastError " + pidfController.getLastError() +
+//        " | Current position: " + getCurrentPosition() + " | target position: " + getTargetPosition());
 
         boolean isBusy = isBusy();
         if(getTargetPosition() == 0 && !isBusy) {
@@ -66,8 +66,10 @@ public class MotorWithPID {
         }
 
         if(previouslyBusy && !isBusy) {
-            Log.d("MotorWithPID_Logger", "Current position: " + getCurrentPosition() + " | target position: " + getTargetPosition()
-            + "| Elapsed time: " + (System.currentTimeMillis() - startTime));
+            Log.d("MotorWithPID_Logger", "Current position: " + getCurrentPosition()
+                    + " | target position: " + getTargetPosition()
+                    + " | internal_offset: " + internalOffset
+                    + "| Elapsed time: " + (System.currentTimeMillis() - startTime));
         }
 
         previouslyBusy = isBusy;
@@ -105,6 +107,9 @@ public class MotorWithPID {
      * @param position the desired encoder target position
      */
     public void setTargetPosition(int position) {
+
+        Log.d("MotorWithPID_Logger", "position to set: " + position + " | internal_offset: " + internalOffset + " | pid_target_position: " + (position - internalOffset));
+
         startTime = System.currentTimeMillis();
         this.targetPosition = position;
         this.pidfController.setTargetPosition(position - internalOffset); // TODO: Verify sign

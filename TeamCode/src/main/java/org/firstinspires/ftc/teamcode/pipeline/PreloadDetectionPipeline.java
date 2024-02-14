@@ -55,7 +55,7 @@ public class PreloadDetectionPipeline implements VisionProcessor {
         numOfDetections = currentDetections.size();
         if (currentDetections != null) {
             for (AprilTagDetection detection : currentDetections) {
-                    if (detection.id == targetAprilTagID) {
+                    if (detection.id == targetAprilTagID || detection.id == (targetAprilTagID-3)) {
                         if (detection.metadata != null) {
                             Log.d("PreloadDetectionPipeline_logger", "Detected_id: " + detection.id + " | targetAprilId: " + targetAprilTagID + " | Alliance Color: " + Globals.COLOR);
                             Log.d("PreloadDetectionPipeline_logger",
@@ -152,7 +152,7 @@ public class PreloadDetectionPipeline implements VisionProcessor {
                 break;
         }
 
-//        if (Globals.COLOR == AlliancePosition.RED) targetAprilTagID += 3;
+        if (Globals.COLOR == AlliancePosition.RED) targetAprilTagID += 3;
 
         leftZoneAverage = 1;
         rightZoneAverage = 1;
