@@ -65,7 +65,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
     // configure a wait time to allow partner time to finish the backdrop
     //----------------------------------------------------------------
     public int farSideAutoWaitTimeInSeconds = 0;
-    private int[] waitTimeOptions = {0, 4, 7, 10};
+    private int[] waitTimeOptions = {0, 5, 8, 12};
     private int selectionIdx = 0;
 
     public static boolean displayDistanceSensor = true;
@@ -629,7 +629,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         " | slide voltage: " + String.format("%3.2f", slidePivotVoltage) +
                         " | back distance: " + String.format("%3.2f", backDistance));
 
-                if(Math.abs(slidePivotVoltage - Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_MIN) <= 0.03 || backDistance < 6.5 ) {
+                if(Math.abs(slidePivotVoltage - Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_MIN) <= 0.01 || backDistance < 6.5 ) {
                     pidDriveStraight.resetStartTime();
                     pidDriveStraight.update();
 
@@ -683,15 +683,15 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
                     if (outtake.hasOuttakeReached()) {
                         if (slidePivotVoltage > (Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX + 0.10)) {
-                            straightDistance = 0.75;
+                            straightDistance = 0.6;
                         } else if (slidePivotVoltage > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX) {
-                            straightDistance = 0.35;
+                            straightDistance = 0.3;
                         }
                     } else if(backDistance > 8.1) {
                         straightDistance = -1.5;
                     } else if(backDistance > 7.5) {
-                        straightDistance = -0.85;
-                    } else if(backDistance > 7.0) {
+                        straightDistance = -1.05;
+                    } else if(backDistance > 6.9) {
                         straightDistance = -0.40;
                     } else {
                         straightDistance = -0.5;

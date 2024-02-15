@@ -53,7 +53,7 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
 
     public static double threshold = 0.0;
 
-    public static double redDeltaThreshold = 0.6;
+    public static double redDeltaThreshold = 0.75;
 
     public static double blueDeltaThreshold = 1.5;
 
@@ -191,7 +191,9 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
                 location = Side.LEFT;
                 Imgproc.rectangle(frame, sideZoneArea, GREEN,8);
                 Imgproc.rectangle(frame, centerZoneArea, YELLOW, 3);
-            } else if (Math.abs(meanCenterColor - meanSideColor) < 0.35){
+            } else if (Math.abs(meanCenterColor - meanSideColor) < 0.75 ||
+                    ((maxSideColor - meanSideColor) < 0.5 && (maxCenterColor - meanCenterColor) < 0.5)
+            ){
                 // right zone has it
                 location = Side.RIGHT;
                 Imgproc.rectangle(frame, sideZoneArea, YELLOW, 3);

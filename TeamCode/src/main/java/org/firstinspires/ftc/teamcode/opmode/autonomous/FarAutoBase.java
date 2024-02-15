@@ -353,11 +353,11 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                         getBackdropDistanceAdjustmentAction(),
 
                         outtake.latchScore1(),
-                        new SleepAction(0.5),
+                        new SleepAction(0.45),
                         outtake.afterScore2(),
-                        new SleepAction(0.15),
+                        new SleepAction(0.25),
                         outtake.latchScore2(),
-                        new SleepAction(0.40),
+                        new SleepAction(0.35),
                         new ActionUtil.RunnableAction(() -> {
                             pidDriveActivated = false;
                             pidDriveStarted = false;
@@ -502,10 +502,10 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                         getBackdropDistanceAdjustmentAction(),
                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_adjustment"),
                         outtake.latchScore1(),
-                        new SleepAction(0.5),
+                        new SleepAction(0.4),
                         outtake.latchScore2(),
                         new SleepAction(0.4),
-                        outtake.afterScore2(),
+                        outtake.afterScore(),
                         new SleepAction(sleepTime),
                         new ActionUtil.RunnableAction(() -> {
                             pidDriveActivated = false;
@@ -640,9 +640,9 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
     public Action strafeToBackdrop() {
         Vector2d backdrop_position = backdrop[SPIKE].position;
         if(Globals.COLOR == AlliancePosition.RED && preloadPosition != Side.RIGHT) {
-            backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.4);
+            backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.45);
         } else if(Globals.COLOR == AlliancePosition.BLUE && preloadPosition != Side.LEFT) {
-            backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.4);
+            backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.45);
         }
 
         Log.d("strafeToBackdrop_logger", "Preload position: " + preloadPosition +

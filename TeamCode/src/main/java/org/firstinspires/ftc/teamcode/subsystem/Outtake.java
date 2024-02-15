@@ -47,11 +47,11 @@ public class Outtake {
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
     public static int OUTTAKE_SLIDE_MID = 1250;
     public static int OUTTAKE_SLIDE_CYCLES_ONE = 980;
-    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1380;
-    public static int OUTTAKE_SLIDE_FAR_LOW = 970;
+    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1100;
+    public static int OUTTAKE_SLIDE_FAR_LOW = 950;
     public static int OUTTAKE_SLIDE_LOW = 830;
     public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 1050;
-    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO_2 = 1420;
+    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO_2 = 1200;
     public static int OUTTAKE_SLIDE_INIT = 0;
     public static int OUTTAKE_SLIDE_INCREMENT= 80;
     public static int OUTTAKE_SLIDE_DECREMENT= 50;
@@ -80,7 +80,7 @@ public class Outtake {
 
     public static double SLIDE_PIVOT_DUMP_1 = 0.248;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.68;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.60;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.61;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN_0 = 2.52;
 
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX = 2.82;

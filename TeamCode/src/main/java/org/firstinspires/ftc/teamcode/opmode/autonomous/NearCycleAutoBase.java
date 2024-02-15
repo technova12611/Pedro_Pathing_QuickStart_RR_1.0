@@ -47,6 +47,9 @@ public abstract class NearCycleAutoBase extends AutoBase {
     @Override
     protected void onRun() {
 
+        cycleCount = 0;
+        this.stackPosition = stackIntake1;
+
         Log.d("Drive_logger", "starting:" + new PoseMessage(drive.pose));
         Log.d("Drive_logger", "backdrop position:" + new PoseMessage(backdrop[SPIKE]));
 
@@ -152,13 +155,14 @@ public abstract class NearCycleAutoBase extends AutoBase {
 
         Pose2d stackAlignmentPosition = stackAlignment;
 
-        double latchSleepTIme = 0.25;
+        double latchSleepTIme = 0.2;
 
         if((Globals.COLOR == AlliancePosition.RED && SPIKE != 0) || (Globals.COLOR == AlliancePosition.BLUE && SPIKE != 2) ) {
             latchSleepTIme = 0.4;
         }
 
         if(++cycleCount == 2) {
+            Log.d("Auto_Logger", "Configure cycle: " + cycleCount);
             extendSlideAction = outtake.extendOuttakeCycleTwo();
             stackIntakePosition = stackIntake2;
             // do we need to move back, need to test more, changed from 0.5 -> 0.25 for now
@@ -263,7 +267,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                     new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_open_latch_start"),
                         getBackdropDistanceAdjustmentAction(),
                         outtake.latchScore1(),
-                    new SleepAction(0.3),
+                    new SleepAction(0.2),
                     outtake.latchScore2(),
                     new SleepAction(0.4),
                         outtake.afterScore2(),
