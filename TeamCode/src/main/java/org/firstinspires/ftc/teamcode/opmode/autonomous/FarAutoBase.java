@@ -49,6 +49,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
 
     @Override
     protected void onRun() {
+        this.stackPosition = stackIntake1;
 
         // depends on the spike position, the paths are different
         //
@@ -357,7 +358,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                         outtake.afterScore2(),
                         new SleepAction(0.25),
                         outtake.latchScore2(),
-                        new SleepAction(0.35),
+                        new SleepAction(0.55),
                         new ActionUtil.RunnableAction(() -> {
                             pidDriveActivated = false;
                             pidDriveStarted = false;
