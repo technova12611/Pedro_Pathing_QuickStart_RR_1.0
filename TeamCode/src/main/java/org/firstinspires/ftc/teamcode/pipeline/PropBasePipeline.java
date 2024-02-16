@@ -45,7 +45,7 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
     public static int redCenterX = 410;
     public static int redCenterY = 0;
 
-    public static int width = 150;
+    public static int width = 170;
     public static int height = 128;
 
     public static double blueThreshold = 1.75;

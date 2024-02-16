@@ -462,7 +462,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                 ),
 
                                 new SequentialAction(
-                                        new SleepAction(1.5),
+                                        new SleepAction(2.0),
                                         intake.prepareTeleOpsIntake(),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "Intake_off")
                                 )
@@ -506,7 +506,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                         new SleepAction(0.4),
                         outtake.latchScore2(),
                         new SleepAction(0.4),
-                        outtake.afterScore(),
+                        outtake.afterScore2(),
                         new SleepAction(sleepTime),
                         new ActionUtil.RunnableAction(() -> {
                             pidDriveActivated = false;
@@ -641,9 +641,9 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
     public Action strafeToBackdrop() {
         Vector2d backdrop_position = backdrop[SPIKE].position;
         if(Globals.COLOR == AlliancePosition.RED && preloadPosition != Side.RIGHT) {
-            backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.45);
+            backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.85);
         } else if(Globals.COLOR == AlliancePosition.BLUE && preloadPosition != Side.LEFT) {
-            backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.45);
+            backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.65);
         }
 
         Log.d("strafeToBackdrop_logger", "Preload position: " + preloadPosition +

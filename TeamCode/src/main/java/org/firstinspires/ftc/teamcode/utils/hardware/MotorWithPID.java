@@ -158,8 +158,8 @@ public class MotorWithPID {
         @Override
         public boolean run(TelemetryPacket packet) {
             Log.d("MotorWithPID_Logger", "Reset motor encoder: " + motorName);
-            resetIntegralGain();
             zeroMotorInternals();
+            resetIntegralGain();
             return false;
         }
     }

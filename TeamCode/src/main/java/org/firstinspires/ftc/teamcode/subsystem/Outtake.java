@@ -300,7 +300,7 @@ public class Outtake {
                 new SleepAction(0.2),
                 prepareToSlide(),
                 new SleepAction(0.3),
-                this.slide.setTargetPositionAction(-250),
+                this.slide.setTargetPositionAction(-200),
                 new SleepAction(0.5),
                 this.slide.zeroMotorInternalsAction("OuttakeSlideMotor"));
     }

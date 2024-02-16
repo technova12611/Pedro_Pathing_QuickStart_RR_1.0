@@ -666,12 +666,14 @@ public class ManualDrive extends LinearOpMode {
         && g1.left_stick_x == 0.0 && g1.left_stick_y == 0.0 ) {
             autoBackdropDistance = true;
 
-            double forwardDistance =0.42;
-            if(outtake.getSlidePivotServoVoltage() > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME) {
-                forwardDistance =0.7;
+            double forwardDistance =0.32;
+            double voltage = outtake.getSlidePivotServoVoltage();
+            if(voltage > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME) {
+                forwardDistance =0.5;
             }
 
-            Log.d("DriveWithPID_Logger_0_Teleops", "Pose before straight forward: " + new PoseMessage(this.drive.pose) + " | target=" + forwardDistance);
+            Log.d("DriveWithPID_Logger_0_Teleops", "Pose before straight forward: "
+                    + new PoseMessage(this.drive.pose) + " | target=" + forwardDistance + " | voltage: " + String.format("%3.2f", voltage));
             drive.updatePoseEstimate();
             start_y = drive.pose.position.y;
 
@@ -760,6 +762,7 @@ public class ManualDrive extends LinearOpMode {
         if (g1.start() && g1.guideOnce()) {
             sched.queueAction(outtake.resetSliderPosition());
         } else if (g1.guideOnce()) {
+            sched.queueAction(outtake.reverseDump());
 //            if (isHangingActivated) {
 //                Log.d("Hang_drop_down", "Hang current position: " + hang.getCurrentPosition());
 //                hang.dropdownFromHang();
