@@ -24,7 +24,7 @@ public class BlueRightAuto extends FarAutoBase {
       };
 
       this.backdrop = new Pose2d[] {
-              new Pose2d(48.0, 39.2, Math.toRadians(-180)),
+              new Pose2d(48.0, 39.5, Math.toRadians(-180)),
               new Pose2d(48.0, 32.5, Math.toRadians(-180)),
               new Pose2d(47.8, 26.9, Math.toRadians(-180))
       };
@@ -50,7 +50,7 @@ public class BlueRightAuto extends FarAutoBase {
       };
 
       this.stackIntake = new Pose2d[] {
-              new Pose2d(-58.0, 11.0, Math.toRadians(-180)),
+              new Pose2d(-57.8, 11.0, Math.toRadians(-180)),
               new Pose2d(-58.0, 35.0, Math.toRadians(-180)),
               new Pose2d(-58.0, 11.0, Math.toRadians(-180))
       };

@@ -27,15 +27,15 @@ public class RedLeftAuto extends FarAutoBase {
                 new Pose2d(-35.6, -36.2, Math.toRadians(25))
         };
         this.backdrop = new Pose2d[] {
-                new Pose2d(48.3, -28.5, Math.toRadians(180)),
+                new Pose2d(48.3, -28.0, Math.toRadians(180)),
                 new Pose2d(48.3, -34.5, Math.toRadians(180)),
-                new Pose2d(48.3, -40.2, Math.toRadians(180))
+                new Pose2d(48.3, -40.0, Math.toRadians(180))
         };
 
         this.parking = new Pose2d(45.0, -24.0, Math.toRadians(180));
 
         this.backOffFromSpike = new Pose2d[] {
-                new Pose2d(-34.9, -48.9, Math.toRadians(90)),
+                new Pose2d(-34.9, -49.2, Math.toRadians(90)),
                 new Pose2d(-38.5, -43.5, Math.toRadians(90)),
                 new Pose2d(-39.2, -45.0, Math.toRadians(90))
         };
@@ -52,9 +52,9 @@ public class RedLeftAuto extends FarAutoBase {
                 new Pose2d(-58.0, -12.0, Math.toRadians(180))
         };
         this.crossFieldAlignment = new Pose2d[] {
-                new Pose2d(-46.5, -11.75, Math.toRadians(180)),
+                new Pose2d(-46.5, -11.25, Math.toRadians(180)),
                 new Pose2d(-38.5, -35.7, Math.toRadians(180)),
-                new Pose2d(-46.5, -11.75, Math.toRadians(180))
+                new Pose2d(-46.5, -11.25, Math.toRadians(180))
         };
 
         this.backdropAlignment = new Pose2d[] {
