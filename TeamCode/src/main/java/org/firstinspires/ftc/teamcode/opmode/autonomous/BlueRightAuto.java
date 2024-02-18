@@ -24,17 +24,17 @@ public class BlueRightAuto extends FarAutoBase {
       };
 
       this.backdrop = new Pose2d[] {
-              new Pose2d(48.0, 39.5, Math.toRadians(-180)),
-              new Pose2d(48.0, 32.5, Math.toRadians(-180)),
-              new Pose2d(47.8, 26.9, Math.toRadians(-180))
+              new Pose2d(47.5, 39.5, Math.toRadians(-180)),
+              new Pose2d(47.5, 32.5, Math.toRadians(-180)),
+              new Pose2d(47.3, 26.9, Math.toRadians(-180))
       };
 
       this.parking = new Pose2d(46.0, 20.0, Math.toRadians(-180));
 
       this.cycleScore = new Pose2d[] {
-              new Pose2d(47.5, 30.0, Math.toRadians(-180)),
-              new Pose2d(47.5, 30.0, Math.toRadians(-180)),
-              new Pose2d(47.5, 36.0, Math.toRadians(-180)),
+              new Pose2d(46.9, 30.0, Math.toRadians(-180)),
+              new Pose2d(46.9, 30.0, Math.toRadians(-180)),
+              new Pose2d(46.9, 36.0, Math.toRadians(-180)),
       };
 
       this.backOffFromSpike = new Pose2d[] {

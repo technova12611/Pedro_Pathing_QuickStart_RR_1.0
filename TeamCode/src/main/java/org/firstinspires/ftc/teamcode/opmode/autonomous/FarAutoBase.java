@@ -61,16 +61,15 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
 
         // RED SPIKE right or BLUE left
         //--------------------------------------------
-        double waitTime = farSideAutoWaitTimeInSeconds;
         if(doCycle()) {
             if(SPIKE == 1) {
-                waitTime = 2.0;
+                farSideAutoWaitTimeInSeconds = 2.0;
             }
             else {
-                waitTime = 0.0;
+                farSideAutoWaitTimeInSeconds = 0.0;
             }
         }
-        sched.addAction(new SleepAction(waitTime));
+        sched.addAction(new SleepAction(farSideAutoWaitTimeInSeconds));
 
         if ((SPIKE == 2 && getAlliance() == AlliancePosition.RED) ||
                 (SPIKE == 0 && getAlliance() == AlliancePosition.BLUE)) {
@@ -356,9 +355,9 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                         outtake.latchScore1(),
                         new SleepAction(0.45),
                         outtake.afterScore2(),
-                        new SleepAction(0.25),
+                        new SleepAction(0.35),
                         outtake.latchScore2(),
-                        new SleepAction(0.55),
+                        new SleepAction(0.65),
                         new ActionUtil.RunnableAction(() -> {
                             pidDriveActivated = false;
                             pidDriveStarted = false;

@@ -64,8 +64,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
     private GamePadController g1, g2;
     // configure a wait time to allow partner time to finish the backdrop
     //----------------------------------------------------------------
-    public int farSideAutoWaitTimeInSeconds = 0;
-    private int[] waitTimeOptions = {0, 5, 8, 12};
+    public double farSideAutoWaitTimeInSeconds = 11.0;
+    private double[] waitTimeOptions = {0.0, 5.0, 8.0, 11.0};
     private int selectionIdx = 0;
 
     public static boolean displayDistanceSensor = true;
@@ -185,8 +185,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
                 // cycle the idx
                 if (selectionIdx < 0) {
-                    selectionIdx = waitTimeOptions.length;
-                } else if (selectionIdx > waitTimeOptions.length) {
+                    selectionIdx = waitTimeOptions.length-1;
+                } else if (selectionIdx >= waitTimeOptions.length) {
                     selectionIdx = 0;
                 }
 
@@ -473,7 +473,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         String.format("%3.2f", (drive.pose.position.y + adjustment_y)) + "," + adjustment_y + ")"
                 );
 
-                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -58.25, -56.25);
+                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -58.75, -56.95);
 
                 if (180 - Math.abs(Math.toDegrees(drive.pose.heading.toDouble())) > 3.0) {
                     adjustment_y = 0.0;
@@ -566,9 +566,9 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             if (counter++ >= 3) {
                 double avg_distance = backdropDistanceList.getAvg();
 
-                double base_distance = 26.0;
+                double base_distance = 27.0;
 
-                double adjustment = Range.clip((base_distance - avg_distance) * 0.7, -1.5, 1.5);
+                double adjustment = Range.clip((base_distance - avg_distance) * 0.8, -1.5, 1.5);
 
                 Pose2d currentPose = drive.pose;
                 drive.pose = new Pose2d(currentPose.position.plus(new Vector2d(adjustment, 0)), currentPose.heading);
@@ -582,7 +582,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 return false;
             }
             double distance = outtake.getBackdropDistance();
-            if (distance < 32.5 && distance > 21.0) {
+            if (distance < 33.5 && distance > 21.0) {
                 backdropDistanceList.add(distance);
             }
 
@@ -610,6 +610,10 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
             if(backDistance > 10.5) {
                 backDistance = 0.0;
+            } else if(backDistance < 5.0 ) {
+                straightDistance = 1.5;
+            } else if(backDistance < 5.75) {
+                straightDistance = 1.0;
             }
 
             if (!pidDriveStarted) {
@@ -629,7 +633,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         " | slide voltage: " + String.format("%3.2f", slidePivotVoltage) +
                         " | back distance: " + String.format("%3.2f", backDistance));
 
-                if(Math.abs(slidePivotVoltage - Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_MIN) <= 0.01 || backDistance < 6.5 ) {
+                if(Math.abs(slidePivotVoltage - Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_MIN) <= 0.01
+                        || (backDistance < 6.5 && straightDistance < 0)) {
                     pidDriveStraight.resetStartTime();
                     pidDriveStraight.update();
 
@@ -695,6 +700,10 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         straightDistance = -0.40;
                     } else {
                         straightDistance = -0.5;
+                    }
+
+                    if(backDistance < 5.25 && backDistance > 3.75) {
+                        straightDistance = 1.5;
                     }
 
                     Log.d("Backdrop_distance_Logger", " --- Starting Adjustment: " + straightDistance +
