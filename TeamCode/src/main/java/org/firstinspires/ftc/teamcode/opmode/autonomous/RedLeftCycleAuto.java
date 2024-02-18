@@ -23,7 +23,7 @@ public class RedLeftCycleAuto extends RedLeftAuto {
         };
 
         this.stackAlignment = new Pose2d(-46.0, -11.0, Math.toRadians(180.85));
-        this.stackIntake1 = new Pose2d(-56.5, -12.0, Math.toRadians(180));
+        this.stackIntake1 = new Pose2d(-57.5, -12.0, Math.toRadians(180));
         this.safeTrussPassStop = new Pose2d(-51.0, -11.0, Math.toRadians(180));
 
         this.backdropAlignmentCycle = new Pose2d[]{
