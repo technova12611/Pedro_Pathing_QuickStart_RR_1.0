@@ -26,9 +26,6 @@ public class PropNearPipeline extends PropBasePipeline {
     public void init(int width, int height, CameraCalibration calibration) {
 
         super.init(width, height, calibration);
-
-        redDeltaThreshold = 1.95;
-        blueDeltaThreshold = 1.25;
     }
 
 }

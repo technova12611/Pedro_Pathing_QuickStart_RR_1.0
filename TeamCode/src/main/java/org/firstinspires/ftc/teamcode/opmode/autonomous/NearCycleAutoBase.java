@@ -73,9 +73,10 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         ),
 
                         new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_position"),
-                        //new MecanumDrive.UpdateDrivePoseAction(drive, this.visionPortal2, this.aprilTag),
-
-//                        outtake.prepareToScore(),
+                        new ActionUtil.RunnableAction(() -> {
+                            outtake.getBackdropDistanceMean();
+                            return false;
+                        }),
                         new SleepAction(0.1),
                         getBackdropDistanceAdjustmentAction(),
                         outtake.latchScore1(),
@@ -85,7 +86,10 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         new SleepAction(0.15),
                         new ActionUtil.RunnableAction(() -> {
                             pidDriveActivated = false;
+                            pidDriveStarted = false;
+                            pidDriveStraight.resetIntegralGain();
                             straightDistance = 0.0;
+                            outtake.stopBackdropDistanceMeasurement();
                             return false;
                         }),
                         new MecanumDrive.DrivePoseLoggingAction(drive, "end_of_scoring_position"),
@@ -243,6 +247,10 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                             .strafeToLinearHeading(cycleScorePosition, cycleScore[SPIKE].heading,
                                                     drive.slowVelConstraint, drive.slowAccelConstraint)
                                             .build(),
+                                        new ActionUtil.RunnableAction(() -> {
+                                            outtake.getBackdropDistanceMean();
+                                            return false;
+                                        }),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_position")
                                 ),
 
@@ -277,6 +285,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         pidDriveStarted = false;
                         pidDriveStraight.resetIntegralGain();
                         straightDistance = 0.0;
+                        outtake.stopBackdropDistanceMeasurement();
                         return false;
                     })
                 )

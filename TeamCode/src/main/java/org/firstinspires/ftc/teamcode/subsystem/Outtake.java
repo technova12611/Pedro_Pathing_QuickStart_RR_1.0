@@ -32,6 +32,8 @@ import org.firstinspires.ftc.teamcode.utils.software.MovingArrayList;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Config
 public class Outtake {
@@ -154,6 +156,11 @@ public class Outtake {
 
     private Rev2mDistanceSensor backdropDistance;
 
+    public ElapsedTime backdropDistanceMeasurementTimer = null;
+    private ExecutorService backdropDistanceExecutor = Executors.newSingleThreadExecutor();
+
+    private MovingArrayList backdropDistanceList = new MovingArrayList(10);
+
     public FixerServoPosition fixerServoPosition = FixerServoPosition.LEVEL_0;
     private MovingArrayList slidePivotVoltages = new MovingArrayList(10);
 
@@ -239,6 +246,7 @@ public class Outtake {
         }
 
         checkSlidePivotPosition();
+        measureBackdropDistance();
 
 //        if (!this.slide.isBusy()) {
 //            if (this.slide.getCurrentPosition() < -20) {
@@ -608,13 +616,38 @@ public class Outtake {
             Log.d("Slide_Pivot_Logger",
                     "slidePivot " + direction + " servo position:" + String.format("%3.3f",servoPosition)
                             + " | slideServoVoltage: " + String.format("%3.2f",slidePivotVoltageMean) +
-                    " | back Distance: " + String.format("%3.2f",getBackdropDistance()));
+                    " | back Distance: " + String.format("%3.2f",getBackdropDistanceMean()));
             slidePivotlEapsedTimer.reset();
         }
 
         previousSlidePivotVoltage = slidePivotVoltageMean;
 
         return backdropTouched;
+    }
+
+    private void measureBackdropDistance() {
+        if(backdropDistanceMeasurementTimer != null && backdropDistanceList.isEmpty()) {
+            backdropDistanceExecutor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    while(backdropDistanceMeasurementTimer != null) {
+                        backdropDistanceList.add(getBackdropDistance());
+                    }
+                }
+            });
+        }
+
+        if(backdropDistanceMeasurementTimer != null && backdropDistanceMeasurementTimer.milliseconds() > 1500.0) {
+            backdropDistanceMeasurementTimer = null;
+            backdropDistanceList.clear();
+            backdropDistanceExecutor.shutdown();
+        }
+    }
+
+    public void stopBackdropDistanceMeasurement() {
+        backdropDistanceMeasurementTimer = null;
+        backdropDistanceList.clear();
+        backdropDistanceExecutor.shutdown();
     }
 
     public void resetSlideEncoder() {
@@ -863,6 +896,15 @@ public class Outtake {
 
     public double getSlidePivotServoVoltage() {
         return slidePivotVoltages.getMean();
+    }
+
+    public double getBackdropDistanceMean() {
+        if(backdropDistanceMeasurementTimer == null) {
+            backdropDistanceMeasurementTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+            return backdropDistance.getDistance(DistanceUnit.INCH);
+        }
+
+        return backdropDistanceList.getMean();
     }
 
     public double getBackdropDistance() {

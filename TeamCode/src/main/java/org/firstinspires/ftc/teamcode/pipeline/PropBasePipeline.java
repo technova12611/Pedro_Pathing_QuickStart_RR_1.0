@@ -53,7 +53,7 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
 
     public static double threshold = 0.0;
 
-    public static double redDeltaThreshold = 0.75;
+    public static double redDeltaThreshold = 0.85;
 
     public static double blueDeltaThreshold = 0.85;
 
@@ -205,7 +205,10 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
             }
         }
 
-        //Log.d("PropDetection_logger", "meanCenter: " + meanCenterColor + " | " + meanSideColor);
+//        Log.d("PropDetection_logger", "meanCenter: " + meanCenterColor + " | " + meanSideColor + " | " + (meanSideColor - meanCenterColor) + " | " + redDeltaThreshold
+//        + " | " + (meanSideColor - meanCenterColor > redDeltaThreshold &&
+//                        meanSideColor < 7.0 && meanCenterColor < 7.0)
+//         );
 
         sideZone.release();
         centerZone.release();

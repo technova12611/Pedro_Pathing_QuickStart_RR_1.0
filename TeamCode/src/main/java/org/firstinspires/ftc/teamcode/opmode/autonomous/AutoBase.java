@@ -173,6 +173,10 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             telemetry.addData(centerStr + " color:", "Mean: %3.2f | Max: %3.2f ", teamProPipeline.meanCenterColor, teamProPipeline.maxCenterColor);
             telemetry.addData(sideStr + " color:", "Mean: %3.2f | Max: %3.2f ", teamProPipeline.meanSideColor, teamProPipeline.maxSideColor);
             telemetry.addData("Spike Position", teamPropPosition.toString() + " | SPIKE: " + SPIKE);
+
+            telemetry.addData(" Delta Threshold:", "Red: %3.2f | Blue: %3.2f ", PropBasePipeline.redDeltaThreshold, PropBasePipeline.blueDeltaThreshold);
+            telemetry.addData(" Color Threshold:", "Red: %3.2f | Blue: %3.2f ", PropBasePipeline.redThreshold, PropBasePipeline.blueThreshold);
+
             telemetry.addLine("\n");
 
             if (getFieldPosition() == FieldPosition.FAR) {
@@ -566,13 +570,15 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             if (counter++ >= 3) {
                 double avg_distance = backdropDistanceList.getAvg();
 
-                double base_distance = 27.0;
+                double base_distance = 27.25;
 
                 double adjustment = Range.clip((base_distance - avg_distance) * 0.8, -1.5, 1.5);
 
                 Pose2d currentPose = drive.pose;
                 drive.pose = new Pose2d(currentPose.position.plus(new Vector2d(adjustment, 0)), currentPose.heading);
                 drive.updatePoseEstimate();
+
+                outtake.stopBackdropDistanceMeasurement();
 
                 Log.d("BackdropDistance_Logger", "Current Drive Pose: " + new PoseMessage(currentPose)
                         + " | avg backdrop distance: " + String.format("%3.2f", avg_distance)
@@ -581,7 +587,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         + " | Target backdrop Pose: " + new PoseMessage(backdropPose));
                 return false;
             }
-            double distance = outtake.getBackdropDistance();
+            double distance = outtake.getBackdropDistanceMean();
             if (distance < 33.5 && distance > 21.0) {
                 backdropDistanceList.add(distance);
             }
@@ -606,20 +612,20 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
         if (pidDriveActivated && Math.abs(straightDistance) > 0.0) {
             double slidePivotVoltage = outtake.getSlidePivotServoVoltage();
-            double backDistance = outtake.getBackdropDistance();
+            double backDistance = outtake.getBackdropDistanceMean();
 
             if(backDistance > 10.5) {
                 backDistance = 0.0;
-            } else if(backDistance < 5.0 ) {
+            } else if(backDistance < 5.5 ) {
                 straightDistance = 1.5;
-            } else if(backDistance < 5.75) {
+            } else if(backDistance < 6.05) {
                 straightDistance = 1.0;
             }
 
             if (!pidDriveStarted) {
                 pidDriveStraight.setTargetPosition((int) (straightDistance / MecanumDrive.PARAMS.inPerTick));
                 pidDriveStarted = true;
-                Log.d("backdrop_pidDriveUpdate_logger", "straightDistance: "
+                Log.d("Backdrop_distance_Logger", "straightDistance: "
                         + straightDistance + " | pidDriveActivated: " + pidDriveActivated
                         + " | pidDriveStarted: " + pidDriveStarted + " | isBusy: " + pidDriveStraight.isBusy() +
                         " | drive pose: " + new PoseMessage(drive.pose));
@@ -633,8 +639,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         " | slide voltage: " + String.format("%3.2f", slidePivotVoltage) +
                         " | back distance: " + String.format("%3.2f", backDistance));
 
-                if(Math.abs(slidePivotVoltage - Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_MIN) <= 0.01
-                        || (backDistance < 6.5 && straightDistance < 0)) {
+                if(Math.abs(slidePivotVoltage - Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_MAX) <= 0.05
+                        || (backDistance < 7.05 && straightDistance < 0)) {
                     pidDriveStraight.resetStartTime();
                     pidDriveStraight.update();
 
@@ -666,43 +672,29 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                     pidDriveStarted = false;
                     straightDistance = 0.0;
                     double slidePivotVoltage = outtake.getSlidePivotServoVoltage();
-                    double backDistance = outtake.getBackdropDistance();
+                    double backDistance = outtake.getBackdropDistanceMean();
 
                     if(backDistance > 11.5) {
                         backDistance = 0.0;
                     }
-                    double backDistance1 = outtake.getBackdropDistance();
-
-                    if(backDistance1 > 11.5) {
-                        backDistance1 = 0.0;
-                    } else if(backDistance != 0.0){
-                        backDistance = (backDistance+backDistance1)/2.0;
-                    }
-
-                    double backDistance2 = outtake.getBackdropDistance();
-                    if(backDistance2 > 11.5) {
-                        backDistance2 = 0.0;
-                    } else if(backDistance != 0.0){
-                        backDistance = (backDistance+backDistance2)/2.0;
-                    }
 
                     if (outtake.hasOuttakeReached()) {
                         if (slidePivotVoltage > (Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX + 0.10)) {
-                            straightDistance = 0.6;
+                            straightDistance = 0.85;
                         } else if (slidePivotVoltage > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX) {
-                            straightDistance = 0.3;
+                            straightDistance = 0.5;
                         }
-                    } else if(backDistance > 8.1) {
+                    } else if(backDistance > 8.75) {
                         straightDistance = -1.5;
-                    } else if(backDistance > 7.5) {
+                    } else if(backDistance > 7.85) {
                         straightDistance = -1.05;
-                    } else if(backDistance > 6.9) {
+                    } else if(backDistance > 7.25) {
                         straightDistance = -0.40;
                     } else {
                         straightDistance = -0.5;
                     }
 
-                    if(backDistance < 5.25 && backDistance > 3.75) {
+                    if(backDistance < 5.5 && backDistance > 3.75) {
                         straightDistance = 1.5;
                     }
 

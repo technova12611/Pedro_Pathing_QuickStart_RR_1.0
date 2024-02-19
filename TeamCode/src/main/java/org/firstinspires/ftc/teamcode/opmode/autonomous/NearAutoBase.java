@@ -54,7 +54,11 @@ public abstract class NearAutoBase extends AutoBase {
                           )
                       ),
                       new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_position"),
-                      outtake.prepareToScore(),
+                      new ActionUtil.RunnableAction(() -> {
+                          outtake.getBackdropDistanceMean();
+                          return false;
+                      }),
+                      outtake.prepareToScoreCycle(),
                       new SleepAction(0.5),
                       getBackdropDistanceAdjustmentAction(),
                       outtake.latchScore1(),
@@ -64,7 +68,10 @@ public abstract class NearAutoBase extends AutoBase {
                       new SleepAction(0.50),
                       new ActionUtil.RunnableAction(() -> {
                           pidDriveActivated = false;
+                          pidDriveStarted = false;
+                          pidDriveStraight.resetIntegralGain();
                           straightDistance = 0.0;
+                          outtake.stopBackdropDistanceMeasurement();
                           return false;
                       })
               ));

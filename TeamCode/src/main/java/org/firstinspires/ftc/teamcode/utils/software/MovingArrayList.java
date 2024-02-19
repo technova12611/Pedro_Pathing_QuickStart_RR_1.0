@@ -64,4 +64,16 @@ public class MovingArrayList {
         arrayList.remove(minIndex);
         arrayList.remove(maxIndex > minIndex ? maxIndex - 1 : maxIndex); // Adjust index if max was after min
     }
+
+    public int size() {
+        return arrayList.size();
+    }
+
+    public boolean isEmpty() {
+        return arrayList.isEmpty();
+    }
+
+    public void clear() {
+        arrayList.clear();
+    }
 }

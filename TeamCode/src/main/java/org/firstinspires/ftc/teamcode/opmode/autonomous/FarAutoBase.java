@@ -481,6 +481,10 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                                 .setReversed(true)
                                                 .strafeToLinearHeading(cycleScorePosition, cycleScore[SPIKE].heading)
                                                 .build(),
+                                        new ActionUtil.RunnableAction(() -> {
+                                            outtake.getBackdropDistanceMean();
+                                            return false;
+                                        }),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_position")
                                 ),
 
@@ -514,6 +518,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                             pidDriveStraight.resetIntegralGain();
                             straightDistance = 0.0;
 
+                            outtake.stopBackdropDistanceMeasurement();
                             return false;
                         })
                 )
