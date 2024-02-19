@@ -351,13 +351,14 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                 new SequentialAction(
                         new MecanumDrive.DrivePoseLoggingAction(drive, "start_scoring"),
                         getBackdropDistanceAdjustmentAction(),
-
                         outtake.latchScore1(),
-                        new SleepAction(0.45),
-                        outtake.afterScore2(),
-                        new SleepAction(0.35),
+                        new SleepAction(0.50),
+                        outtake.afterScore(),
+                        new SleepAction(0.20),
                         outtake.latchScore2(),
-                        new SleepAction(0.65),
+                        new SleepAction(0.35),
+                        outtake.afterScore2(),
+                        new SleepAction(0.25),
                         new ActionUtil.RunnableAction(() -> {
                             pidDriveActivated = false;
                             pidDriveStarted = false;

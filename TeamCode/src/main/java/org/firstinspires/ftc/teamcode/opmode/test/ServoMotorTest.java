@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder;
 import com.acmerobotics.roadrunner.ftc.RawEncoder;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -15,12 +16,14 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.subsystem.Drone;
 import org.firstinspires.ftc.teamcode.subsystem.Hang;
@@ -94,6 +97,10 @@ public class ServoMotorTest extends LinearOpMode {
     DigitalChannel beamBreaker1;
 
     DigitalChannel beamBreaker2;
+
+    Rev2mDistanceSensor stackDistance;
+    Rev2mDistanceSensor stackDistance2;
+    Rev2mDistanceSensor backdropDistance;
 
     boolean prevBeamBreakerState = true;
     boolean curBeamBreakerState = true;
@@ -169,6 +176,12 @@ public class ServoMotorTest extends LinearOpMode {
 
         beamBreaker1 = hardwareMap.get(DigitalChannel.class, "beamBreaker1");
         beamBreaker2 = hardwareMap.get(DigitalChannel.class, "beamBreaker2");
+
+        stackDistance = (Rev2mDistanceSensor) hardwareMap.get(DistanceSensor.class, "stackDistance");
+        stackDistance2 = (Rev2mDistanceSensor) hardwareMap.get(DistanceSensor.class, "stackDistance2");
+        backdropDistance = (Rev2mDistanceSensor) hardwareMap.get(DistanceSensor.class, "backdropDistance");
+
+        this.stackIntakeLinkage.setPosition(Intake.STACK_INTAKE_LINKAGE_DOWN);
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
@@ -405,6 +418,10 @@ public class ServoMotorTest extends LinearOpMode {
                 this.hangMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
 
+            telemetry.addData("** Stack distance sensor left: ", String.format("%3.2f",stackDistance.getDistance(DistanceUnit.INCH)));
+            telemetry.addData("** Stack distance sensor right: ", String.format("%3.2f",stackDistance2.getDistance(DistanceUnit.INCH)));
+            telemetry.addData("**    Backdrop distance sensor: ", String.format("%3.2f", backdropDistance.getDistance(DistanceUnit.INCH)));
+
             YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
             AngularVelocity angularVelocity = imu.getRobotAngularVelocity(AngleUnit.DEGREES);
 
@@ -447,6 +464,10 @@ public class ServoMotorTest extends LinearOpMode {
             telemetry.addData("par0 overflow encoder value: ", par.encoder.getPositionAndVelocity().position);
             telemetry.addData("perp overflow encoder value: ", perp.encoder.getPositionAndVelocity().position);
             telemetry.addData("par1 overflow encoder value: ", par1.encoder.getPositionAndVelocity().position);
+
+            telemetry.addData("** Stack distance sensor left: ", String.format("%3.2f",stackDistance.getDistance(DistanceUnit.INCH)));
+            telemetry.addData("** Stack distance sensor right: ", String.format("%3.2f",stackDistance2.getDistance(DistanceUnit.INCH)));
+            telemetry.addData("**    Backdrop distance sensor: ", String.format("%3.2f", backdropDistance.getDistance(DistanceUnit.INCH)));
 
             telemetry.update();
 

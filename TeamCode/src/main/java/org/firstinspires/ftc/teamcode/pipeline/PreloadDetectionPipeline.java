@@ -55,7 +55,9 @@ public class PreloadDetectionPipeline implements VisionProcessor {
         numOfDetections = currentDetections.size();
         if (currentDetections != null) {
             for (AprilTagDetection detection : currentDetections) {
-                    if (detection.id == targetAprilTagID || detection.id == (targetAprilTagID-3)) {
+                    // we are doing this check in case for wahtever reason the apriltag got switched
+                    // we only need to know the position LEFT/CENTER/RIGHT tp corresponding numbers
+                    if (detection.id == targetAprilTagID || detection.id == (targetAprilTagID-3) || detection.id == (targetAprilTagID+3)) {
                         if (detection.metadata != null) {
                             Log.d("PreloadDetectionPipeline_logger", "Detected_id: " + detection.id + " | targetAprilId: " + targetAprilTagID + " | Alliance Color: " + Globals.COLOR);
                             Log.d("PreloadDetectionPipeline_logger",
