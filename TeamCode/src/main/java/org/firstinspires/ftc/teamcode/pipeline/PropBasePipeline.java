@@ -33,29 +33,29 @@ public class PropBasePipeline implements VisionProcessor, CameraStreamSource {
 
     private Mat finalMat = new Mat();
 
-    public static int blueLeftX = 280;
-    public static int blueLeftY = 40;
+    public int blueLeftX = 280;
+    public int blueLeftY = 40;
 
-    public static int blueCenterX = 545;
-    public static int blueCenterY = 20;
+    public int blueCenterX = 545;
+    public int blueCenterY = 20;
 
-    public static int redLeftX = 110;
-    public static int redLeftY = 25;
+    public int redLeftX = 110;
+    public int redLeftY = 25;
 
-    public static int redCenterX = 410;
-    public static int redCenterY = 0;
+    public int redCenterX = 400;
+    public int redCenterY = 0;
 
-    public static int width = 170;
-    public static int height = 128;
+    public int width = 170;
+    public int height = 128;
 
-    public static double blueThreshold = 1.75;
-    public static double redThreshold = 1.75;
+    public double blueThreshold = 1.75;
+    public double redThreshold = 1.75;
 
-    public static double threshold = 0.0;
+    public double threshold = 0.0;
 
-    public static double redDeltaThreshold = 0.85;
+    public double redDeltaThreshold = 0.60;
 
-    public static double blueDeltaThreshold = 0.85;
+    public double blueDeltaThreshold = 0.60;
 
     public double sideColor = 0.0;
     public double centerColor = 0.0;

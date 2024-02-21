@@ -37,7 +37,7 @@ public class WolfDriveTest extends LinearOpMode {
         telemetry.update();
 
         // Init
-        baseDrive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
+        baseDrive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0), true);
         drive = new WolfDrive(baseDrive);
 
         intake = new Intake(hardwareMap, false);

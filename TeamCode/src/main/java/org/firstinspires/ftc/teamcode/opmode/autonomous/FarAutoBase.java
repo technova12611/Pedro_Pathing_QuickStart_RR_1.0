@@ -284,9 +284,9 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
 
         Action relocalizationAction = new BackdropRelocalizationAction(drive, outtake, backdrop[SPIKE]);
 
-        if(SPIKE == 1) {
-            relocalizationAction = new NullAction();
-        }
+//        if(SPIKE == 1) {
+//            relocalizationAction = new NullAction();
+//        }
 
         // Move to the backdrop side, and potentially add a configurable sleep time
         //-------------------------------------------------------------------------

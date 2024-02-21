@@ -41,12 +41,12 @@ public final class AutoPathTestForDonuts extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        drive = new MecanumDrive(hardwareMap, starting);
+        drive = new MecanumDrive(hardwareMap, starting, true);
 
         intake = new Intake(hardwareMap, false);
         outtake = new Outtake(hardwareMap, false);
 
-        this.sched = new AutoActionScheduler(this::update);
+        this.sched = new AutoActionScheduler(this::update,hardwareMap);
 
         intake.initialize(true);
         outtake.initialize();

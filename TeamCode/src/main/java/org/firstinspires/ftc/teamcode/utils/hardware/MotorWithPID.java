@@ -48,6 +48,7 @@ public class MotorWithPID {
         return motor;
     }
 
+    private double previousPower = 0.0;
     /**
      * Updates the power sent to the motor according to the pidf controller.
      */
@@ -60,9 +61,15 @@ public class MotorWithPID {
 
         boolean isBusy = isBusy();
         if(getTargetPosition() == 0 && !isBusy) {
-            motor.setPower(0.0);
+            if(Math.abs(previousPower) != 0.0) {
+                motor.setPower(0.0);
+                previousPower = 0.0;
+            }
         } else {
-            motor.setPower(newPower);
+            if(Math.abs(previousPower-newPower) > 0.01) {
+                motor.setPower(newPower);
+                previousPower = newPower;
+            }
         }
 
         if(previouslyBusy && !isBusy) {
@@ -83,7 +90,11 @@ public class MotorWithPID {
         double newPower = Range.clip(this.pidfController.update(motor.getCurrentPosition(), motor.getVelocity()) * targetVoltage / currentVoltage, -maxPower, maxPower);
 //        Log.d("MotorWithPID", "newPower " + newPower + ", lastError " + pidfController.getLastError());
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        motor.setPower(newPower);
+
+        if(Math.abs(previousPower - newPower) > 0.01) {
+            motor.setPower(newPower);
+            previousPower = newPower;
+        }
     }
 
     /**
@@ -111,6 +122,7 @@ public class MotorWithPID {
         Log.d("MotorWithPID_Logger", "position to set: " + position + " | internal_offset: " + internalOffset + " | pid_target_position: " + (position - internalOffset));
 
         startTime = System.currentTimeMillis();
+        previousPower = 0.0;
         this.targetPosition = position;
         this.pidfController.setTargetPosition(position - internalOffset); // TODO: Verify sign
     }
@@ -203,6 +215,7 @@ public class MotorWithPID {
 
     public void zeroMotorInternals() {
         motor.setPower(0.0);
+        previousPower = 0.0;
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         setTargetPosition(0);
         setCurrentPosition(0);
@@ -271,6 +284,7 @@ public class MotorWithPID {
      */
     public void stopMotor() {
         motor.setPower(0);
+        previousPower = 0.0;
     }
 
     /**

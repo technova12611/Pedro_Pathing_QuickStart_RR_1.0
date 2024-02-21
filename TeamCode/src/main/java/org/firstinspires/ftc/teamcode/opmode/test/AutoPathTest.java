@@ -26,6 +26,7 @@ import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 public final class AutoPathTest extends LinearOpMode {
     public static Pose2d starting = new Pose2d(14.5, -62.0, Math.PI/2);
     public static Pose2d cycleStart = new Pose2d(28.5, -11.0, Math.PI);
+    public static Pose2d backdropAlignment = new Pose2d(38.0, -11.0, Math.PI);
     public static Pose2d backdrop = new Pose2d(48.5, -36.0, Math.PI);
     public static Pose2d spike = new Pose2d(28.5, -24.5, Math.PI);
     public static Pose2d parking = new Pose2d(52.0, -60.0, Math.PI);
@@ -44,11 +45,11 @@ public final class AutoPathTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        drive = new MecanumDrive(hardwareMap, starting);
+        drive = new MecanumDrive(hardwareMap, backdropAlignment,true);
         intake = new Intake(hardwareMap, false);
         outtake = new Outtake(hardwareMap, false);
         this.drone = new Drone(hardwareMap);
-        this.sched = new AutoActionScheduler(this::update);
+        this.sched = new AutoActionScheduler(this::update,hardwareMap);
 
         intake.initialize(true);
         outtake.initialize();
@@ -68,35 +69,35 @@ public final class AutoPathTest extends LinearOpMode {
                         new MecanumDrive.DrivePoseLoggingAction(drive, "path_begin"),
                         drive.actionBuilder(drive.pose)
                                 .strafeToLinearHeading(backdrop.position, backdrop.heading)
-                                .build(),
+                                .build()
 
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop"),
-                        drive.actionBuilder(backdrop)
-                                .strafeToLinearHeading(spike.position, spike.heading)
-                                .build(),
-
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "spike"),
-                        drive.actionBuilder(spike)
-                                .strafeToLinearHeading(cycleStart.position, cycleStart.heading)
-                                .build(),
-
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle"),
-                        new ParallelAction(
-                            drive.actionBuilderFast(cycleStart)
-                                    .strafeTo(stackAlignment.position)
-                                    .build(),
-                                new SequentialAction(
-                                new SleepAction(1.0),
-                                    intake.prepareStackIntake()
-                            )
-                        ),
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "stackIntake"),
-                        drive.actionBuilder(stackAlignment)
-                                .strafeTo(stackIntake.position)
-                                .build(),
-
-                        intake.intakeTwoStackedPixels(),
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "stackIntake_end")
+//                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop"),
+//                        drive.actionBuilder(backdrop)
+//                                .strafeToLinearHeading(spike.position, spike.heading)
+//                                .build(),
+//
+//                        new MecanumDrive.DrivePoseLoggingAction(drive, "spike"),
+//                        drive.actionBuilder(spike)
+//                                .strafeToLinearHeading(cycleStart.position, cycleStart.heading)
+//                                .build(),
+//
+//                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle"),
+//                        new ParallelAction(
+//                            drive.actionBuilderFast(cycleStart)
+//                                    .strafeTo(stackAlignment.position)
+//                                    .build(),
+//                                new SequentialAction(
+//                                new SleepAction(1.0),
+//                                    intake.prepareStackIntake()
+//                            )
+//                        ),
+//                        new MecanumDrive.DrivePoseLoggingAction(drive, "stackIntake"),
+//                        drive.actionBuilder(stackAlignment)
+//                                .strafeTo(stackIntake.position)
+//                                .build(),
+//
+//                        intake.intakeTwoStackedPixels(),
+//                        new MecanumDrive.DrivePoseLoggingAction(drive, "stackIntake_end")
 
 //                        new ParallelAction(
 //                                new SequentialAction(

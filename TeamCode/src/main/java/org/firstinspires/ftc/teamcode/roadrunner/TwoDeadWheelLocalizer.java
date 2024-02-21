@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.roadrunner;
 
+import android.util.Log;
+
+import androidx.annotation.GuardedBy;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.DualNum;
 import com.acmerobotics.roadrunner.Rotation2d;
@@ -11,6 +15,7 @@ import com.acmerobotics.roadrunner.ftc.FlightRecorder;
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder;
 import com.acmerobotics.roadrunner.ftc.PositionVelocityPair;
 import com.acmerobotics.roadrunner.ftc.RawEncoder;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -18,6 +23,9 @@ import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Config
 public final class TwoDeadWheelLocalizer implements Localizer {
@@ -31,6 +39,8 @@ public final class TwoDeadWheelLocalizer implements Localizer {
     public static Params PARAMS = new Params();
 
     public final Encoder par, perp;
+//    private final Object imuLock = new Object();
+//    @GuardedBy("imuLock")
     public final IMU imu;
 
     private int lastParPos, lastPerpPos;
@@ -39,6 +49,11 @@ public final class TwoDeadWheelLocalizer implements Localizer {
     private final double inPerTick;
 
     private double lastRawHeadingVel, headingVelOffset;
+
+    private double imuYawHeading = 0.0;
+
+    private double imuHeadingVelo = 0.0;
+    private ExecutorService imuExecutor = Executors.newSingleThreadExecutor();
 
     public TwoDeadWheelLocalizer(HardwareMap hardwareMap, IMU imu, double inPerTick) {
         par = new OverflowEncoder(new RawEncoder(HardwareCreator.createMotor(hardwareMap, "par")));
@@ -56,6 +71,20 @@ public final class TwoDeadWheelLocalizer implements Localizer {
         FlightRecorder.write("TWO_DEAD_WHEEL_PARAMS", PARAMS);
     }
 
+    public void startIMUThread(LinearOpMode opMode) {
+//        imuExecutor.submit(new Runnable() {
+//            @Override
+//            public void run() {
+//                while (!opMode.isStopRequested()) {
+//                    synchronized (imuLock) {
+//                        imuYawHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+//                        imuHeadingVelo = imu.getRobotAngularVelocity(AngleUnit.RADIANS).zRotationRate;
+//                    }
+//                }
+//            }
+//        });
+    }
+
     // see https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/617
     private double getHeadingVelocity() {
         double rawHeadingVel = imu.getRobotAngularVelocity(AngleUnit.RADIANS).zRotationRate;
@@ -67,6 +96,9 @@ public final class TwoDeadWheelLocalizer implements Localizer {
     }
 
     public Twist2dDual<Time> update() {
+
+//        Long t0 = System.currentTimeMillis();
+
         PositionVelocityPair parPosVel = par.getPositionAndVelocity();
         PositionVelocityPair perpPosVel = perp.getPositionAndVelocity();
         Rotation2d heading = Rotation2d.exp(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
@@ -95,6 +127,8 @@ public final class TwoDeadWheelLocalizer implements Localizer {
         lastParPos = parPosVel.position;
         lastPerpPos = perpPosVel.position;
         lastHeading = heading;
+
+//        Log.d("Localizer_logger", "update() called, elapsed time:" + (System.currentTimeMillis()-t0));
 
         return twist;
     }

@@ -6,6 +6,8 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.opmode.autonomous.AutoBase;
 import org.firstinspires.ftc.teamcode.opmode.autonomous.BackdropPositionCallback;
@@ -13,6 +15,7 @@ import org.firstinspires.ftc.teamcode.opmode.autonomous.PreloadPositionDetection
 import org.firstinspires.ftc.teamcode.opmode.autonomous.StackPositionCallback;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 public class AutoActionScheduler {
@@ -31,8 +34,11 @@ public class AutoActionScheduler {
 
    private PreloadPositionDetectionCallback preloadPositionCallback;
 
-   public AutoActionScheduler(Runnable pidUpdate) {
+   private HardwareMap hardwareMap;
+
+   public AutoActionScheduler(Runnable pidUpdate, HardwareMap hardwareMap) {
       this.pidUpdate = pidUpdate;
+      this.hardwareMap = hardwareMap;
    }
 
    public void addAction(Action action) {
@@ -86,6 +92,12 @@ public class AutoActionScheduler {
             }
 //            Log.d("AutoActionScheduler:", "Action: " + a + " - " + (++actionOrder) + " finished at " + (System.currentTimeMillis()-startTime + "(ms)"));
          }
+
+         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
+         for (LynxModule module : allHubs) {
+            module.clearBulkCache();
+         }
+
       }
 
       autoRunElapsedTime = System.currentTimeMillis() - startTime;

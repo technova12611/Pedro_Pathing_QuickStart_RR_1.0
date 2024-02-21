@@ -25,14 +25,14 @@ public class BlueLeftCycleAuto extends NearCycleAutoBase {
         };
 
         this.stackAlignment = new Pose2d(-45.0, 11.5, Math.toRadians(-180.85));
-        this.stackIntake1 = new Pose2d(-58.2, 11.5, Math.toRadians(-180));
+        this.stackIntake1 = new Pose2d(-58.0, 11.5, Math.toRadians(-180));
         this.stackIntake2 = new Pose2d(-58.5, 12.0, Math.toRadians(-180));
         this.safeTrussPassStop = new Pose2d(-51.0, 11.5, Math.toRadians(-180));
 
         this.backdropAlignment = new Pose2d(38.0, 11.5, Math.toRadians(-180));
 
         this.cycleScore = new Pose2d[]{
-                new Pose2d(47.5, 32.0, Math.toRadians(-180)),
+                new Pose2d(47.5, 33.0, Math.toRadians(-180)),
                 new Pose2d(47.5, 33.0, Math.toRadians(-180)),
                 new Pose2d(47.5, 36.0, Math.toRadians(-180))
         };

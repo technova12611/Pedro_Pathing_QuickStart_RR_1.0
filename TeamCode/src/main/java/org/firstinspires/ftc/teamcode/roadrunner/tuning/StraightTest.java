@@ -20,7 +20,7 @@ public final class StraightTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0), true);
         TwoDeadWheelLocalizer localizer = (TwoDeadWheelLocalizer)drive.localizer;
 
         int begin = localizer.par.getPositionAndVelocity().position;

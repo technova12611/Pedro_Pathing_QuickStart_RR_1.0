@@ -95,13 +95,13 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         g1 = new GamePadController(gamepad1);
         g2 = new GamePadController(gamepad2);
 
-        this.drive = new MecanumDrive(hardwareMap, Memory.LAST_POSE);
+        this.drive = new MecanumDrive(hardwareMap, Memory.LAST_POSE, true);
         this.intake = new Intake(hardwareMap, true);
         this.outtake = new Outtake(hardwareMap, true);
         this.drone = new Drone(hardwareMap);
         this.hang = new Hang(hardwareMap);
 
-        this.sched = new AutoActionScheduler(this::update);
+        this.sched = new AutoActionScheduler(this::update, hardwareMap);
 
         outtake.initialize();
         intake.initialize(true);
@@ -135,6 +135,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         double maxLoopTime = 0.0;
         double minLoopTime = 100.0;
         loopTimer.reset();
+
+        drive.startIMUThread(this);
 
         while (opModeInInit()) {
             double loopTimeBegin = loopTimer.milliseconds();
@@ -174,8 +176,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             telemetry.addData(sideStr + " color:", "Mean: %3.2f | Max: %3.2f ", teamProPipeline.meanSideColor, teamProPipeline.maxSideColor);
             telemetry.addData("Spike Position", teamPropPosition.toString() + " | SPIKE: " + SPIKE);
 
-            telemetry.addData(" Delta Threshold:", "Red: %3.2f | Blue: %3.2f ", PropBasePipeline.redDeltaThreshold, PropBasePipeline.blueDeltaThreshold);
-            telemetry.addData(" Color Threshold:", "Red: %3.2f | Blue: %3.2f ", PropBasePipeline.redThreshold, PropBasePipeline.blueThreshold);
+            telemetry.addData(" Delta Threshold:", "Red: %3.2f | Blue: %3.2f ", teamProPipeline.redDeltaThreshold, teamProPipeline.blueDeltaThreshold);
+            telemetry.addData(" Color Threshold:", "Red: %3.2f | Blue: %3.2f ", teamProPipeline.redThreshold, teamProPipeline.blueThreshold);
 
             telemetry.addLine("\n");
 
@@ -246,6 +248,17 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
                 Log.d("Auto_logger", " onRun() finished, elapsed time:  "
                         + (System.currentTimeMillis() - start_onrun) + " | actions: " + sched.size());
+
+                Log.d("Auto_logger"," Spike position changed!!! Distance sensor: Left: " + String.format("%3.2f", intake.getStackDistanceLeft()) +
+                        " | Right: " + String.format("%3.2f", intake.getStackDistanceRight()) +
+                        " | Back: "+ String.format("%3.2f", outtake.getBackdropDistance()));
+
+                Log.d("Auto_logger", centerStr + " color:" + String.format("Mean: %3.2f | Max: %3.2f ", teamProPipeline.meanCenterColor, teamProPipeline.maxCenterColor));
+                Log.d("Auto_logger", sideStr + " color:" + String.format("Mean: %3.2f | Max: %3.2f ", teamProPipeline.meanSideColor, teamProPipeline.maxSideColor));
+                Log.d("Auto_logger", "Spike Position" + teamPropPosition.toString() + " | SPIKE: " + SPIKE);
+
+                Log.d("Auto_logger", " Delta Threshold:" + String.format( "Red: %3.2f | Blue: %3.2f ", teamProPipeline.redDeltaThreshold, teamProPipeline.blueDeltaThreshold));
+                Log.d("Auto_logger", " Color Threshold:" + String.format( "Red: %3.2f | Blue: %3.2f ", teamProPipeline.redThreshold, teamProPipeline.blueThreshold));
             }
 
             idle();
@@ -286,6 +299,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             sched.reset();
             onRun();
         }
+
+        outtake.stopBackdropDistanceMeasurement();
 
         Log.d("Auto_logger", String.format("!!! onRun() finished at %.3f", getRuntime()));
 
@@ -375,7 +390,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
     protected static double x_adjustment = 0.0;
     protected static double y_adjustment = 0.0;
 
-    public static class StackIntakePositionAction implements Action {
+    public class StackIntakePositionAction implements Action {
         MecanumDrive drive;
         Intake intake;
         Pose2d stackPose;
@@ -445,22 +460,22 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 double delta_stack_position = avg_y_adj_left - avg_y_adj_right;
 
                 double y_offset = 1.25;
-                if (Math.abs(delta_stack_position) <= 0.6 && avg_y_adj_left > 5.0 && avg_y_adj_right > 5.0) {
+                if (Math.abs(delta_stack_position) <= 0.75 && avg_y_adj_left > 5.0 && avg_y_adj_right > 5.0) {
                     adjustment_x = (avg_y_adj_left + avg_y_adj_right) / 2 - 0.5;
-                } else if (delta_stack_position < -2.0) {
+                } else if (delta_stack_position < -2.25) {
                     adjustment_y = -2.05;
                     adjustment_x = avg_y_adj_right - y_offset;
                 } else if (delta_stack_position < -1.5) {
-                    adjustment_y = -1.25;
+                    adjustment_y = -1.05;
                     adjustment_x = avg_y_adj_right - y_offset;
                 } else if (delta_stack_position < -0.75) {
                     adjustment_y = -0.5;
                     adjustment_x = avg_y_adj_right - y_offset;
-                } else if (delta_stack_position > 2.0) {
+                } else if (delta_stack_position > 2.25) {
                     adjustment_y = 2.05;
                     adjustment_x = avg_y_adj_left - y_offset;
                 } else if (delta_stack_position > 1.5) {
-                    adjustment_y = 1.25;
+                    adjustment_y = 1.05;
                     adjustment_x = avg_y_adj_left - y_offset;
                 } else if (delta_stack_position > 0.75) {
                     adjustment_y = 0.5;
@@ -477,7 +492,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         String.format("%3.2f", (drive.pose.position.y + adjustment_y)) + "," + adjustment_y + ")"
                 );
 
-                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -58.75, -56.95);
+                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -58.75, -56.5);
 
                 if (180 - Math.abs(Math.toDegrees(drive.pose.heading.toDouble())) > 3.0) {
                     adjustment_y = 0.0;
@@ -546,7 +561,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
     protected static Vector2d backdropAdjustment = new Vector2d(0.0, 0.0);
 
-    public static class BackdropRelocalizationAction implements Action {
+    public class BackdropRelocalizationAction implements Action {
         MecanumDrive drive;
         Outtake outtake;
         Pose2d backdropPose;
@@ -570,13 +585,20 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             if (counter++ >= 3) {
                 double avg_distance = backdropDistanceList.getAvg();
 
-                double base_distance = 27.25;
+                double base_distance = 12.5;
+                if(Globals.FIELD == FieldPosition.FAR && SPIKE == 1) {
+                    base_distance = 12.5;
+                }
 
                 double adjustment = Range.clip((base_distance - avg_distance) * 0.8, -1.5, 1.5);
 
+                if(Globals.FIELD == FieldPosition.FAR && SPIKE == 1) {
+                    adjustment = 0.0;
+                }
+
                 Pose2d currentPose = drive.pose;
-                drive.pose = new Pose2d(currentPose.position.plus(new Vector2d(adjustment, 0)), currentPose.heading);
-                drive.updatePoseEstimate();
+//                drive.pose = new Pose2d(currentPose.position.plus(new Vector2d(adjustment, 0)), currentPose.heading);
+//                drive.updatePoseEstimate();
 
                 outtake.stopBackdropDistanceMeasurement();
 
@@ -588,7 +610,12 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 return false;
             }
             double distance = outtake.getBackdropDistanceMean();
-            if (distance < 33.5 && distance > 21.0) {
+            if(Globals.FIELD == FieldPosition.FAR && SPIKE == 1) {
+                if (distance < 20.5 && distance > 10.0) {
+                    backdropDistanceList.add(distance);
+                }
+            }
+            else if (distance < 15.5 && distance > 10.0) {
                 backdropDistanceList.add(distance);
             }
 
@@ -616,10 +643,6 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
             if(backDistance > 10.5) {
                 backDistance = 0.0;
-            } else if(backDistance < 5.5 ) {
-                straightDistance = 1.5;
-            } else if(backDistance < 6.05) {
-                straightDistance = 1.0;
             }
 
             if (!pidDriveStarted) {
@@ -639,8 +662,11 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         " | slide voltage: " + String.format("%3.2f", slidePivotVoltage) +
                         " | back distance: " + String.format("%3.2f", backDistance));
 
-                if(Math.abs(slidePivotVoltage - Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_MAX) <= 0.05
-                        || (backDistance < 7.05 && straightDistance < 0)) {
+                if(
+//                        Math.abs(slidePivotVoltage - Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_MAX) <= 0.05
+//                        ||
+                                (backDistance > 6.05 && straightDistance > 0) ||
+                                        (outtake.hasOuttakeReached() ||  backDistance < 7.05) && straightDistance < 0) {
                     pidDriveStraight.resetStartTime();
                     pidDriveStraight.update();
 
@@ -661,6 +687,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
                 pidDriveActivated = false;
                 pidDriveStraight.resetStartTime();
+                pidDriveStraight.update();
             }
         }
     }
@@ -678,24 +705,33 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         backDistance = 0.0;
                     }
 
-                    if (outtake.hasOuttakeReached()) {
-                        if (slidePivotVoltage > (Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX + 0.10)) {
-                            straightDistance = 0.85;
-                        } else if (slidePivotVoltage > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX) {
-                            straightDistance = 0.5;
-                        }
-                    } else if(backDistance > 8.75) {
+                    double base_distance = 7.0;
+
+                    if(backDistance > base_distance + 1.5) {
                         straightDistance = -1.5;
-                    } else if(backDistance > 7.85) {
+                    } else if(backDistance > base_distance + 0.60) {
                         straightDistance = -1.05;
-                    } else if(backDistance > 7.25) {
+                    } else if(backDistance > base_distance + 0.4) {
                         straightDistance = -0.40;
-                    } else {
-                        straightDistance = -0.5;
                     }
 
-                    if(backDistance < 5.5 && backDistance > 3.75) {
-                        straightDistance = 1.5;
+                    if(backDistance < 5.25 && backDistance > 3.75) {
+                        straightDistance = 0.85;
+                    } else if(backDistance < 6.25 && backDistance > 3.75) {
+                        straightDistance = 0.45;
+                    }
+
+                    if(backDistance == 0.0) {
+                        if (outtake.hasOuttakeReached()) {
+                            if (slidePivotVoltage > (Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME)) {
+                                straightDistance = 0.75;
+                            } else if (slidePivotVoltage > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX) {
+                                straightDistance = 0.35;
+                            }
+                        }
+                        else {
+                            straightDistance = -1.0;
+                        }
                     }
 
                     Log.d("Backdrop_distance_Logger", " --- Starting Adjustment: " + straightDistance +
@@ -788,5 +824,108 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         }
     }
 
+    public class BackdropDistanceCheckAction implements Action {
+        MecanumDrive drive;
+        Outtake outtake;
+        Pose2d backdropPose;
+
+        ElapsedTime timer = null;
+        int counter = 0;
+
+        public BackdropDistanceCheckAction(MecanumDrive drive, Outtake outtake, Pose2d backdropPose) {
+            this.drive = drive;
+            this.outtake = outtake;
+            this.backdropPose = backdropPose;
+        }
+
+        @Override
+        public boolean run(TelemetryPacket packet) {
+
+            if (timer == null) {
+                timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+            }
+
+            if(timer.milliseconds() < 1000.0) {
+                return true;
+            }
+
+            double distance = outtake.getBackdropDistanceMean();
+            counter++;
+
+            if (distance < 7.05 || timer.milliseconds() > 1500) {
+                if(distance < 7.05) {
+                    drive.cancelCurrentTrajectory();
+                    Log.d("BackdropDistance_Logger", "Cancel trajectory called: ");
+                }
+                outtake.stopBackdropDistanceMeasurement();
+
+                Log.d("BackdropDistance_Logger", "End of the check! Current Drive Pose: " + new PoseMessage(drive.pose)
+                        + " | avg backdrop distance: " + String.format("%3.2f", distance)
+                        + " | Target backdrop Pose: " + new PoseMessage(backdropPose));
+                return false;
+            }
+
+            Log.d("BackdropDistance_Logger", "Count: " + counter + " | Current Drive Pose: " + new PoseMessage(drive.pose)
+                    + " | backdrop distance: " + String.format("%3.2f", distance)
+                    + " | Target backdrop Pose: " + new PoseMessage(backdropPose)
+                    + " | elapsed time: " + String.format("%3.2f", timer.milliseconds())
+            );
+
+            return true;
+        }
+    }
+
+    public class StackDistanceCheckAction implements Action {
+        MecanumDrive drive;
+        Intake intake;
+        Pose2d stackPose;
+
+        ElapsedTime timer = null;
+        int counter = 0;
+
+        public StackDistanceCheckAction(MecanumDrive drive, Intake intake, Pose2d stackPose) {
+            this.drive = drive;
+            this.intake = intake;
+            this.stackPose = stackPose;
+        }
+
+        @Override
+        public boolean run(TelemetryPacket packet) {
+
+            if (timer == null) {
+                timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+            }
+
+            if(timer.milliseconds() < 800.0) {
+                return true;
+            }
+
+            double leftDistance = intake.getStackDistanceLeft();
+            double rightDistance = intake.getStackDistanceRight();
+            counter++;
+
+            if (leftDistance < 1.25 ||  rightDistance < 1.25 || timer.milliseconds() > 1500) {
+                if(leftDistance < 1.25 ||  rightDistance < 1.25) {
+                    drive.cancelCurrentTrajectory();
+                    Log.d("StackDistance_Logger", "Cancel trajectory called: ");
+                }
+
+                Log.d("StackDistance_Logger", "End of the check! Current Drive Pose: " + new PoseMessage(drive.pose)
+                        + " | left distance: " + String.format("%3.2f", leftDistance)
+                        + " | right distance: " + String.format("%3.2f", rightDistance)
+                        + " | Target stack Pose: " + new PoseMessage(stackPose));
+                return false;
+            }
+
+            Log.d("StackDistance_Logger", "Count: " + counter + " | Current Drive Pose: " + new PoseMessage(drive.pose)
+                    + " | left distance: " + String.format("%3.2f", leftDistance)
+                    + " | right distance: " + String.format("%3.2f", rightDistance)
+                    + " | Target Stack Pose: " + new PoseMessage(stackPose)
+                    + " | elapsed time: " + String.format("%3.2f", timer.milliseconds())
+            );
+
+            return true;
+        }
+    }
 }
 

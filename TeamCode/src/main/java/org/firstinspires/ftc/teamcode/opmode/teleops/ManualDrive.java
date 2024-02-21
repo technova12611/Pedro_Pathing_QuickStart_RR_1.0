@@ -129,7 +129,7 @@ public class ManualDrive extends LinearOpMode {
         g1.update();
         g2.update();
         sched = new ActionScheduler();
-        drive = new MecanumDrive(hardwareMap, Memory.LAST_POSE);
+        drive = new MecanumDrive(hardwareMap, Memory.LAST_POSE, false);
         intake = new Intake(hardwareMap, false);
         outtake = new Outtake(hardwareMap, false);
         hang = new Hang(hardwareMap);
@@ -154,6 +154,8 @@ public class ManualDrive extends LinearOpMode {
         outtake.initialize();
         drone.initialize();
         hang.initialize();
+
+        drive.startIMUThread(this);
 
 //        long current_time = System.currentTimeMillis();
 //        telemetry.addLine("Initializing AprilTag: " + (current_time - start_time));
@@ -309,7 +311,6 @@ public class ManualDrive extends LinearOpMode {
                         g1.runLedEffect(whiteEffect);
                     }
                 }
-
 
                 // if 0-->1, slowdown a bit to avoid collision
                 // the 2nd pixel could push the 1st, potentially it could mess up the transfer
@@ -513,8 +514,8 @@ public class ManualDrive extends LinearOpMode {
 
         // Outtake controls
         if (g1.yLong()) {
-            sched.queueAction(outtake.latchScore2());
-            pixelScored = true;
+//            sched.queueAction(outtake.latchScore2());
+//            pixelScored = true;
         } else if (g1.yOnce()) {
             if (isSlideOut) {
                 if (outtake.latchState == Outtake.OuttakeLatchState.LATCH_1) {
@@ -626,7 +627,7 @@ public class ManualDrive extends LinearOpMode {
 
                 pidDriveStraight.setMaxPower(0.35);
 
-                AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);
+                AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update,hardwareMap);
                 autoActionSched.addAction(
                         new ParallelAction(
                             pidDriveStraight.setTargetPositionActionBlocking((int) (forwardDistance / MecanumDrive.PARAMS.inPerTick)),
@@ -677,7 +678,7 @@ public class ManualDrive extends LinearOpMode {
             drive.updatePoseEstimate();
             start_y = drive.pose.position.y;
 
-            AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);
+            AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update,hardwareMap);
             autoActionSched.addAction(
                         pidDriveStraight.setTargetPositionActionBlocking((int) (forwardDistance / MecanumDrive.PARAMS.inPerTick))
                 );
@@ -701,7 +702,7 @@ public class ManualDrive extends LinearOpMode {
             Log.d("DriveWithPID_Logger_0_Teleops", "Pose before strafe: " + new PoseMessage(this.drive.pose) + " | target=" + strafeDistance + " | multiplier=" + multiplier);
             start_y = drive.pose.position.y;
 
-            AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update);
+            AutoActionScheduler autoActionSched = new AutoActionScheduler(this::update,hardwareMap);
             if (isSlideOut) {
                 autoActionSched.addAction(
                         new SequentialAction(

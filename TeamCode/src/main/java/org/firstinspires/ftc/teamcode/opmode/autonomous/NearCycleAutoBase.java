@@ -29,6 +29,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
     public Pose2d stackIntake2;
     public Pose2d safeTrussPassStop;
     public Pose2d backdropAlignment;
+
     public Pose2d[] cycleScore;
     public Pose2d parking;
     private int cycleCount = 0;
@@ -95,10 +96,10 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         new MecanumDrive.DrivePoseLoggingAction(drive, "end_of_scoring_position"),
                         new ParallelAction(
                                 outtake.retractOuttake(),
-
                                 // to score the purple pixel on the spike
                                 drive.actionBuilder(backdrop[SPIKE])
-                                        .strafeToLinearHeading(spike[SPIKE].position, spike[SPIKE].heading, this.drive.highSpeedVelConstraint, this.drive.highSpeedAccelConstraint)
+                                        .strafeToLinearHeading(spike[SPIKE].position, spike[SPIKE].heading,
+                                                drive.highSpeedVelConstraint, drive.highSpeedAccelConstraint)
                                         .build()
                         ),
 
@@ -154,7 +155,6 @@ public abstract class NearCycleAutoBase extends AutoBase {
     private void cyclePixelFromStack(Pose2d startingPosition) {
         Action extendSlideAction;
         Pose2d stackIntakePosition;
-        Vector2d cycleScorePosition = cycleScore[SPIKE].position;
         Pose2d cycleStartPose = this.cycleStart[SPIKE];
 
         Pose2d stackAlignmentPosition = stackAlignment;
@@ -170,7 +170,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
             extendSlideAction = outtake.extendOuttakeCycleTwo();
             stackIntakePosition = stackIntake2;
             // do we need to move back, need to test more, changed from 0.5 -> 0.25 for now
-            cycleScorePosition = new Vector2d(cycleScorePosition.x, cycleScorePosition.y);
+
             if(Globals.COLOR == AlliancePosition.RED) {
                 cycleStartPose = this.cycleStart[1];
                 stackAlignmentPosition = new Pose2d(stackAlignment.position.x, stackAlignment.position.y + 0.5, stackAlignment.heading.toDouble());
@@ -219,7 +219,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                 new SequentialAction(
                                     drive.actionBuilder(safeTrussPassStop)
                                             .setReversed(true)
-                                            .strafeToLinearHeading(backdropAlignment.position,backdropAlignment.heading,
+                                            .strafeToLinearHeading(backdropAlignment.position, backdropAlignment.heading,
                                                     this.drive.highSpeedVelConstraint,
                                                     this.drive.highSpeedAccelConstraint)
                                             .build(),
@@ -236,15 +236,15 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         new MecanumDrive.DrivePoseLoggingAction(drive, "Before_backdrop_score"),
                         new MecanumDrive.AutoPositionCheckAction(drive, backdropAlignment),
 
-                        new BackdropRelocalizationAction(drive, outtake, cycleScore[SPIKE]),
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "after_localization"),
+//                        new BackdropRelocalizationAction(drive, outtake, cycleScore[SPIKE]),
+//                        new MecanumDrive.DrivePoseLoggingAction(drive, "after_localization"),
 
                         // move to backdrop scoring position
                         new ParallelAction(
                                 new SequentialAction(
                                     drive.actionBuilder(backdropAlignment)
                                             .setReversed(true)
-                                            .strafeToLinearHeading(cycleScorePosition, cycleScore[SPIKE].heading,
+                                            .strafeToLinearHeading(cycleScore[SPIKE].position,cycleScore[SPIKE].heading,
                                                     drive.slowVelConstraint, drive.slowAccelConstraint)
                                             .build(),
                                         new ActionUtil.RunnableAction(() -> {
@@ -254,15 +254,19 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_position")
                                 ),
 
+                               new BackdropDistanceCheckAction(drive,outtake, cycleScore[SPIKE]),
+
                                 new SequentialAction(
                                         outtake.prepareToSlide(),
                                         new SleepAction(0.5),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_prepare"),
                                         extendSlideAction,
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_extend"),
-                                        new SleepAction(0.75),
+                                        new SleepAction(0.60),
+                                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_outtake_start"),
                                         outtake.prepareToScoreCycle(),
-                                        new SleepAction(0.3)
+                                        new SleepAction(0.2),
+                                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_outtake_end")
                                 )
                         )
                 ));
@@ -319,7 +323,8 @@ public abstract class NearCycleAutoBase extends AutoBase {
                          .strafeToLinearHeading(getStackPosition().position, getStackPosition().heading,
                                  drive.slowVelConstraint, drive.slowAccelConstraint)
                          .build(),
-                    intake.intakeOn()
+                    intake.intakeOn(),
+                     new StackDistanceCheckAction(drive,intake,getStackPosition())
                 ),
 
                new ParallelAction(
@@ -327,14 +332,14 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_start", true),
                            intake.intakeTwoStackedPixels2(),
                                new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_end", true),
-                               new ActionUtil.RunnableAction(() -> {
-
-                                   if(relocalization) {
-                                       drive.pose = new Pose2d(drive.pose.position.plus(new Vector2d(AutoBase.x_adjustment, AutoBase.y_adjustment)), drive.pose.heading);
-                                       drive.updatePoseEstimate();
-                                   }
-                                   return false;
-                               }),
+//                               new ActionUtil.RunnableAction(() -> {
+//
+//                                   if(relocalization) {
+//                                       drive.pose = new Pose2d(drive.pose.position.plus(new Vector2d(AutoBase.x_adjustment, AutoBase.y_adjustment)), drive.pose.heading);
+//                                       drive.updatePoseEstimate();
+//                                   }
+//                                   return false;
+//                               }),
                            new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_after_adjustment", true)
                        ),
 

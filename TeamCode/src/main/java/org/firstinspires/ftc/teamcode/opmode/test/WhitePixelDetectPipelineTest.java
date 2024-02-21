@@ -62,7 +62,7 @@ public class WhitePixelDetectPipelineTest extends LinearOpMode {
         stackDistance = (Rev2mDistanceSensor)hardwareMap.get(DistanceSensor.class, "stackDistance");
         stackDistance2 = (Rev2mDistanceSensor)hardwareMap.get(DistanceSensor.class, "stackDistance2");
 
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0.0,0.0, Math.toRadians(180)));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0.0,0.0, Math.toRadians(180)),true);
 
         long startTime = System.currentTimeMillis();
         while(!portal.getCameraState().equals(VisionPortal.CameraState.STREAMING)) {

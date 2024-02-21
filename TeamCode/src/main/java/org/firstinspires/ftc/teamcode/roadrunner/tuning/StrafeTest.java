@@ -23,7 +23,7 @@ public final class StrafeTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, Math.PI/2));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, Math.PI/2), true);
 
         TwoDeadWheelLocalizer localizer = (TwoDeadWheelLocalizer)drive.localizer;
 

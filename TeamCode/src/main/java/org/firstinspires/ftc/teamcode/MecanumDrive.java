@@ -30,12 +30,14 @@ import com.acmerobotics.roadrunner.ftc.FlightRecorder;
 import com.acmerobotics.roadrunner.ftc.LynxFirmware;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.roadrunner.LazyImu;
 import org.firstinspires.ftc.teamcode.roadrunner.Localizer;
@@ -45,6 +47,7 @@ import org.firstinspires.ftc.teamcode.roadrunner.messages.PoseMessage;
 import org.firstinspires.ftc.teamcode.roadrunner.TwoDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.subsystem.Intake;
 import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
+import org.firstinspires.ftc.teamcode.utils.software.MovingArrayList;
 
 import java.lang.Math;
 import java.text.DecimalFormat;
@@ -126,7 +129,6 @@ public final class MecanumDrive {
 
     public final IMU imu;
 
-
     public final Localizer localizer;
     public Pose2d pose;
 
@@ -136,18 +138,26 @@ public final class MecanumDrive {
 
     public static Long autoStartTimestamp = null;
 
+    private boolean cancelTrajectory = false;
+
     private final DownsampledWriter estimatedPoseWriter = new DownsampledWriter("ESTIMATED_POSE", 50_000_000);
     private final DownsampledWriter targetPoseWriter = new DownsampledWriter("TARGET_POSE", 50_000_000);
     private final DownsampledWriter driveCommandWriter = new DownsampledWriter("DRIVE_COMMAND", 50_000_000);
     private final DownsampledWriter mecanumCommandWriter = new DownsampledWriter("MECANUM_COMMAND", 50_000_000);
 
-    public MecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
+    public MecanumDrive(HardwareMap hardwareMap, Pose2d pose, boolean isAuto) {
         this.pose = pose;
 
         LynxFirmware.throwIfModulesAreOutdated(hardwareMap);
 
-        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
-            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        if(!isAuto) {
+            for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
+                module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+            }
+        } else {
+            for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
+                module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+            }
         }
 
         leftFront = HardwareCreator.createMotor(hardwareMap, "leftFront");
@@ -207,9 +217,16 @@ public final class MecanumDrive {
         public final TimeTrajectory timeTrajectory;
         private double beginTs = -1;
         private final double[] xPoints, yPoints;
+        private double previous_leftFront = 0.0;
+        private double previous_leftBack = 0.0;
+        private double previous_rightFront = 0.0;
+        private double previous_rightBack = 0.0;
+        private ElapsedTime elapsedTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+        private ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+        MovingArrayList loopTime = new MovingArrayList(50);
+
         public FollowTrajectoryAction(TimeTrajectory t) {
             timeTrajectory = t;
-
             List<Double> disps = com.acmerobotics.roadrunner.Math.range(
                     0, t.path.length(),
                     Math.max(2, (int) Math.ceil(t.path.length() / 2)));
@@ -227,32 +244,61 @@ public final class MecanumDrive {
             if (beginTs < 0) {
                 beginTs = Actions.now();
                 t = 0;
+                elapsedTimer.reset();
+                loopTimer.reset();
+                loopTime.clear();
+                cancelTrajectory = false;
             } else {
                 t = Actions.now() - beginTs;
             }
 
-            if (t >= timeTrajectory.duration) {
+            if (t >= timeTrajectory.duration || cancelTrajectory) {
                 leftFront.setPower(0);
                 leftBack.setPower(0);
                 rightBack.setPower(0);
                 rightFront.setPower(0);
 
+                previous_leftFront = 0.0;
+                previous_leftBack = 0.0;
+                previous_rightBack = 0.0;
+                previous_rightFront = 0.0;
+
+                updatePoseEstimate();
+
+                Log.d("Drive_loop_logger", " -- Avg loop time: " + String.format("A: %3.3f | M: %3.3f", loopTime.getAvg(),loopTime.getMean())
+                        + " | cancelTrajectory: " + cancelTrajectory + " | Trajectory elapsed time: " + String.format("%3.3f", t*1000)
+                        + " | Trajectory original time: " + String.format("%3.3f", timeTrajectory.duration*1000)
+                        + " ---");
+
                 return false;
             }
+
+//            Log.d("Drive_loop_logger", "0. start (other subsystems): " + String.format("%3.3f", elapsedTimer.milliseconds()));
+//            elapsedTimer.reset();
 
             Pose2dDual<Time> txWorldTarget = timeTrajectory.get(t);
 
             PoseVelocity2d robotVelRobot = updatePoseEstimate();
+
+//            Log.d("Drive_loop_logger", "1. updatePoseEstimate: " + String.format("%3.3f", elapsedTimer.milliseconds()));
+//            elapsedTimer.reset();
 
             PoseVelocity2dDual<Time> command = new HolonomicController(
                     PARAMS.axialGain, PARAMS.lateralGain, PARAMS.headingGain,
                     PARAMS.axialVelGain, PARAMS.lateralVelGain, PARAMS.headingVelGain)
                     .compute(txWorldTarget, pose, robotVelRobot);
 
-            driveCommandWriter.write(new DriveCommandMessage(command));
+//            driveCommandWriter.write(new DriveCommandMessage(command));
 
             MecanumKinematics.WheelVelocities<Time> wheelVels = kinematics.inverse(command);
+
+//            Log.d("Drive_loop_logger", "2_1. calculate kinematics: " + String.format("%3.3f", elapsedTimer.milliseconds()));
+//            elapsedTimer.reset();
+
             double voltage = voltageSensor.getVoltage();
+
+//            Log.d("Drive_logger", "2_2. calculate getVoltage(): " + String.format("%3.3f", elapsedTimer.milliseconds()));
+//            elapsedTimer.reset();
 
             final MotorFeedforward feedforward = new MotorFeedforward(PARAMS.kS, PARAMS.kV / PARAMS.inPerTick,
                     PARAMS.kA / PARAMS.inPerTick);
@@ -260,14 +306,40 @@ public final class MecanumDrive {
             double leftBackPower = feedforward.compute(wheelVels.leftBack) / voltage;
             double rightBackPower = feedforward.compute(wheelVels.rightBack) / voltage;
             double rightFrontPower = feedforward.compute(wheelVels.rightFront) / voltage;
-            mecanumCommandWriter.write(new MecanumCommandMessage(
-                    voltage, leftFrontPower, leftBackPower, rightBackPower, rightFrontPower
-            ));
 
-            leftFront.setPower(leftFrontPower);
-            leftBack.setPower(leftBackPower);
-            rightBack.setPower(rightBackPower);
-            rightFront.setPower(rightFrontPower);
+//            mecanumCommandWriter.write(new MecanumCommandMessage(
+//                    voltage, leftFrontPower, leftBackPower, rightBackPower, rightFrontPower
+//            ));
+
+//           Log.d("Drive_loop_logger", "2_3. calculate power: " + String.format("%3.3f", elapsedTimer.milliseconds()));
+//           elapsedTimer.reset();
+
+            double delta_power = 0.01;
+            if(Math.abs(leftFrontPower - previous_leftFront) > delta_power) {
+                leftFront.setPower(leftFrontPower);
+                previous_leftFront = leftFrontPower;
+            }
+
+            if(Math.abs(leftBackPower - previous_leftBack) > delta_power) {
+                leftBack.setPower(leftBackPower);
+                previous_leftBack = leftBackPower;
+            }
+
+//            Log.d("Drive_loop_logger", "3_1. setLeftPower(): " + String.format("%3.3f", elapsedTimer.milliseconds()));
+//            elapsedTimer.reset();
+
+            if(Math.abs(rightBackPower - previous_rightBack) > delta_power) {
+                rightBack.setPower(rightBackPower);
+                previous_rightBack = rightBackPower;
+            }
+
+            if(Math.abs(rightFrontPower - previous_rightFront) > delta_power) {
+                rightFront.setPower(rightFrontPower);
+                previous_rightFront = rightFrontPower;
+            }
+
+//            Log.d("Drive_loop_logger", "3_2. setRightPower(): " + String.format("%3.3f", elapsedTimer.milliseconds()));
+//            elapsedTimer.reset();
 
             p.put("x", pose.position.x);
             p.put("y", pose.position.y);
@@ -292,6 +364,13 @@ public final class MecanumDrive {
             c.setStrokeWidth(1);
             c.strokePolyline(xPoints, yPoints);
 
+//            Log.d("Drive_loop_logger", "Dashboard drawing: " + String.format("%3.3f", elapsedTimer.milliseconds()));
+//            elapsedTimer.reset();
+            loopTime.add(loopTimer.milliseconds());
+
+
+            loopTimer.reset();
+
             return true;
         }
 
@@ -308,6 +387,13 @@ public final class MecanumDrive {
 
         private double beginTs = -1;
 
+        private ElapsedTime elapsedTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+
+        private double previous_leftFront = 0.0;
+        private double previous_leftBack = 0.0;
+        private double previous_rightFront = 0.0;
+        private double previous_rightBack = 0.0;
+
         public TurnAction(TimeTurn turn) {
             this.turn = turn;
         }
@@ -318,6 +404,7 @@ public final class MecanumDrive {
             if (beginTs < 0) {
                 beginTs = Actions.now();
                 t = 0;
+                elapsedTimer.reset();
             } else {
                 t = Actions.now() - beginTs;
             }
@@ -327,6 +414,10 @@ public final class MecanumDrive {
                 leftBack.setPower(0);
                 rightBack.setPower(0);
                 rightFront.setPower(0);
+                previous_leftFront = 0.0;
+                previous_leftBack = 0.0;
+                previous_rightBack = 0.0;
+                previous_rightFront = 0.0;
 
                 return false;
             }
@@ -340,7 +431,7 @@ public final class MecanumDrive {
                     PARAMS.axialVelGain, PARAMS.lateralVelGain, PARAMS.headingVelGain)
                     .compute(txWorldTarget, pose, robotVelRobot);
 
-            driveCommandWriter.write(new DriveCommandMessage(command));
+//            driveCommandWriter.write(new DriveCommandMessage(command));
 
             MecanumKinematics.WheelVelocities<Time> wheelVels = kinematics.inverse(command);
             double voltage = voltageSensor.getVoltage();
@@ -350,14 +441,31 @@ public final class MecanumDrive {
             double leftBackPower = feedforward.compute(wheelVels.leftBack) / voltage;
             double rightBackPower = feedforward.compute(wheelVels.rightBack) / voltage;
             double rightFrontPower = feedforward.compute(wheelVels.rightFront) / voltage;
-            mecanumCommandWriter.write(new MecanumCommandMessage(
-                    voltage, leftFrontPower, leftBackPower, rightBackPower, rightFrontPower
-            ));
 
-            leftFront.setPower(feedforward.compute(wheelVels.leftFront) / voltage);
-            leftBack.setPower(feedforward.compute(wheelVels.leftBack) / voltage);
-            rightBack.setPower(feedforward.compute(wheelVels.rightBack) / voltage);
-            rightFront.setPower(feedforward.compute(wheelVels.rightFront) / voltage);
+//            mecanumCommandWriter.write(new MecanumCommandMessage(
+//                    voltage, leftFrontPower, leftBackPower, rightBackPower, rightFrontPower
+//            ));
+
+            double delta_power = 0.0;
+            if(Math.abs(leftFrontPower - previous_leftFront) > delta_power) {
+                leftFront.setPower(leftFrontPower);
+                previous_leftFront = leftFrontPower;
+            }
+
+            if(Math.abs(leftBackPower - previous_leftBack) > delta_power) {
+                leftBack.setPower(leftBackPower);
+                previous_leftBack = leftBackPower;
+            }
+
+            if(Math.abs(rightBackPower - previous_rightBack) > delta_power) {
+                rightBack.setPower(rightBackPower);
+                previous_rightBack = rightBackPower;
+            }
+
+            if(Math.abs(rightFrontPower - previous_rightFront) > delta_power) {
+                rightFront.setPower(rightFrontPower);
+                previous_rightFront = rightFrontPower;
+            }
 
             Canvas c = p.fieldOverlay();
             drawPoseHistory(c);
@@ -370,6 +478,9 @@ public final class MecanumDrive {
 
             c.setStroke("#7C4DFFFF");
             c.fillCircle(turn.beginPose.position.x, turn.beginPose.position.y, 2);
+
+            //Log.d("Drive_logger", "Drive Loop time: " + elapsedTimer.milliseconds());
+            elapsedTimer.reset();
 
             return true;
         }
@@ -390,7 +501,7 @@ public final class MecanumDrive {
             poseHistory.removeFirst();
         }
 
-        estimatedPoseWriter.write(new PoseMessage(pose));
+//        estimatedPoseWriter.write(new PoseMessage(pose));
 
         return twist.velocity().value();
     }
@@ -425,7 +536,7 @@ public final class MecanumDrive {
     }
 
     public TrajectoryActionBuilder actionBuilder(Pose2d beginPose) {
-        Log.d("TrajectoryActionBuilder", "Drive path builder begin position: " + new PoseMessage(beginPose));
+        Log.d("TrajectoryActionBuilder_default", "Default Drive path builder begin position: " + new PoseMessage(beginPose));
         return new TrajectoryActionBuilder(
                 TurnAction::new,
                 FollowTrajectoryAction::new,
@@ -436,7 +547,7 @@ public final class MecanumDrive {
     }
 
     public TrajectoryActionBuilder actionBuilderSlow(Pose2d beginPose) {
-        Log.d("TrajectoryActionBuilder_slow", "Drive path builder begin position: " + new PoseMessage(beginPose));
+        Log.d("TrajectoryActionBuilder_slow", "Slow Drive path builder begin position: " + new PoseMessage(beginPose));
         return new TrajectoryActionBuilder(
                 TurnAction::new,
                 FollowTrajectoryAction::new,
@@ -447,7 +558,7 @@ public final class MecanumDrive {
     }
 
     public TrajectoryActionBuilder actionBuilderFast(Pose2d beginPose) {
-        Log.d("TrajectoryActionBuilder_fast", "Drive path builder begin position: " + new PoseMessage(beginPose));
+        Log.d("TrajectoryActionBuilder_fast", "Fast Drive path builder begin position: " + new PoseMessage(beginPose));
         return new TrajectoryActionBuilder(
                 TurnAction::new,
                 FollowTrajectoryAction::new,
@@ -463,7 +574,7 @@ public final class MecanumDrive {
 
         String message;
 
-        boolean logPixelCount = false;
+        boolean logPixelCount = true;
 
         public DrivePoseLoggingAction(MecanumDrive drive, String label) {
             this.drive = drive;
@@ -539,5 +650,17 @@ public final class MecanumDrive {
 
             return false;
         }
+    }
+
+    public void cancelCurrentTrajectory() {
+        this.cancelTrajectory = true;
+    }
+
+    public void resetCancelTrajectory() {
+        this.cancelTrajectory = false;
+    }
+
+    public void startIMUThread(LinearOpMode opMode) {
+        ((TwoDeadWheelLocalizer)localizer).startIMUThread(opMode);
     }
 }

@@ -35,8 +35,8 @@ public class StackIntakeTest extends LinearOpMode {
         intake.initialize(false);
         outtake.initialize();
 
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
-        sched = new AutoActionScheduler(this::update);
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0),true);
+        sched = new AutoActionScheduler(this::update,hardwareMap);
 
         sched.addAction(
                 new SequentialAction(

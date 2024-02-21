@@ -74,23 +74,23 @@ public class Outtake {
 
     public static double OUTTAKE_PIVOT_DUMP_VERY_HIGH = 0.62;
 
-    public static double SLIDE_PIVOT_INIT = 0.442;
+    public static double SLIDE_PIVOT_INIT = 0.452;
     public static double SLIDE_PIVOT_SLIDING = 0.52;
 
     public static double SLIDE_PIVOT_DUMP_0 = 0.22;
-    public static double SLIDE_PIVOT_DUMP = 0.238;
+    public static double SLIDE_PIVOT_DUMP = 0.258;
 
-    public static double SLIDE_PIVOT_DUMP_1 = 0.248;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = 2.68;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.61;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN_0 = 2.52;
+    public static double SLIDE_PIVOT_DUMP_1 = 0.278;
 
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX = 2.82;
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MIN = 2.70;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.55;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = SLIDE_PIVOT_DUMP_VOLTAGE_MIN + 0.10; //2.68;
 
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME = 3.0;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX = SLIDE_PIVOT_DUMP_VOLTAGE_MIN + 0.25; //2.82;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MIN = SLIDE_PIVOT_DUMP_VOLTAGE_MIN + 0.15; //2.70;
 
-    public static double SLIDE_PIVOT_DUMP_2 = 0.255;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME = SLIDE_PIVOT_DUMP_VOLTAGE_MIN + 0.35; //3.0;
+
+    public static double SLIDE_PIVOT_DUMP_2 = 0.275;
 
     public static double SLIDE_PIVOT_STRAFE = 0.25;
 
@@ -246,7 +246,9 @@ public class Outtake {
         }
 
         checkSlidePivotPosition();
-        measureBackdropDistance();
+        if(isAuto) {
+            measureBackdropDistance();
+        }
 
 //        if (!this.slide.isBusy()) {
 //            if (this.slide.getCurrentPosition() < -20) {
@@ -574,6 +576,7 @@ public class Outtake {
                 " | OuttakePivot: " + String.format("%.2f", this.outtakePivot.getPosition()) +
                 " | Latch: " + String.format("%.2f", this.latch.getPosition()) +
                 " | SlidePivot voltage: " + String.format("%.2f", slidePivotVoltages.getMean()) +
+                " | Outtake voltage: " + String.format("%.2f", outtakePivotVoltage.getVoltage()) +
                 " | backdropTouched: " + backdropTouched;
     }
 
@@ -615,13 +618,12 @@ public class Outtake {
         if(isLogging && Math.abs(slidePivotVoltageMean - previousSlidePivotVoltage) > 0.03) {
             Log.d("Slide_Pivot_Logger",
                     "slidePivot " + direction + " servo position:" + String.format("%3.3f",servoPosition)
-                            + " | slideServoVoltage: " + String.format("%3.2f",slidePivotVoltageMean) +
+                            + " | slideServoVoltage: " + String.format("%3.2f",slidePivotVoltageMean)
+                            + " | outtakeServoVoltage: " + String.format("%3.2f",outtakePivotVoltage.getVoltage()) +
                     " | back Distance: " + String.format("%3.2f",getBackdropDistanceMean()));
             slidePivotlEapsedTimer.reset();
+            previousSlidePivotVoltage = slidePivotVoltageMean;
         }
-
-        previousSlidePivotVoltage = slidePivotVoltageMean;
-
         return backdropTouched;
     }
 
@@ -630,24 +632,37 @@ public class Outtake {
             backdropDistanceExecutor.submit(new Runnable() {
                 @Override
                 public void run() {
+                    ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
                     while(backdropDistanceMeasurementTimer != null) {
-                        backdropDistanceList.add(getBackdropDistance());
+//                        backdropDistanceList.add(getBackdropDistance());
+//
+//                        Log.d("Backdrop_distance_thread_logger",
+//                                "Measuring elapsed time: " +  timer.milliseconds() +
+//                                        " | " + getBackdropDistanceMean());
                     }
+
+                    Log.d("Backdrop_distance_thread_logger",
+                            "Executor ended !!! elapsed time: " +  timer.milliseconds() +
+                                    " | " + getBackdropDistanceMean());
                 }
             });
         }
 
-        if(backdropDistanceMeasurementTimer != null && backdropDistanceMeasurementTimer.milliseconds() > 1500.0) {
+        if(backdropDistanceMeasurementTimer != null && backdropDistanceMeasurementTimer.milliseconds() > 3000.0) {
             backdropDistanceMeasurementTimer = null;
             backdropDistanceList.clear();
-            backdropDistanceExecutor.shutdown();
+            //backdropDistanceExecutor.shutdown();
+
+            Log.d("Backdrop_distance_thread_logger",
+                    "Executor ended !!! due to timeout !" +
+                            " | " + getBackdropDistanceMean());
         }
     }
 
     public void stopBackdropDistanceMeasurement() {
         backdropDistanceMeasurementTimer = null;
         backdropDistanceList.clear();
-        backdropDistanceExecutor.shutdown();
+        //backdropDistanceExecutor.shutdown();
     }
 
     public void resetSlideEncoder() {
@@ -899,12 +914,19 @@ public class Outtake {
     }
 
     public double getBackdropDistanceMean() {
-        if(backdropDistanceMeasurementTimer == null) {
-            backdropDistanceMeasurementTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-            return backdropDistance.getDistance(DistanceUnit.INCH);
-        }
 
-        return backdropDistanceList.getMean();
+        return getBackdropDistance();
+
+//        long t0 = System.currentTimeMillis();
+//        if(backdropDistanceMeasurementTimer == null) {
+//            backdropDistanceMeasurementTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+//            return backdropDistance.getDistance(DistanceUnit.INCH);
+//        }
+//
+//        double backdropDistance= backdropDistanceList.getMean();
+////        Log.d("Outtake_logger", "getBackdropDistanceMean() elapsed time: " +  (System.currentTimeMillis() - t0));
+//
+//        return backdropDistance;
     }
 
     public double getBackdropDistance() {

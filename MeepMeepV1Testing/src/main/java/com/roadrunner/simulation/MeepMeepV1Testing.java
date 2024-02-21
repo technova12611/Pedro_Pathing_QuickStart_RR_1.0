@@ -17,7 +17,7 @@ public class MeepMeepV1Testing {
         RoadRunnerBotEntity myFirstBot = new DefaultBotBuilder(meepMeep)
                 // We set this bot to be blue
                 .setColorScheme(new ColorSchemeRedDark())
-                .setConstraints(75, 75, Math.toRadians(180), Math.toRadians(180), 16)
+                .setConstraints(72, 72, Math.toRadians(180), Math.toRadians(180), 16)
                 .build();
 
 //        myFirstBot.runAction(myFirstBot.getDrive().actionBuilder(new Pose2d(16.0, -62, Math.toRadians(90)))
@@ -44,9 +44,10 @@ public class MeepMeepV1Testing {
                 .strafeTo(new Vector2d(28.5,-12.0))
                 .strafeTo(new Vector2d(-50,-11.0))
                 .strafeToLinearHeading(new Vector2d(-55,-11.50), Math.PI)
-                .strafeTo(new Vector2d(-50,-11.5))
-                .strafeToLinearHeading(new Vector2d(30,-11.5), Math.PI)
+                .strafeToLinearHeading(new Vector2d(-50,-11.5), Math.PI)
+                .strafeToLinearHeading(new Vector2d(38,-11.5), Math.PI)
                 .strafeToLinearHeading(new Vector2d(48.5,-32.0), Math.PI)
+//                .splineToLinearHeading(new Pose2d(48.0,-32.0, Math.PI),0)
 //                .splineToLinearHeading(new Pose2d(30,-11.5, Math.PI), 0)
 //                .splineToLinearHeading(new Pose2d(48.5,-32.0, Math.PI), 0)
 //                .strafeTo(new Vector2d(24,-12.0))
