@@ -51,7 +51,7 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_CYCLES_ONE = 980;
     public static int OUTTAKE_SLIDE_CYCLES_TWO = 1100;
     public static int OUTTAKE_SLIDE_FAR_LOW = 950;
-    public static int OUTTAKE_SLIDE_LOW = 830;
+    public static int OUTTAKE_SLIDE_LOW = 810;
     public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 1050;
     public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO_2 = 1280;
     public static int OUTTAKE_SLIDE_INIT = 0;

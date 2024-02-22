@@ -85,11 +85,11 @@ public abstract class NearAutoBase extends AutoBase {
                               outtake.prepareToSlide(),
                           new SleepAction(0.25),
                           outtake.retractOuttake()),
-                          new MecanumDrive.DrivePoseLoggingAction(drive, "retract_started")
+                          new MecanumDrive.DrivePoseLoggingAction(drive, "retract_started"),
                           // to score the purple pixel on the spike
-//                          drive.actionBuilder(backdrop[SPIKE])
-//                                  .strafeToLinearHeading(spike[SPIKE].position, spike[SPIKE].heading, drive.slowVelConstraint,drive.slowAccelConstraint)
-//                                  .build()
+                          drive.actionBuilder(backdrop[SPIKE])
+                                  .strafeToLinearHeading(spike[SPIKE].position, spike[SPIKE].heading, drive.slowVelConstraint,drive.slowAccelConstraint)
+                                  .build()
                   ),
 
                        new ActionUtil.RunnableAction(() -> {
@@ -114,12 +114,12 @@ public abstract class NearAutoBase extends AutoBase {
               new ParallelAction(
                       intake.prepareTeleOpsIntake(),
                       outtake.prepareToTransfer(),
-                      new MecanumDrive.DrivePoseLoggingAction(drive, "parking_start")
-//                      drive.actionBuilder(spike[SPIKE])
-//                              .setReversed(true)
-//                              .strafeToLinearHeading(parking.position, parking.heading)
-//                              .strafeToLinearHeading(parking_2.position, parking_2.heading)
-//                              .build()
+                      new MecanumDrive.DrivePoseLoggingAction(drive, "parking_start"),
+                      drive.actionBuilder(spike[SPIKE])
+                              .setReversed(true)
+                              .strafeToLinearHeading(parking.position, parking.heading)
+                              .strafeToLinearHeading(parking_2.position, parking_2.heading)
+                              .build()
               ),
 
                    new ActionUtil.RunnableAction(() -> {
