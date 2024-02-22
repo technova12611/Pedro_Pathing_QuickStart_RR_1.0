@@ -514,8 +514,8 @@ public class ManualDrive extends LinearOpMode {
 
         // Outtake controls
         if (g1.yLong()) {
-//            sched.queueAction(outtake.latchScore2());
-//            pixelScored = true;
+            sched.queueAction(outtake.latchScore2());
+            pixelScored = true;
         } else if (g1.yOnce()) {
             if (isSlideOut) {
                 if (outtake.latchState == Outtake.OuttakeLatchState.LATCH_1) {
@@ -523,6 +523,9 @@ public class ManualDrive extends LinearOpMode {
                     pixelScored = true;
                 } else {
                     sched.queueAction(outtake.latchScore1());
+                    if(Intake.pixelsCount == 0) {
+                        pixelScored = true;
+                    }
                 }
             } else {
                 isSlideOut = true;

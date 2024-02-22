@@ -470,8 +470,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
 
                         new MecanumDrive.DrivePoseLoggingAction(drive, "Before_backdrop_score"),
                         new MecanumDrive.AutoPositionCheckAction(drive, backdropAlignmentCycle[SPIKE]),
-
-                        new BackdropRelocalizationAction(drive, outtake, cycleScore[SPIKE]),
+//                        new BackdropRelocalizationAction(drive, outtake, cycleScore[SPIKE]),
                         new MecanumDrive.DrivePoseLoggingAction(drive, "after_localization"),
 
                         // move to backdrop scoring position
@@ -481,10 +480,11 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                                 .setReversed(true)
                                                 .strafeToLinearHeading(cycleScorePosition, cycleScore[SPIKE].heading)
                                                 .build(),
-                                        new ActionUtil.RunnableAction(() -> {
-                                            outtake.getBackdropDistanceMean();
-                                            return false;
-                                        }),
+                                        new BackdropDistanceCheckAction(drive,outtake, new Pose2d(cycleScorePosition, cycleScore[SPIKE].heading)),
+//                                        new ActionUtil.RunnableAction(() -> {
+//                                            outtake.getBackdropDistanceMean();
+//                                            return false;
+//                                        }),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_position")
                                 ),
 

@@ -307,6 +307,11 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         // run the auto path, all the actions are queued
         //-------------------------------
         sched.run();
+        // end of the auto run
+        // keep position and settings in memory for TeleOps
+        //--------------------------------------------------
+        Memory.LAST_POSE = drive.pose;
+        Globals.drivePose = drive.pose;
         Globals.OUTTAKE_SLIDE_POSITION = outtake.getMotorCurrentPosition();
 
         Log.d("Auto_logger", String.format("!!! Auto run() finished at %.3f", getRuntime()));
@@ -322,18 +327,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         }
 
         Log.d("Auto_logger", String.format("!!! Auto program ended at %.3f", getRuntime()));
-
-        drive.updatePoseEstimate();
-
-        // end of the auto run
-        // keep position and settings in memory for TeleOps
-        //--------------------------------------------------
-        Memory.LAST_POSE = drive.pose;
-        Globals.drivePose = drive.pose;
-
         Log.d("Auto_logger", "Outtake Slide end position: " + Globals.OUTTAKE_SLIDE_POSITION);
-        Log.d("Auto_logger", "End path drive Estimated Pose: " + new PoseMessage(drive.pose));
-        Log.d("Auto_logger", "\n");
 
     }
 
@@ -492,7 +486,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         String.format("%3.2f", (drive.pose.position.y + adjustment_y)) + "," + adjustment_y + ")"
                 );
 
-                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -58.75, -56.5);
+                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -58.75, -56.75);
 
                 if (180 - Math.abs(Math.toDegrees(drive.pose.heading.toDouble())) > 3.0) {
                     adjustment_y = 0.0;
@@ -894,9 +888,10 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
             if (timer == null) {
                 timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+                Log.d("StackDistance_Logger", "Start stack distance checking !!!");
             }
 
-            if(timer.milliseconds() < 800.0) {
+            if(timer.milliseconds() < 700.0) {
                 return true;
             }
 
@@ -905,16 +900,19 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             counter++;
 
             if (leftDistance < 1.25 ||  rightDistance < 1.25 || timer.milliseconds() > 1500) {
-                if(leftDistance < 1.25 ||  rightDistance < 1.25) {
+                if (leftDistance < 1.25 || rightDistance < 1.25) {
                     drive.cancelCurrentTrajectory();
-                    Log.d("StackDistance_Logger", "Cancel trajectory called: ");
-                }
+                    Log.d("StackDistance_Logger", "Cancel trajectory called at " + String.format("%3.3f", timer.milliseconds()));
 
-                Log.d("StackDistance_Logger", "End of the check! Current Drive Pose: " + new PoseMessage(drive.pose)
-                        + " | left distance: " + String.format("%3.2f", leftDistance)
-                        + " | right distance: " + String.format("%3.2f", rightDistance)
-                        + " | Target stack Pose: " + new PoseMessage(stackPose));
-                return false;
+                    Log.d("StackDistance_Logger", "End of the check! Current Drive Pose: " + new PoseMessage(drive.pose)
+                            + " | left distance: " + String.format("%3.2f", leftDistance)
+                            + " | right distance: " + String.format("%3.2f", rightDistance)
+                            + " | Target stack Pose: " + new PoseMessage(stackPose));
+
+                    timer = null;
+
+                    return false;
+                }
             }
 
             Log.d("StackDistance_Logger", "Count: " + counter + " | Current Drive Pose: " + new PoseMessage(drive.pose)

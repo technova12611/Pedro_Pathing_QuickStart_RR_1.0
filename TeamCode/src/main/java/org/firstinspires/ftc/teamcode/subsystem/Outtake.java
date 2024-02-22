@@ -193,7 +193,7 @@ public class Outtake {
         LATCH_2
     }
 
-    public OuttakeLatchState latchState;
+    public OuttakeLatchState latchState = OuttakeLatchState.CLOSED;
 
     public class OuttakeLatchStateAction implements Action {
         OuttakeLatchState newState;
@@ -233,6 +233,7 @@ public class Outtake {
         this.slidePivot.setPosition(SLIDE_PIVOT_INIT);
         this.outtakePivot.setPosition(OUTTAKE_PIVOT_INIT);
         this.outtakeFixerServo.setPosition(OUTTAKE_FIXER_INIT);
+        this.latchState = OuttakeLatchState.CLOSED;
     }
 
     public void update() {
@@ -327,6 +328,7 @@ public class Outtake {
                 new ParallelAction(
                     outtakeWireDown(),
                         new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
+                        new OuttakeLatchStateAction(OuttakeLatchState.CLOSED),
                     this.slide.setTargetPositionAction(OUTTAKE_SLIDE_INIT, "outtakeSlide")
                 )
         );
@@ -339,7 +341,8 @@ public class Outtake {
                 new ParallelAction(
                         this.slide.setTargetPositionAction(OUTTAKE_SLIDE_INIT, "outtakeSlide"),
                         outtakeWireDown(),
-                        new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch")
+                        new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
+                        new OuttakeLatchStateAction(OuttakeLatchState.CLOSED)
                 )
         );
     }
@@ -482,6 +485,7 @@ public class Outtake {
     public Action prepareToTransfer() {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
+                new OuttakeLatchStateAction(OuttakeLatchState.CLOSED),
                 new ActionUtil.ServoPositionAction(outtakePivot, OUTTAKE_PIVOT_INIT, "outtakePivot"),
                 new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_INIT, "slidePivot")
         );
@@ -523,6 +527,7 @@ public class Outtake {
 
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
+                new OuttakeLatchStateAction(OuttakeLatchState.CLOSED),
                 new ActionUtil.ServoPositionAction(outtakePivot, outtakeDumpPosition, "outtakePivot"),
                 new ActionUtil.ServoPositionAction(slidePivot, slideDumpPosition, "slidePivot")
         );
@@ -538,6 +543,7 @@ public class Outtake {
 
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
+                new OuttakeLatchStateAction(OuttakeLatchState.CLOSED),
                 new ActionUtil.ServoPositionAction(outtakePivot, outtakeDumpPosition, "outtakePivot"),
                 new ActionUtil.ServoPositionAction(slidePivot, slideDumpPosition, "slidePivot")
         );
@@ -552,6 +558,7 @@ public class Outtake {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(outtakeWireServo, OUTTAKE_WIRE_VERY_HIGH, "outtakeWireServo"),
                 new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
+                new OuttakeLatchStateAction(OuttakeLatchState.CLOSED),
                 new ActionUtil.ServoPositionAction(outtakePivot, outtakeDumpPosition, "outtakePivot"),
                 new ActionUtil.ServoPositionAction(slidePivot, slideDumpPosition, "slidePivot")
         );
