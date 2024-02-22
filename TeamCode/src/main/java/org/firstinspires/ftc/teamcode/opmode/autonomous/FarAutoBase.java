@@ -354,11 +354,11 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                         outtake.latchScore1(),
                         new SleepAction(0.50),
                         outtake.afterScore(),
-                        new SleepAction(0.20),
-                        outtake.latchScore2(),
-                        new SleepAction(0.35),
-                        outtake.afterScore2(),
                         new SleepAction(0.25),
+                        outtake.latchScore2(),
+                        new SleepAction(0.40),
+                        outtake.afterScore2(),
+                        new SleepAction(0.30),
                         new ActionUtil.RunnableAction(() -> {
                             pidDriveActivated = false;
                             pidDriveStarted = false;
@@ -480,13 +480,10 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                                 .setReversed(true)
                                                 .strafeToLinearHeading(cycleScorePosition, cycleScore[SPIKE].heading)
                                                 .build(),
-                                        new BackdropDistanceCheckAction(drive,outtake, new Pose2d(cycleScorePosition, cycleScore[SPIKE].heading)),
-//                                        new ActionUtil.RunnableAction(() -> {
-//                                            outtake.getBackdropDistanceMean();
-//                                            return false;
-//                                        }),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_position")
                                 ),
+
+                                new BackdropDistanceCheckAction(drive,outtake, new Pose2d(cycleScorePosition, cycleScore[SPIKE].heading)),
 
                                 new SequentialAction(
                                         outtake.prepareToSlide(),
@@ -551,7 +548,8 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                     .strafeToLinearHeading(getStackPosition().position, getStackPosition().heading,
                                             drive.slowVelConstraint, drive.slowAccelConstraint)
                                     .build(),
-                            intake.intakeOn()
+                            intake.intakeOn(),
+                            new StackDistanceCheckAction(drive,intake,getStackPosition())
                     ),
 
                     new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_start", true),
@@ -671,11 +669,14 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
             new SequentialAction(
                     intake.stackIntakeLinkageUp(),
                     // move back to the backdrop
-                    new MecanumDrive.DrivePoseLoggingAction(drive, "strafe_to_backdrop_begin"),
-                    drive.actionBuilder(new Pose2d(preloadDetection[SPIKE].position, preloadDetection[SPIKE].heading))
+                    new ParallelAction(
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "strafe_to_backdrop_begin"),
+                        drive.actionBuilder(new Pose2d(preloadDetection[SPIKE].position, preloadDetection[SPIKE].heading))
                             .setReversed(true)
                             .strafeToLinearHeading(backdrop_position,preloadDetection[SPIKE].heading)
                             .build(),
+                        new BackdropDistanceCheckAction(drive,outtake, new Pose2d(backdrop_position, preloadDetection[SPIKE].heading))
+                    ),
 
                     new MecanumDrive.DrivePoseLoggingAction(drive, "strafe_to_backdrop_end")
             );

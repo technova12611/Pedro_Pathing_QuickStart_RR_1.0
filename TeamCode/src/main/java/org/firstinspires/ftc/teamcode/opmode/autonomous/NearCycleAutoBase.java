@@ -279,7 +279,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                     new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_open_latch_start"),
                         getBackdropDistanceAdjustmentAction(),
                         outtake.latchScore1(),
-                    new SleepAction(0.2),
+                    new SleepAction(0.4),
                     outtake.latchScore2(),
                     new SleepAction(0.4),
                         outtake.afterScore2(),
@@ -324,7 +324,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                  drive.slowVelConstraint, drive.slowAccelConstraint)
                          .build(),
                     intake.intakeOn(),
-                     new StackDistanceCheckAction(drive,intake,getStackPosition())
+                    new StackDistanceCheckAction(drive,intake,getStackPosition())
                 ),
 
                new ParallelAction(

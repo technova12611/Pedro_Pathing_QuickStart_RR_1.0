@@ -302,7 +302,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
         outtake.stopBackdropDistanceMeasurement();
 
-        Log.d("Auto_logger", String.format("!!! onRun() finished at %.3f", getRuntime()));
+        Log.d("Auto_logger", "Outtake Slide end position: " + Globals.OUTTAKE_SLIDE_POSITION);
+        Log.d("Auto_logger", String.format("!!! onRun() finished at %.3f", getRuntime())  + " | SPIKE: " + SPIKE);
 
         // run the auto path, all the actions are queued
         //-------------------------------
@@ -314,7 +315,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         Globals.drivePose = drive.pose;
         Globals.OUTTAKE_SLIDE_POSITION = outtake.getMotorCurrentPosition();
 
-        Log.d("Auto_logger", String.format("!!! Auto run() finished at %.3f", getRuntime()));
+        Log.d("Auto_logger", String.format("!!! Auto run() finished at %.3f", getRuntime()) + " | SPIKE: " + SPIKE + " | Total Pixels: " + Intake.totalPixelCount);
 
         try {
             if (backVisionPortal != null) backVisionPortal.close();
@@ -326,9 +327,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             // ignore
         }
 
-        Log.d("Auto_logger", String.format("!!! Auto program ended at %.3f", getRuntime()));
-        Log.d("Auto_logger", "Outtake Slide end position: " + Globals.OUTTAKE_SLIDE_POSITION);
-
+        Log.d("Auto_logger", String.format("!!! Auto program ended at %.3f", getRuntime()) + " | Drive Pose: " + new PoseMessage(Globals.drivePose));
     }
 
     protected void initVisionPortal() {
@@ -701,12 +700,12 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
                     double base_distance = 7.0;
 
-                    if(backDistance > base_distance + 1.5) {
-                        straightDistance = -1.5;
-                    } else if(backDistance > base_distance + 0.60) {
-                        straightDistance = -1.05;
-                    } else if(backDistance > base_distance + 0.4) {
-                        straightDistance = -0.40;
+                    if(backDistance > base_distance + 1.55) {
+                        straightDistance = -1.75;
+                    } else if(backDistance > base_distance + 0.65) {
+                        straightDistance = -1.25;
+                    } else if(backDistance > base_distance + 0.25) {
+                        straightDistance = -0.50;
                     }
 
                     if(backDistance < 5.25 && backDistance > 3.75) {
@@ -715,7 +714,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         straightDistance = 0.45;
                     }
 
-                    if(backDistance == 0.0) {
+                    if(backDistance == 0.0 || straightDistance == 0.0) {
                         if (outtake.hasOuttakeReached()) {
                             if (slidePivotVoltage > (Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME)) {
                                 straightDistance = 0.75;
@@ -724,7 +723,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                             }
                         }
                         else {
-                            straightDistance = -1.0;
+                            straightDistance = -0.75;
                         }
                     }
 
@@ -891,7 +890,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 Log.d("StackDistance_Logger", "Start stack distance checking !!!");
             }
 
-            if(timer.milliseconds() < 700.0) {
+            if(timer.milliseconds() < 500.0) {
                 return true;
             }
 
@@ -899,8 +898,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             double rightDistance = intake.getStackDistanceRight();
             counter++;
 
-            if (leftDistance < 1.25 ||  rightDistance < 1.25 || timer.milliseconds() > 1500) {
-                if (leftDistance < 1.25 || rightDistance < 1.25) {
+            if (leftDistance < 1.05 ||  rightDistance < 1.05 || timer.milliseconds() > 1500) {
+                if (leftDistance < 1.05 || rightDistance < 1.05) {
                     drive.cancelCurrentTrajectory();
                     Log.d("StackDistance_Logger", "Cancel trajectory called at " + String.format("%3.3f", timer.milliseconds()));
 
