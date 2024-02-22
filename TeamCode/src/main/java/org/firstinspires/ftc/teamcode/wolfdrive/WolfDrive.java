@@ -7,9 +7,9 @@ import com.acmerobotics.roadrunner.Vector2d;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 public class WolfDrive {
-    public static double maxVelocityX = 80; // max positive straight velocity. TODO: Record using MaxVelStraightTest.
+    public static double maxVelocityX = 72; // max positive straight velocity. TODO: Record using MaxVelStraightTest.
     public static double maxVelocityY = 55; // max positive sideways velocity. TODO: Record using MaxVelStrafeTest.
-    public static double centripetalWeighting = 0.00005; // TODO: adjust by trial and error for how much smoothing you need. Wolfpack calculates it but I can't be bothered.
+    public static double centripetalWeighting = 0.00001; // TODO: adjust by trial and error for how much smoothing you need. Wolfpack calculates it but I can't be bothered.
     public static double dashboardVectorScale = 1;
 
     private Vector2d leftFrontWheelForceVector;  // these vectors should not change during the match,

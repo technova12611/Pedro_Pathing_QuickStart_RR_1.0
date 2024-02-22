@@ -62,6 +62,8 @@ public class ManualDrive extends LinearOpMode {
     private Hang hang;
     private Drone drone;
 
+    private boolean useWolfDrive = true;
+
 //    private AprilTag aprilTag;
 
     Long intakeReverseStartTime = null;
@@ -425,11 +427,19 @@ public class ManualDrive extends LinearOpMode {
             // not set upset the power
         } else {
             // test wolfPack drive
-            PoseVelocity2d currentVel = drive.updatePoseEstimate();
-            wolfDrive.trackPosition(drive.pose);
-            wolfDrive.driveWithCorrection(new PoseVelocity2d(input, input_turn), currentVel);
+            if(useWolfDrive) {
+                PoseVelocity2d currentVel = drive.updatePoseEstimate();
+                wolfDrive.trackPosition(drive.pose);
+                wolfDrive.driveWithCorrection(new PoseVelocity2d(input, input_turn), currentVel);
+            } else {
+                drive.setDrivePowers(new PoseVelocity2d(input, input_turn));
+            }
+        }
 
-            //drive.setDrivePowers(new PoseVelocity2d(input, input_turn));
+        if(g2.xOnce()) {
+            useWolfDrive = false;
+        } else if(g2.yOnce()) {
+            useWolfDrive = true;
         }
 
         if (input_x > 0.1) {

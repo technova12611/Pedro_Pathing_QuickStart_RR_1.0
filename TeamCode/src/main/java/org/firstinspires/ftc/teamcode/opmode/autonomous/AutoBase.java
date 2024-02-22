@@ -703,6 +703,10 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         straightDistance = -1.25;
                     } else if(backDistance > base_distance + 0.2) {
                         straightDistance = -0.6;
+                    } else if(backDistance > base_distance) {
+                            straightDistance = -0.2;
+                    }else {
+                        straightDistance = 0.01;
                     }
 
                     if(backDistance < 5.25 && backDistance > 3.75) {
@@ -711,7 +715,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         straightDistance = 0.45;
                     }
 
-                    if(backDistance == 0.0 || straightDistance == 0.0) {
+                    if(backDistance == 0.0 ) {
                         if (outtake.hasOuttakeReached()) {
                             if (slidePivotVoltage > (Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME)) {
                                 straightDistance = 0.75;
