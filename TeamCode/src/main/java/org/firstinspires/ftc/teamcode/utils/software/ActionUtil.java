@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
@@ -109,6 +110,40 @@ public class ActionUtil {
          } catch (Exception e) {
             throw new RuntimeException(e);
          }
+      }
+   }
+
+   public static class DcMotorRWEAction implements Action {
+      double duration;
+      double power;
+      DcMotorEx motor;
+      ElapsedTime timer = null;
+
+      public DcMotorRWEAction(DcMotorEx motor, double power, double duration) {
+         this.duration = duration;
+         this.motor = motor;
+         this.power = power;
+      }
+
+      @Override
+      public boolean run(TelemetryPacket packet) {
+         if(this.timer == null) {
+            this.timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+            Log.d("ActionUtil.Motor_RWE_logger", "Starting:: duration: " + String.format("|%.3f", duration) + String.format("| power: %.2f", power)
+            + " | current timer: " + this.timer.milliseconds());
+            motor.setPower(power);
+
+            return true;
+         }
+
+         if(this.timer.milliseconds() >= duration) {
+            Log.d("ActionUtil.Motor_RWE_logger", "Ending:: duration: " + String.format("|%.3f", duration) + String.format("| power: %.2f", power));
+            motor.setPower(0.0);
+
+            return false;
+         }
+
+         return true;
       }
    }
 }

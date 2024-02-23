@@ -7,10 +7,8 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.NullAction;
 import com.acmerobotics.roadrunner.ParallelAction;
-import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -21,9 +19,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.utils.software.ActionUtil;
 import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 import org.firstinspires.ftc.teamcode.utils.hardware.MotorWithPID;
@@ -43,16 +39,16 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_ABOVE_LEVEL_2 = 2150;
     public static int OUTTAKE_SLIDE_BELOW_LEVEL_2 = 1850;
     public static int OUTTAKE_SLIDE_ABOVE_LEVEL_1 = 1550;
-    public static int OUTTAKE_SLIDE_BELOW_LEVEL_1 = 1100;
+    public static int OUTTAKE_SLIDE_BELOW_LEVEL_1 = 950;
 
     public static int OUTTAKE_SLIDE_HIGH = OUTTAKE_SLIDE_ABOVE_LEVEL_2;
     public static int OUTTAKE_TELEOPS = OUTTAKE_SLIDE_BELOW_LEVEL_1;
     public static int OUTTAKE_SLIDE_MID = 1250;
-    public static int OUTTAKE_SLIDE_CYCLES_ONE = 980;
-    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1100;
+    public static int OUTTAKE_SLIDE_CYCLES_ONE = 1050;
+    public static int OUTTAKE_SLIDE_CYCLES_TWO = 1180;
     public static int OUTTAKE_SLIDE_FAR_LOW = 950;
     public static int OUTTAKE_SLIDE_LOW = 810;
-    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 1050;
+    public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO = 1150;
     public static int OUTTAKE_SLIDE_AFTER_DUMP_AUTO_2 = 1280;
     public static int OUTTAKE_SLIDE_INIT = 0;
     public static int OUTTAKE_SLIDE_INCREMENT= 80;
@@ -82,13 +78,13 @@ public class Outtake {
 
     public static double SLIDE_PIVOT_DUMP_1 = 0.278;
 
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.55;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_MIN = 2.71;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_MAX = SLIDE_PIVOT_DUMP_VOLTAGE_MIN + 0.10; //2.68;
 
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX = SLIDE_PIVOT_DUMP_VOLTAGE_MIN + 0.25; //2.82;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX = SLIDE_PIVOT_DUMP_VOLTAGE_MIN + 0.20; //2.82;
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MIN = SLIDE_PIVOT_DUMP_VOLTAGE_MIN + 0.15; //2.70;
 
-    public static double SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME = SLIDE_PIVOT_DUMP_VOLTAGE_MIN + 0.35; //3.0;
+    public static double SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME = SLIDE_PIVOT_DUMP_VOLTAGE_MIN + 0.30; //3.0;
 
     public static double SLIDE_PIVOT_DUMP_2 = 0.275;
 
@@ -184,7 +180,6 @@ public class Outtake {
         this.outtakePivotVoltage = hardwareMap.get(AnalogInput.class, "outtakePivotVoltage");
 
         backdropDistance = (Rev2mDistanceSensor) hardwareMap.get(DistanceSensor.class, "backdropDistance");
-
     }
 
     public enum OuttakeLatchState {
@@ -212,7 +207,7 @@ public class Outtake {
 
     public Action prepTeleop(int position) {
         if(position > 300) {
-            return resetSliderPosition();
+            return resetSliderZeroPosition();
         }
         else {
             this.slide.getMotor().setPower(-0.2);
@@ -305,13 +300,12 @@ public class Outtake {
         return new NullAction();
     }
 
-    public Action resetSliderPosition() {
+    public Action resetSliderZeroPosition() {
         return new SequentialAction(
-                this.slide.setTargetPositionAction(500),
-                new SleepAction(0.2),
+                new ActionUtil.DcMotorRWEAction(this.slide.getMotor(), 0.35, 300.0),
                 prepareToSlide(),
-                new SleepAction(0.3),
-                this.slide.setTargetPositionAction(-200),
+                new SleepAction(0.5),
+                new ActionUtil.DcMotorRWEAction(this.slide.getMotor(), -0.35, 700.0),
                 new SleepAction(0.5),
                 this.slide.zeroMotorInternalsAction("OuttakeSlideMotor"));
     }
@@ -598,10 +592,10 @@ public class Outtake {
         double slidePivotVoltageMean = slidePivotVoltages.getMean();
 
         if(backdropTouched &&
-                slidePivotVoltageMean <= SLIDE_PIVOT_DUMP_VOLTAGE_MIN) {
+                        (getBackdropDistance() > 7.05 && getBackdropDistance() < 30.0) ) {
             backdropTouched= false;
         } else if (slideServoPosition > SLIDE_PIVOT_DUMP_HIGH && slideServoPosition < SLIDE_PIVOT_DUMP_2 &&
-                slidePivotVoltageMean >= SLIDE_PIVOT_DUMP_VOLTAGE_MAX) {
+                (getBackdropDistance() < 6.25 && getBackdropDistance() > 4.25)) {
             backdropTouched = true;
         }
 

@@ -5,7 +5,6 @@ import android.util.Log;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.AccelConstraint;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.AngularVelConstraint;
@@ -20,7 +19,6 @@ import com.acmerobotics.roadrunner.VelConstraint;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -116,6 +114,8 @@ public class ManualDrive extends LinearOpMode {
             .addStep(1, 1, 1, 750) // Show white for 250ms
             .build();
 
+    private boolean resetSliderEnabled = false;
+
     @Override
     public void runOpMode() throws InterruptedException {
 
@@ -183,7 +183,7 @@ public class ManualDrive extends LinearOpMode {
 
         Long aTimer = System.currentTimeMillis();
         while (opModeInInit() && !isStopRequested()) {
-            if (aTimer != null && (System.currentTimeMillis() - aTimer > 600)) {
+            if (aTimer != null && (System.currentTimeMillis() - aTimer > 1000)) {
                 outtake.finishPrepTeleop();
                 if(Globals.OUTTAKE_SLIDE_POSITION < 30) {
                     outtake.resetSlideEncoder();
@@ -198,8 +198,6 @@ public class ManualDrive extends LinearOpMode {
         resetRuntime();
         g1.reset();
         g2.reset();
-
-
 
         Globals.OUTTAKE_SLIDE_POSITION = 0;
 
@@ -511,7 +509,7 @@ public class ManualDrive extends LinearOpMode {
             }
         }
 
-        if (g1.b()) {
+        if (g1.b() && !g1.start()) {
             if (isSlideOut) {
                 retractSlide();
             } else {
@@ -774,9 +772,9 @@ public class ManualDrive extends LinearOpMode {
         }
 
         if (g1.start() && g1.guideOnce()) {
-            sched.queueAction(outtake.resetSliderPosition());
+            sched.queueAction(outtake.resetSliderZeroPosition());
         } else if (g1.guideOnce()) {
-            sched.queueAction(outtake.reverseDump());
+//            sched.queueAction(outtake.reverseDump());
 //            if (isHangingActivated) {
 //                Log.d("Hang_drop_down", "Hang current position: " + hang.getCurrentPosition());
 //                hang.dropdownFromHang();
@@ -812,10 +810,14 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void retractSlide() {
-        isSlideOut = false;
-        pixelScored = false;
 //        sched.queueAction(new SequentialAction(outtake.latchScore0(), new SleepAction(0.2)));
         sched.queueAction(outtake.retractOuttake());
+        sched.queueAction(new SleepAction(0.2));
+        sched.queueAction(new ActionUtil.RunnableAction(() -> {
+            isSlideOut = false;
+            pixelScored = false;
+            return false;
+        }));
     }
 
     private void logLoopTime(String msg, long elapsedTime) {

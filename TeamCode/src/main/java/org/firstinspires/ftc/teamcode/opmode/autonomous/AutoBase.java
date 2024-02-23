@@ -241,27 +241,27 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 long start_onrun = System.currentTimeMillis();
                 sched.reset();
 
-                Log.d("Auto_logger", " onRun() starts for " + getAlliance() + "-" + getFieldPosition() + "-" + teamPropPosition + " | actions: " + sched.size() + " | Prev_Prop_Position: " + prev_teamPropPosition);
+                Log.d("Auto_logger", " OpModeInit::onRun() starts for " + getAlliance() + "-" + getFieldPosition() + "-" + teamPropPosition + " | actions: " + sched.size() + " | Prev_Prop_Position: " + prev_teamPropPosition);
                 onRun();
 
                 prev_teamPropPosition = teamPropPosition;
 
-                Log.d("Auto_logger", " onRun() finished, elapsed time:  "
-                        + (System.currentTimeMillis() - start_onrun) + " | actions: " + sched.size());
+                g1.rumble(500);
+
+                Log.d("Auto_logger", " OpModeInit::onRun() finished, elapsed time (ms):  "
+                        + (System.currentTimeMillis() - start_onrun) + " | # of actions: " + sched.size());
 
                 Log.d("Auto_logger"," Spike position changed!!! Distance sensor: Left: " + String.format("%3.2f", intake.getStackDistanceLeft()) +
                         " | Right: " + String.format("%3.2f", intake.getStackDistanceRight()) +
                         " | Back: "+ String.format("%3.2f", outtake.getBackdropDistance()));
 
-                Log.d("Auto_logger", centerStr + " color:" + String.format("Mean: %3.2f | Max: %3.2f ", teamProPipeline.meanCenterColor, teamProPipeline.maxCenterColor));
-                Log.d("Auto_logger", sideStr + " color:" + String.format("Mean: %3.2f | Max: %3.2f ", teamProPipeline.meanSideColor, teamProPipeline.maxSideColor));
-                Log.d("Auto_logger", "Spike Position" + teamPropPosition.toString() + " | SPIKE: " + SPIKE);
+                Log.d("Auto_logger", centerStr + " color:" + String.format("Mean: %3.2f | Max: %3.2f ", teamProPipeline.meanCenterColor, teamProPipeline.maxCenterColor)
+                + " | " + sideStr + " color:" + String.format("Mean: %3.2f | Max: %3.2f ", teamProPipeline.meanSideColor, teamProPipeline.maxSideColor)
+                +" | Spike Position: " + teamPropPosition.toString() + " | SPIKE: " + SPIKE);
 
-                Log.d("Auto_logger", " Delta Threshold:" + String.format( "Red: %3.2f | Blue: %3.2f ", teamProPipeline.redDeltaThreshold, teamProPipeline.blueDeltaThreshold));
-                Log.d("Auto_logger", " Color Threshold:" + String.format( "Red: %3.2f | Blue: %3.2f ", teamProPipeline.redThreshold, teamProPipeline.blueThreshold));
+                Log.d("Auto_logger", " Delta Threshold:" + String.format( "Red: %3.2f | Blue: %3.2f ", teamProPipeline.redDeltaThreshold, teamProPipeline.blueDeltaThreshold)
+                + " | Color Threshold:" + String.format( "Red: %3.2f | Blue: %3.2f ", teamProPipeline.redThreshold, teamProPipeline.blueThreshold));
             }
-
-            idle();
         }
 
         // Auto start
@@ -272,9 +272,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         Log.d("Auto_logger", String.format("Auto program started at %.3f", getRuntime()));
 
         try {
-            frontVisionPortal.close();
-            teamProPipeline = null;
-            frontVisionPortal = null;
+            frontVisionPortal.setProcessorEnabled(teamProPipeline,false);
         } catch (Exception e) {
             // ignore
         }
@@ -319,12 +317,16 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
         try {
             if (backVisionPortal != null) backVisionPortal.close();
-
             aprilTag = null;
             preloadPipeline = null;
             backVisionPortal = null;
+
+            if (frontVisionPortal != null) frontVisionPortal.close();
+            teamProPipeline = null;
+            frontVisionPortal = null;
+
         } catch (Exception e) {
-            // ignore
+            Log.d("Auto_logger", "Close Visioln Portal error: " + e.getMessage());
         }
 
         Log.d("Auto_logger", String.format("!!! Auto program ended at %.3f", getRuntime()) + " | Drive Pose: " + new PoseMessage(Globals.drivePose));
@@ -456,7 +458,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 if (Math.abs(delta_stack_position) <= 0.75 && avg_y_adj_left > 5.0 && avg_y_adj_right > 5.0) {
                     adjustment_x = (avg_y_adj_left + avg_y_adj_right) / 2 - 0.5;
                 } else if (delta_stack_position < -2.25) {
-                    adjustment_y = -2.05;
+                    adjustment_y = -1.75;
                     adjustment_x = avg_y_adj_right - y_offset;
                 } else if (delta_stack_position < -1.5) {
                     adjustment_y = -1.05;
@@ -485,7 +487,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         String.format("%3.2f", (drive.pose.position.y + adjustment_y)) + "," + adjustment_y + ")"
                 );
 
-                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -58.75, -56.75);
+                double x_position = Range.clip(drive.pose.position.x - adjustment_x, -58.5, -56.5);
 
                 if (180 - Math.abs(Math.toDegrees(drive.pose.heading.toDouble())) > 3.0) {
                     adjustment_y = 0.0;
@@ -655,8 +657,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         " | slide voltage: " + String.format("%3.2f", slidePivotVoltage) +
                         " | back distance: " + String.format("%3.2f", backDistance));
 
-                if((backDistance > 6.15 && straightDistance > 0) ||
-                      ( backDistance < 7.25) && straightDistance < 0) {
+                if((backDistance > 6.25 && straightDistance > 0) ||
+                      ( backDistance < 7.05) && straightDistance < 0) {
                     pidDriveStraight.resetStartTime();
                     pidDriveStraight.update();
 
@@ -695,35 +697,33 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         backDistance = 0.0;
                     }
 
-                    double base_distance = 7.0;
+                    double base_distance = 6.75;
 
                     if(backDistance > base_distance + 1.5) {
-                        straightDistance = -1.75;
+                        straightDistance = -1.55;
                     } else if(backDistance > base_distance + 0.5) {
-                        straightDistance = -1.25;
+                        straightDistance = -1.05;
                     } else if(backDistance > base_distance + 0.2) {
-                        straightDistance = -0.6;
+                        straightDistance = -0.5;
                     } else if(backDistance > base_distance) {
-                            straightDistance = -0.2;
-                    }else {
+                            straightDistance = -0.3;
+                    } else {
                         straightDistance = 0.01;
                     }
 
                     if(backDistance < 5.25 && backDistance > 3.75) {
                         straightDistance = 0.85;
-                    } else if(backDistance < 6.25 && backDistance > 3.75) {
+                    } else if(backDistance < 6.15 && backDistance > 3.75) {
                         straightDistance = 0.45;
                     }
 
                     if(backDistance == 0.0 ) {
-                        if (outtake.hasOuttakeReached()) {
-                            if (slidePivotVoltage > (Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME)) {
-                                straightDistance = 0.75;
-                            } else if (slidePivotVoltage > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX) {
-                                straightDistance = 0.35;
-                            }
+                        if (slidePivotVoltage > (Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME)) {
+                            straightDistance = 0.75;
+                        } else if (slidePivotVoltage > Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_SUPER_MAX) {
+                            straightDistance = 0.35;
                         }
-                        else {
+                        else if(slidePivotVoltage < Outtake.SLIDE_PIVOT_DUMP_VOLTAGE_MIN - 0.1){
                             straightDistance = -0.75;
                         }
                     }
@@ -759,7 +759,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
             }
 
-            if(timer.milliseconds() < 200.0 && (preloadPipeline.leftZoneAverage < 20 || preloadPipeline.rightZoneAverage< 20)) {
+            if(timer.milliseconds() < 800.0 && (preloadPipeline.leftZoneAverage < 20 || preloadPipeline.rightZoneAverage< 20)) {
                 return true;
             }
 
@@ -899,20 +899,24 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             double rightDistance = intake.getStackDistanceRight();
             counter++;
 
-            if (leftDistance < 1.05 ||  rightDistance < 1.05 || timer.milliseconds() > 1500) {
-                if (leftDistance < 1.05 || rightDistance < 1.05) {
-                    drive.cancelCurrentTrajectory();
-                    Log.d("StackDistance_Logger", "Cancel trajectory called at " + String.format("%3.3f", timer.milliseconds()));
+            if ((leftDistance < 1.05 && rightDistance < 2.75)
+                    || leftDistance < 0.5
+                    || rightDistance < 0.5
+                    || (rightDistance < 1.05 && leftDistance < 2.75) ) {
+                drive.cancelCurrentTrajectory();
+                Log.d("StackDistance_Logger", "Cancel trajectory called at " + String.format("%3.3f", timer.milliseconds()));
 
-                    Log.d("StackDistance_Logger", "End of the check! Current Drive Pose: " + new PoseMessage(drive.pose)
-                            + " | left distance: " + String.format("%3.2f", leftDistance)
-                            + " | right distance: " + String.format("%3.2f", rightDistance)
-                            + " | Target stack Pose: " + new PoseMessage(stackPose));
+                Log.d("StackDistance_Logger", "End of the check! Current Drive Pose: " + new PoseMessage(drive.pose)
+                        + " | left distance: " + String.format("%3.2f", leftDistance)
+                        + " | right distance: " + String.format("%3.2f", rightDistance)
+                        + " | Target stack Pose: " + new PoseMessage(stackPose));
 
-                    timer = null;
+                timer = null;
+                return false;
+            }
 
-                    return false;
-                }
+            if(timer.milliseconds() > 1200) {
+                return false;
             }
 
             Log.d("StackDistance_Logger", "Count: " + counter + " | Current Drive Pose: " + new PoseMessage(drive.pose)

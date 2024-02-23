@@ -60,6 +60,11 @@ public class MotorWithPID {
 //        " | Current position: " + getCurrentPosition() + " | target position: " + getTargetPosition());
 
         boolean isBusy = isBusy();
+        if(!previouslyBusy && isBusy) {
+            Log.d("MotorWithPID_Logger", "Starting:: Current position: " + getCurrentPosition()
+                    + " | target position: " + getTargetPosition()
+                    + " | internal_offset: " + internalOffset);
+        }
         if(getTargetPosition() == 0 && !isBusy) {
             if(Math.abs(previousPower) != 0.0) {
                 motor.setPower(0.0);

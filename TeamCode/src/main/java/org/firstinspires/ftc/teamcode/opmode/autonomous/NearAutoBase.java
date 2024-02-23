@@ -62,6 +62,7 @@ public abstract class NearAutoBase extends AutoBase {
                       outtake.prepareToScoreCycle(),
                       new SleepAction(0.5),
                       getBackdropDistanceAdjustmentAction(),
+                      new SleepAction(0.3),
                       outtake.latchScore1(),
                       intake.stackIntakeLinkageDown(),
                       new SleepAction(1.0),

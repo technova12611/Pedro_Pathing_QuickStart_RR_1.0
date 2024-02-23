@@ -114,12 +114,14 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                     intake.prepareStackIntake()
                             ),
 
-
                             // move to stack intake position
-                            new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_alignment"),
-                            drive.actionBuilder(stackIntakeAlignment[SPIKE])
-                                    .strafeTo(stackIntake[SPIKE].position,drive.slowVelConstraint,drive.slowAccelConstraint)
-                                    .build(),
+                            new ParallelAction(
+                                new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_alignment"),
+                                drive.actionBuilder(stackIntakeAlignment[SPIKE])
+                                        .strafeTo(stackIntake[SPIKE].position,drive.slowVelConstraint,drive.slowAccelConstraint)
+                                        .build(),
+                                new StackDistanceCheckAction(drive,intake,getStackPosition())
+                            ),
 
                             new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_position"),
                             intake.intakeOneStackedPixels(),
@@ -175,11 +177,14 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                     intake.prepareStackIntake()
                             ),
 
-                            new MecanumDrive.DrivePoseLoggingAction(drive, "stackIntake_alignment"),
-                            // move to stack intake position
-                            drive.actionBuilder(stackIntakeAlignment[SPIKE])
-                                    .strafeTo(stackIntake[SPIKE].position,drive.slowVelConstraint,drive.slowAccelConstraint)
-                                    .build(),
+                            new ParallelAction(
+                                    new MecanumDrive.DrivePoseLoggingAction(drive, "stackIntake_alignment"),
+                                    // move to stack intake position
+                                drive.actionBuilder(stackIntakeAlignment[SPIKE])
+                                        .strafeTo(stackIntake[SPIKE].position,drive.slowVelConstraint,drive.slowAccelConstraint)
+                                        .build(),
+                                new StackDistanceCheckAction(drive,intake,getStackPosition())
+                            ),
 
                             new MecanumDrive.DrivePoseLoggingAction(drive, "stackIntake"),
                             intake.intakeOneStackedPixels(),
@@ -252,12 +257,14 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                     .strafeToLinearHeading(stackIntakeAlignment2.position, stackIntakeAlignment2.heading)
                                     .build(),
 
-                            new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_alignment_2"),
-
                             // move to stack intake position
-                            drive.actionBuilder(stackIntakeAlignment2)
-                                    .strafeToLinearHeading(stackIntake[SPIKE].position, stackIntake[SPIKE].heading)
-                                    .build(),
+                            new ParallelAction(
+                                    new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_alignment_2"),
+                                drive.actionBuilder(stackIntakeAlignment2)
+                                        .strafeToLinearHeading(stackIntake[SPIKE].position, stackIntake[SPIKE].heading)
+                                        .build(),
+                                new StackDistanceCheckAction(drive,intake,getStackPosition())
+                            ),
 
                             new MecanumDrive.DrivePoseLoggingAction(drive, "stack_intake_"),
                             intake.intakeOneStackedPixels(),
@@ -275,9 +282,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                         intake.intakeOneStackedPixels()
                                         )
                             ),
-
                             new MecanumDrive.DrivePoseLoggingAction(drive, "cross_field_alignment", true)
-
                     )
             );
         }
@@ -343,7 +348,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                 ));
 
         sched.addAction(new MecanumDrive.DrivePoseLoggingAction(drive, "start_preload_detection"));
-        sched.addAction(new SleepAction(1.0));
+        sched.addAction(new SleepAction(0.2));
         sched.addAction(new AutoBase.PreloadPositionDetectionAction(drive));
         sched.addAction(new MecanumDrive.DrivePoseLoggingAction(drive, "end_preload_detection"));
 
@@ -354,11 +359,11 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                         outtake.latchScore1(),
                         new SleepAction(0.50),
                         outtake.afterScore(),
-                        new SleepAction(0.25),
+                        new SleepAction(0.20),
                         outtake.latchScore2(),
-                        new SleepAction(0.40),
-                        outtake.afterScore2(),
                         new SleepAction(0.30),
+                        outtake.afterScore2(),
+                        new SleepAction(0.20),
                         new ActionUtil.RunnableAction(() -> {
                             pidDriveActivated = false;
                             pidDriveStarted = false;
@@ -502,11 +507,12 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                         // score pixels
                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_adjustment_start"),
                         getBackdropDistanceAdjustmentAction(),
+                        new SleepAction(0.2),
                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_score_" + cycleCount + "_adjustment"),
                         outtake.latchScore1(),
-                        new SleepAction(0.4),
+                        new SleepAction(0.3),
                         outtake.latchScore2(),
-                        new SleepAction(0.4),
+                        new SleepAction(0.3),
                         outtake.afterScore2(),
                         new SleepAction(sleepTime),
                         new ActionUtil.RunnableAction(() -> {

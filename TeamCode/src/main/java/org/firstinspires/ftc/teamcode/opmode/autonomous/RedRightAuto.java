@@ -18,12 +18,12 @@ public class RedRightAuto extends NearAutoBase {
    public static Pose2d[] red_spike = {
            new Pose2d(13.8, -34.0, Math.toRadians(180)),
            new Pose2d(29.0, -25.7, Math.toRadians(180)),
-           new Pose2d(37.0, -27.0, Math.toRadians(180))
+           new Pose2d(36.6, -27.0, Math.toRadians(180))
    };
    public static Pose2d[] red_backdrop =  {
-           new Pose2d(47.8, -31.6, Math.toRadians(180)), // 29.5 for left
-           new Pose2d(47.8, -38.0, Math.toRadians(180)),  // 35.0 for center
-           new Pose2d(47.8, -43.9, Math.toRadians(180))  // 41 for right
+           new Pose2d(48.1, -31.6, Math.toRadians(180)), // 29.5 for left
+           new Pose2d(48.1, -38.0, Math.toRadians(180)),  // 35.0 for center
+           new Pose2d(48.1, -43.9, Math.toRadians(180))  // 41 for right
    };
    // 0 = left, 1 = middle, 2 = right
    public static Pose2d red_start = new Pose2d(14.5, -62.0, Math.toRadians(90));
