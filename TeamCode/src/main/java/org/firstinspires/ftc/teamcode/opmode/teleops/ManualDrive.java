@@ -49,7 +49,7 @@ public class ManualDrive extends LinearOpMode {
     public static double SLOW_TURN_SPEED = 0.3;
     public static double SLOW_DRIVE_SPEED = 0.3;
 
-    public static double STRAFE_DISTANCE = 1.25;
+    public static double STRAFE_DISTANCE = 1.75;
     private SmartGameTimer smartGameTimer;
     private GamePadController g1, g2;
     private MecanumDrive drive;
@@ -297,12 +297,12 @@ public class ManualDrive extends LinearOpMode {
 
                 if (elapsedTime < 600) {
                     if (Intake.pixelsCount == 2) {
-                        Intake.totalPixelCount--;
+                        //Intake.totalPixelCount--;
                         prevPixelCount = Intake.pixelsCount;
 
-                        Log.d("TeleOps_Pixel_detection", "deduct 1 from the counts. Total: " + Intake.totalPixelCount + " current: " + Intake.pixelsCount);
+                        //Log.d("TeleOps_Pixel_detection", "deduct 1 from the counts. Total: " + Intake.totalPixelCount + " current: " + Intake.pixelsCount);
 
-                        sched.queueAction(intake.intakeReverse());
+                        sched.queueAction(intake.intakeOff());
 
                         intakeSlowdownStartTime = new Long(System.currentTimeMillis());
                         lastTimePixelDetected = null;
@@ -401,15 +401,15 @@ public class ManualDrive extends LinearOpMode {
         }
 
         // if outtake has touched the backdrop, don't move further
-        if (outtake.hasOuttakeReached()) {
+        if (isSlideOut && outtake.hasOuttakeReached()) {
             if (input_x < -0.1) {
-                input_x = 0.0;
+                input_x = Range.clip(input_x, -0.20, -0.10);
                 Log.d("Drive_power", String.format("input_x: %3.2f to 0.0", input_x) + String.format(" | input_y: %3.2f", input_y));
-            }
 
-//            if (outtake.checkSlidePivotOverreached()) {
-//                input_x = 0.05;
-//            }
+                if (input_x < 0.0 && outtake.hasOuttakeReachedTooMuch()) {
+                    input_x = 0.0;
+                }
+            }
         }
 
         prevBackdropTouched = outtake.hasOuttakeReached();
@@ -434,9 +434,9 @@ public class ManualDrive extends LinearOpMode {
             }
         }
 
-        if(g2.xOnce()) {
+        if(g2.xOnce() || g2.leftBumperOnce()) {
             useWolfDrive = false;
-        } else if(g2.yOnce()) {
+        } else if(g2.yOnce() || g2.rightBumperOnce()) {
             useWolfDrive = true;
         }
 
@@ -498,7 +498,9 @@ public class ManualDrive extends LinearOpMode {
         //
         if (g1.aLong()) {
             isPixelDetectionEnabled = false;
-        } else if (!g1.start() && g1.xOnce()) {
+        }
+
+        if (!g1.start() && g1.xOnce()) {
             if (intake.intakeState == Intake.IntakeState.ON) {
                 sched.queueAction(intake.intakeOff());
             } else {
@@ -774,6 +776,9 @@ public class ManualDrive extends LinearOpMode {
         if (g1.start() && g1.guideOnce()) {
             sched.queueAction(outtake.resetSliderZeroPosition());
         } else if (g1.guideOnce()) {
+            if(isSlideOut) {
+                sched.queueAction(outtake.reverseDump());
+            }
 //            sched.queueAction(outtake.reverseDump());
 //            if (isHangingActivated) {
 //                Log.d("Hang_drop_down", "Hang current position: " + hang.getCurrentPosition());
@@ -810,14 +815,10 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void retractSlide() {
+        isSlideOut = false;
+        pixelScored = false;
 //        sched.queueAction(new SequentialAction(outtake.latchScore0(), new SleepAction(0.2)));
         sched.queueAction(outtake.retractOuttake());
-        sched.queueAction(new SleepAction(0.2));
-        sched.queueAction(new ActionUtil.RunnableAction(() -> {
-            isSlideOut = false;
-            pixelScored = false;
-            return false;
-        }));
     }
 
     private void logLoopTime(String msg, long elapsedTime) {

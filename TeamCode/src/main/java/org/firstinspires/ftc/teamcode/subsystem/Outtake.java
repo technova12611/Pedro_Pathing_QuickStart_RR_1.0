@@ -54,12 +54,13 @@ public class Outtake {
     public static int OUTTAKE_SLIDE_INCREMENT= 80;
     public static int OUTTAKE_SLIDE_DECREMENT= 50;
 
+    public static double LATCH_CLOSED_0 = 0.58;
     public static double LATCH_CLOSED = 0.55;
     public static double LATCH_SCORE_1 = 0.415;
     public static double LATCH_SCORE_2 = 0.49;
 
     public static double OUTTAKE_PIVOT_REVERSE_DUMP = 0.01;
-    public static double OUTTAKE_PIVOT_INIT = 0.19;
+    public static double OUTTAKE_PIVOT_INIT = 0.182;
     public static double OUTTAKE_PIVOT_SLIDING = 0.22;
     public static double OUTTAKE_PIVOT_DUMP_LOW = 0.38;
     public static double OUTTAKE_PIVOT_DUMP_MID = 0.39;
@@ -70,7 +71,7 @@ public class Outtake {
 
     public static double OUTTAKE_PIVOT_DUMP_VERY_HIGH = 0.62;
 
-    public static double SLIDE_PIVOT_INIT = 0.452;
+    public static double SLIDE_PIVOT_INIT = 0.465;
     public static double SLIDE_PIVOT_SLIDING = 0.52;
 
     public static double SLIDE_PIVOT_DUMP_0 = 0.22;
@@ -149,6 +150,8 @@ public class Outtake {
     public boolean isHangingHookUp = false;
 
     public boolean backdropTouched = false;
+
+    public boolean backdropTouchedTooMuch = false;
 
     private Rev2mDistanceSensor backdropDistance;
 
@@ -312,7 +315,7 @@ public class Outtake {
 
     public Action retractOuttake() {
         double sleepTime = 0.8;
-        if(!isAuto) {
+        if(!isAuto && this.slide.getTargetPosition() > OUTTAKE_SLIDE_CYCLES_ONE) {
             sleepTime = 0.6;
         }
 
@@ -428,6 +431,8 @@ public class Outtake {
     }
     public Action reverseDump() {
         return new SequentialAction(
+                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED_0, "latch"),
+                new SleepAction(0.2),
                 new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_DUMP_VERY_HIGH, "slidePivot"),
             new ActionUtil.ServoPositionAction(outtakePivot, OUTTAKE_PIVOT_REVERSE_DUMP, "outtakePivot")
         );
@@ -587,16 +592,22 @@ public class Outtake {
         double slideServoVoltage = slidePivotVoltage.getVoltage();
         double slideServoPosition = slidePivot.getPosition();
 
+        double backdropSensorDistance = getBackdropDistance();
+
         slidePivotVoltages.add(slideServoVoltage);
 
         double slidePivotVoltageMean = slidePivotVoltages.getMean();
 
         if(backdropTouched &&
-                        (getBackdropDistance() > 7.05 && getBackdropDistance() < 30.0) ) {
+                        (backdropSensorDistance > 7.0 && backdropSensorDistance < 30.0) ) {
             backdropTouched= false;
         } else if (slideServoPosition > SLIDE_PIVOT_DUMP_HIGH && slideServoPosition < SLIDE_PIVOT_DUMP_2 &&
-                (getBackdropDistance() < 6.25 && getBackdropDistance() > 4.25)) {
+                (backdropSensorDistance < 6.25 && backdropSensorDistance > 4.05)) {
             backdropTouched = true;
+
+            if((backdropSensorDistance < 5.25 && backdropSensorDistance > 2.75) ||  slideServoVoltage > SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME) {
+                backdropTouchedTooMuch = true;
+            }
         }
 
         boolean isLogging = false;
@@ -621,7 +632,7 @@ public class Outtake {
                     "slidePivot " + direction + " servo position:" + String.format("%3.3f",servoPosition)
                             + " | slideServoVoltage: " + String.format("%3.2f",slidePivotVoltageMean)
                             + " | outtakeServoVoltage: " + String.format("%3.2f",outtakePivotVoltage.getVoltage()) +
-                    " | back Distance: " + String.format("%3.2f",getBackdropDistanceMean()));
+                    " | back Distance: " + String.format("%3.2f", backdropSensorDistance));
             slidePivotlEapsedTimer.reset();
             previousSlidePivotVoltage = slidePivotVoltageMean;
         }
@@ -677,6 +688,10 @@ public class Outtake {
 
     public boolean hasOuttakeReached() {
         return backdropTouched;
+    }
+
+    public boolean hasOuttakeReachedTooMuch() {
+        return backdropTouchedTooMuch;
     }
 
     public int getMotorCurrentPosition() {

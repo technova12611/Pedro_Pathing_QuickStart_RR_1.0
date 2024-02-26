@@ -189,6 +189,14 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                     selectionIdx--;
                 }
 
+                if(g1.leftBumperOnce()) {
+                    intake.stackIntakeUp();
+                }
+
+                if(g1.rightBumperOnce()) {
+                    intake.stackIntakeDown();
+                }
+
                 // cycle the idx
                 if (selectionIdx < 0) {
                     selectionIdx = waitTimeOptions.length-1;
@@ -276,7 +284,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         } catch (Exception e) {
             // ignore
         }
-        Log.d("Auto_logger", String.format("Front Vision Portal closed at %.3f", getRuntime()));
+        Log.d("Auto_logger", String.format("Front Vision Portal team prop pipeline disabled at %.3f", getRuntime()));
 
         if (isStopRequested()) return; // exit if stopped
 
@@ -293,10 +301,10 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         Log.d("Auto_logger", String.format("onRun() started at %.3f", getRuntime()) + " | actions: " + sched.size());
         Log.d("Auto_logger", "Team Prop position: " + teamPropPosition + " | SPIKE:" + SPIKE);
 
-        if (prev_teamPropPosition != teamPropPosition || sched.isEmpty()) {
-            sched.reset();
-            onRun();
-        }
+//        if (prev_teamPropPosition != teamPropPosition || sched.isEmpty()) {
+//            sched.reset();
+//            onRun();
+//        }
 
         outtake.stopBackdropDistanceMeasurement();
 
@@ -697,10 +705,10 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         backDistance = 0.0;
                     }
 
-                    double base_distance = 6.75;
+                    double base_distance = 7.05;
 
                     if(backDistance > base_distance + 1.5) {
-                        straightDistance = -1.55;
+                        straightDistance = -1.50;
                     } else if(backDistance > base_distance + 0.5) {
                         straightDistance = -1.05;
                     } else if(backDistance > base_distance + 0.2) {
@@ -741,6 +749,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
         MovingArrayList preloadLeftZoneList = new MovingArrayList(5);
         MovingArrayList preloadRightZoneList = new MovingArrayList(5);
+
+        MovingArrayList aprilTagXPositionList = new MovingArrayList(5);
 
         boolean firstTime = true;
         ElapsedTime timer = null;
@@ -786,11 +796,15 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             if(preloadPipeline != null) {
                 preloadLeftZoneList.add(preloadPipeline.leftZoneAverage);
                 preloadRightZoneList.add(preloadPipeline.rightZoneAverage);
+                aprilTagXPositionList.add(preloadPipeline.aprilTagPose.x);
+
                 Log.d("Preload_detection_logger", "Count " + counter + " | Number of Detections: " + preloadPipeline.numOfDetections
                         + " | Target ID: " + preloadPipeline.getTargetAprilTagID());
                 Log.d("Preload_detection_logger", "Preload LEFT Zone AVG: " + preloadPipeline.leftZoneAverage +
                                                          " | Preload RIGHT Zone AVG: " + preloadPipeline.rightZoneAverage +
-                                                         " | Preload detected raw zone: " + preloadPipeline.getPreloadedZone());
+                                                         " | Preload detected raw zone: " + preloadPipeline.getPreloadedZone() +
+                                                         " | AprilTag X Position: " + String.format("$3.2f", preloadPipeline.aprilTagPose.x)
+                        );
             }
             return true;
         }
@@ -846,8 +860,8 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             double distance = outtake.getBackdropDistanceMean();
             counter++;
 
-            if (distance < 7.05 || timer.milliseconds() > 1500) {
-                if(distance < 7.05) {
+            if (distance < 7.25 || timer.milliseconds() > 1500) {
+                if(distance < 7.25) {
                     drive.cancelCurrentTrajectory();
                     Log.d("BackdropDistance_Logger", "Cancel trajectory called: ");
                 }

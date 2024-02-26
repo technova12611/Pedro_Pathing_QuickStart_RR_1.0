@@ -376,4 +376,12 @@ public class Intake {
         if(stackDistance2 == null) return 0.0;
         return stackDistance2.getDistance(DistanceUnit.INCH);
     }
+
+    public void stackIntakeUp() {
+        stackIntakeLinkage.setPosition(STACK_INTAKE_LINKAGE_UP);
+    }
+
+    public void stackIntakeDown() {
+        stackIntakeLinkage.setPosition(STACK_INTAKE_LINKAGE_DOWN);
+    }
 }

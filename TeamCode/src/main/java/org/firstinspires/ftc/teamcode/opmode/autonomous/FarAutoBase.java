@@ -352,6 +352,10 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
         sched.addAction(new AutoBase.PreloadPositionDetectionAction(drive));
         sched.addAction(new MecanumDrive.DrivePoseLoggingAction(drive, "end_preload_detection"));
 
+        double waitTime = 0.6;
+        if(doCycle()) {
+            waitTime = 0.3;
+        }
         sched.addAction(
                 new SequentialAction(
                         new MecanumDrive.DrivePoseLoggingAction(drive, "start_scoring"),
@@ -359,7 +363,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                         outtake.latchScore1(),
                         new SleepAction(0.50),
                         outtake.afterScore(),
-                        new SleepAction(0.20),
+                        new SleepAction(waitTime),
                         outtake.latchScore2(),
                         new SleepAction(0.30),
                         outtake.afterScore2(),
@@ -655,15 +659,15 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
             } else if(SPIKE == 0) {
                 backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.75);
             } else {
-                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.15);
+                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 0.95);
             }
         } else if(Globals.COLOR == AlliancePosition.BLUE && preloadPosition != Side.LEFT) {
             if(SPIKE == 1) {
                 backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.65);
             } else if(SPIKE == 0) {
-                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.85);
+                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.55);
             } else {
-                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.50);
+                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.35);
             }
         }
 

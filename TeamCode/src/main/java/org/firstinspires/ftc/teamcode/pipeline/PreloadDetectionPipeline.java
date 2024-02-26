@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.util.Log;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.Vector2d;
 
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
 import org.firstinspires.ftc.teamcode.Globals;
@@ -28,13 +29,15 @@ public class PreloadDetectionPipeline implements VisionProcessor {
 
     private AprilTagProcessor aprilTag;
 
-    public static int leftZoneAverage = 0;
-    public static int rightZoneAverage = 0;
+    public int leftZoneAverage = 0;
+    public int rightZoneAverage = 0;
 
-    public static int numOfDetections = 0;
+    public int numOfDetections = 0;
 
-    public static int inclusion_y_offset = 215;
-    public static int exclusion_y_offset = 175;
+    public int inclusion_y_offset = 215;
+    public int exclusion_y_offset = 175;
+
+    public Vector2d aprilTagPose = new Vector2d(0.0,0.0);
 
     public PreloadDetectionPipeline(AprilTagProcessor aprilTag) {
         this.aprilTag = aprilTag;
@@ -68,6 +71,8 @@ public class PreloadDetectionPipeline implements VisionProcessor {
                                     String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
                             Log.d("PreloadDetectionPipeline_logger",
                                     String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
+
+                        aprilTagPose = new Vector2d(detection.ftcPose.x,detection.ftcPose.y);
 
                         int leftX = Integer.MAX_VALUE;
                         int rightX = Integer.MIN_VALUE;
@@ -114,7 +119,7 @@ public class PreloadDetectionPipeline implements VisionProcessor {
                         }
 
                         Log.d("PreloadDetectionPipeline_logger", "Tag Id " + targetAprilTagID + " | leftZoneAverage: " + leftZoneAverage + " | rightZoneAverage: " + rightZoneAverage
-                        + " | zone:" + preloadedZone);
+                        + " | zone:" + preloadedZone + " | aprilTag Pose: " + String.format("%3.2f", aprilTagPose.x));
 
                         break;
                     }
