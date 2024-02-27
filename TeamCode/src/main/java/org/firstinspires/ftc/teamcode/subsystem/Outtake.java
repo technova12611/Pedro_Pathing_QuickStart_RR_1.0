@@ -87,7 +87,7 @@ public class Outtake {
 
     public static double SLIDE_PIVOT_DUMP_VOLTAGE_EXTREME = SLIDE_PIVOT_DUMP_VOLTAGE_MIN + 0.30; //3.0;
 
-    public static double SLIDE_PIVOT_DUMP_2 = 0.275;
+    public static double SLIDE_PIVOT_DUMP_2 = 0.265;
 
     public static double SLIDE_PIVOT_STRAFE = 0.25;
 

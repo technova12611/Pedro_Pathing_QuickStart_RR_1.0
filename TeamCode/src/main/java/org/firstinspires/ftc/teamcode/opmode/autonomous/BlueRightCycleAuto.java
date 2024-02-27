@@ -25,9 +25,9 @@ public class BlueRightCycleAuto extends BlueRightAuto {
         this.stackIntake1 = new Pose2d(-57.5, 11.5, Math.toRadians(-180));
         this.safeTrussPassStop = new Pose2d(-49.0, 10.5, Math.toRadians(-180));
         this.backdropAlignmentCycle = new Pose2d[]{
-                new Pose2d(38.0, 10.5, Math.toRadians(-180)),
-                new Pose2d(38.0, 10.5, Math.toRadians(-180)),
-                new Pose2d(38.0, 10.5, Math.toRadians(-180))
+                new Pose2d(38.0, 11.0, Math.toRadians(-180)),
+                new Pose2d(38.0, 11.0, Math.toRadians(-180)),
+                new Pose2d(38.0, 11.0, Math.toRadians(-180))
         };
     }
 

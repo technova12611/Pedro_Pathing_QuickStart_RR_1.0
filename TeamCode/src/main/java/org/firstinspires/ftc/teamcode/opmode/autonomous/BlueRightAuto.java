@@ -24,16 +24,16 @@ public class BlueRightAuto extends FarAutoBase {
       };
 
       this.backdrop = new Pose2d[] {
-              new Pose2d(48.1, 39.0, Math.toRadians(-180)),
-              new Pose2d(48.1, 32.5, Math.toRadians(-180)),
+              new Pose2d(48.1, 40.1, Math.toRadians(-180)),
+              new Pose2d(48.1, 32.8, Math.toRadians(-180)),
               new Pose2d(48.1, 26.9, Math.toRadians(-180))
       };
 
       this.parking = new Pose2d(46.0, 20.0, Math.toRadians(-180));
 
       this.cycleScore = new Pose2d[] {
-              new Pose2d(47.5, 30.0, Math.toRadians(-180)),
-              new Pose2d(47.5, 30.0, Math.toRadians(-180)),
+              new Pose2d(47.5, 33.0, Math.toRadians(-180)),
+              new Pose2d(47.5, 36.0, Math.toRadians(-180)),
               new Pose2d(47.5, 36.0, Math.toRadians(-180)),
       };
 
@@ -70,7 +70,7 @@ public class BlueRightAuto extends FarAutoBase {
       this.stackIntakeAlignment2 = new Pose2d(-48.0, 11.0, Math.toRadians(-180));
       this.preloadDetection = new Pose2d[]{
               new Pose2d(36.0, 43.5, Math.toRadians(-180)),
-              new Pose2d(38.0, 32.0, Math.toRadians(-180)),
+              new Pose2d(38.0, 35.0, Math.toRadians(-180)),
               new Pose2d(38.0, 30.0, Math.toRadians(-180)),
       };
    }

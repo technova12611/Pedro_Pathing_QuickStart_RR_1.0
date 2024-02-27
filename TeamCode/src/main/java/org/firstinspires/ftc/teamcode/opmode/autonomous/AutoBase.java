@@ -71,7 +71,9 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
     public static boolean displayDistanceSensor = true;
 
     protected static Pose2d stackPosition;
-    protected static Side preloadPosition = Side.RIGHT;
+    protected Side preloadPosition = Side.RIGHT;
+
+    protected double aprilTagPositionX = 0.0;
 
     protected DriveWithPID pidDriveStraight;
     ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
@@ -764,7 +766,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
         public boolean run(TelemetryPacket packet) {
             if(firstTime) {
                 drive.updatePoseEstimate();
-                Log.d("Preload_detection_logger", "Drive Pose: " + new PoseMessage(drive.pose));
+                Log.d("PreloadPositionDetectionAction_logger", "Drive Pose: " + new PoseMessage(drive.pose));
                 firstTime = false;
                 timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
             }
@@ -777,10 +779,12 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 double leftMean = preloadLeftZoneList.getMean();
                 double rightMean = preloadRightZoneList.getMean();
 
-                Log.d("Preload_detection_logger", "Preload LEFT Zone MEAN: " + leftMean);
-                Log.d("Preload_detection_logger", "Preload RIGHT Zone MEAN: " + rightMean);
-                if( (leftMean > 25 && rightMean > 25) || leftMean > 120 || rightMean > 120) {
-                    AutoBase.preloadPosition = (leftMean > (rightMean +25))? Side.LEFT: Side.RIGHT;
+                aprilTagPositionX = preloadPipeline.aprilTagPose.x;
+
+                Log.d("PreloadPositionDetectionAction_logger", "Preload LEFT Zone MEAN: " + leftMean);
+                Log.d("PreloadPositionDetectionAction_logger", "Preload RIGHT Zone MEAN: " + rightMean);
+                if( (leftMean > 35 && rightMean > 35) || leftMean > 120 || rightMean > 120) {
+                    preloadPosition = (leftMean > (rightMean +25))? Side.LEFT: Side.RIGHT;
                 }
 
                 try {
@@ -803,7 +807,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 Log.d("Preload_detection_logger", "Preload LEFT Zone AVG: " + preloadPipeline.leftZoneAverage +
                                                          " | Preload RIGHT Zone AVG: " + preloadPipeline.rightZoneAverage +
                                                          " | Preload detected raw zone: " + preloadPipeline.getPreloadedZone() +
-                                                         " | AprilTag X Position: " + String.format("$3.2f", preloadPipeline.aprilTagPose.x)
+                                                         " | AprilTag X Position: " + String.format("%3.2f", preloadPipeline.aprilTagPose.x)
                         );
             }
             return true;
@@ -853,15 +857,15 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
             }
 
-            if(timer.milliseconds() < 1000.0) {
+            if(timer.milliseconds() < 650.0) {
                 return true;
             }
 
-            double distance = outtake.getBackdropDistanceMean();
+            double distance = outtake.getBackdropDistance();
             counter++;
 
-            if (distance < 7.25 || timer.milliseconds() > 1500) {
-                if(distance < 7.25) {
+            if (distance < 7.5 || timer.milliseconds() > 1500) {
+                if(distance < 7.5) {
                     drive.cancelCurrentTrajectory();
                     Log.d("BackdropDistance_Logger", "Cancel trajectory called: ");
                 }
@@ -905,7 +909,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 Log.d("StackDistance_Logger", "Start stack distance checking !!!");
             }
 
-            if(timer.milliseconds() < 500.0) {
+            if(timer.milliseconds() < 450.0) {
                 return true;
             }
 
@@ -913,10 +917,10 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             double rightDistance = intake.getStackDistanceRight();
             counter++;
 
-            if ((leftDistance < 1.05 && rightDistance < 2.75)
-                    || leftDistance < 0.5
-                    || rightDistance < 0.5
-                    || (rightDistance < 1.05 && leftDistance < 2.75) ) {
+            if ((leftDistance < 1.5 && rightDistance < 2.75)
+                    || leftDistance < 0.75
+                    || rightDistance < 0.75
+                    || (rightDistance < 1.5 && leftDistance < 2.75) ) {
                 drive.cancelCurrentTrajectory();
                 Log.d("StackDistance_Logger", "Cancel trajectory called at " + String.format("%3.3f", timer.milliseconds()));
 

@@ -11,7 +11,9 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.qualcomm.robotcore.util.Range;
 
+import org.apache.commons.math3.util.IntegerSequence;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
@@ -63,7 +65,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
         //--------------------------------------------
         if(doCycle()) {
             if(SPIKE == 1) {
-                farSideAutoWaitTimeInSeconds = 2.0;
+                farSideAutoWaitTimeInSeconds = 1.0;
             }
             else {
                 farSideAutoWaitTimeInSeconds = 0.0;
@@ -81,6 +83,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                     .strafeTo(moveUp1.position,drive.slowVelConstraint,drive.slowAccelConstraint)
                                     .build(),
 
+                            new MecanumDrive.AutoPositionCheckAction(drive, moveUp1),
                             new ParallelAction(
                                     new MecanumDrive.DrivePoseLoggingAction(drive, "to_spike"),
                                     drive.actionBuilder(moveUp1)
@@ -94,10 +97,10 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                             // drop the purple pixel
                             new MecanumDrive.DrivePoseLoggingAction(drive, "spike"),
                             intake.scorePurplePreload(),
-                            new SleepAction(0.25),
+                            new SleepAction(0.15),
 
                             intake.prepareTeleOpsIntake(),
-                            new SleepAction(0.25),
+                            new SleepAction(0.20),
 
                             new MecanumDrive.DrivePoseLoggingAction(drive, "purple_pixel"),
                             drive.actionBuilder(spike[SPIKE])
@@ -155,6 +158,8 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                             drive.actionBuilder(drive.pose)
                                     .strafeTo(spike[SPIKE].position,drive.slowVelConstraint,drive.slowAccelConstraint)
                                     .build(),
+
+                            new MecanumDrive.AutoPositionCheckAction(drive, spike[SPIKE]),
                             // drop the purple pixel
 //                            intake.stackIntakeLinkageDown(),
 //                            new SleepAction(0.75),
@@ -222,6 +227,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                     )
                             ),
 
+                            new MecanumDrive.AutoPositionCheckAction(drive, spike[SPIKE]),
                             new MecanumDrive.DrivePoseLoggingAction(drive, "to_spike"),
                             // drop the purple pixel
                             intake.scorePurplePreload(),
@@ -287,12 +293,6 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
             );
         }
 
-        Action relocalizationAction = new BackdropRelocalizationAction(drive, outtake, backdrop[SPIKE]);
-
-//        if(SPIKE == 1) {
-//            relocalizationAction = new NullAction();
-//        }
-
         // Move to the backdrop side, and potentially add a configurable sleep time
         //-------------------------------------------------------------------------
 
@@ -317,11 +317,6 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                 )
                         ),
                         new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop_alignment_position"),
-
-                        new MecanumDrive.AutoPositionCheckAction(drive, backdropAlignment[SPIKE]),
-
-                        relocalizationAction,
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "after_localization"),
 
                         new ParallelAction(
                                 new SequentialAction(
@@ -361,7 +356,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                         new MecanumDrive.DrivePoseLoggingAction(drive, "start_scoring"),
                         getBackdropDistanceAdjustmentAction(),
                         outtake.latchScore1(),
-                        new SleepAction(0.50),
+                        new SleepAction(0.60),
                         outtake.afterScore(),
                         new SleepAction(waitTime),
                         outtake.latchScore2(),
@@ -653,6 +648,8 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
 
     public Action strafeToBackdrop() {
         Vector2d backdrop_position = backdrop[SPIKE].position;
+        double adjustmentY = 0.0;
+
         if(Globals.COLOR == AlliancePosition.RED && preloadPosition != Side.RIGHT) {
             if(SPIKE == 1) {
                 backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.85);
@@ -663,17 +660,37 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
             }
         } else if(Globals.COLOR == AlliancePosition.BLUE && preloadPosition != Side.LEFT) {
             if(SPIKE == 1) {
-                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.65);
+                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.25);
             } else if(SPIKE == 0) {
-                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.55);
+//                if(aprilTagPositionX < -5.25) {
+//                    adjustmentY = aprilTagPositionX + 5.25;
+//                }
+//
+//                if(aprilTagPositionX > -3.05) {
+//                    adjustmentY = aprilTagPositionX + 4.00;
+//                }
+                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.20);
             } else {
-                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.35);
+                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.28);
             }
+        }
+
+        adjustmentY = Range.clip(adjustmentY, -1.25, 1.25);
+
+        if(Math.abs(adjustmentY) > 0.0 ) {
+            Pose2d origPose = drive.pose;
+//            drive.pose = new Pose2d(drive.pose.position.x, drive.pose.position.y + adjustmentY, drive.pose.heading.toDouble());
+//            drive.updatePoseEstimate();
+
+            Log.d("strafeToBackdrop_logger", "Original Pose: " + new PoseMessage(origPose) +
+                    " | Adjusted Pose: " + new PoseMessage(drive.pose) +
+                    " | AdjustmentY:  " + String.format("%3.2f", adjustmentY));
         }
 
         Log.d("strafeToBackdrop_logger", "Preload position: " + preloadPosition +
                 " | Original backdrop pose: " + new PoseMessage(backdrop[SPIKE]) +
-                " | Calculated backdrop pose: " + new PoseMessage(new Pose2d(backdrop_position, backdrop[SPIKE].heading)));
+                " | Calculated backdrop pose: " + new PoseMessage(new Pose2d(backdrop_position, backdrop[SPIKE].heading)) +
+                " | Current drive pose: " + new PoseMessage(drive.pose));
 
         return
             new SequentialAction(

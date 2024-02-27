@@ -10,6 +10,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.AngularVelConstraint;
 import com.acmerobotics.roadrunner.MinVelConstraint;
 import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.SequentialAction;
@@ -144,11 +145,16 @@ public class ManualDrive extends LinearOpMode {
 
         if (Globals.RUN_AUTO) {
             drive.pose = Globals.drivePose;
+        } else {
+            drive.pose = new Pose2d(0.0,0.0,0.0);
         }
+
         outtake.isAuto = false;
         Globals.RUN_AUTO = false;
 
-        Log.d("ManualDrive_Logger", "Robot init Pose: " + new PoseMessage(drive.pose));
+        if(drive.pose != null) {
+            Log.d("ManualDrive_Logger", "Robot init Pose: " + new PoseMessage(drive.pose));
+        }
         Log.d("ManualDrive_Logger", "Slide Position: " + Globals.OUTTAKE_SLIDE_POSITION);
 
         intake.initialize(false);

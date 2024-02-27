@@ -75,7 +75,7 @@ public class RedLeftAuto extends FarAutoBase {
 
         this.preloadDetection = new Pose2d[]{
                 new Pose2d(38.0, -31.0, Math.toRadians(180)),
-                new Pose2d(38.0, -34.0, Math.toRadians(180)),
+                new Pose2d(38.0, -34.3, Math.toRadians(180)),
                 new Pose2d(38.0, -38.0, Math.toRadians(180)),
         };
     }
