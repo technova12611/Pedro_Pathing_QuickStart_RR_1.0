@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.utils.hardware.HardwareCreator;
 @Config
 public class Hang {
     public static int HANG_POSITION_MAX = 5500;
-    public static int HANG_POSITION = 1600;
+    public static int HANG_POSITION = 1500;
     public static int HANG_INCREMENTAL_CHANGE_POSITION = 250;
     public static int DROPDOWN_AFTER_HANG_POSITION = 500;
 

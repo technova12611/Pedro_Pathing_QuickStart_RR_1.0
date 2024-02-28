@@ -917,10 +917,10 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             double rightDistance = intake.getStackDistanceRight();
             counter++;
 
-            if ((leftDistance < 1.5 && rightDistance < 2.75)
+            if ((leftDistance < 1.75 && rightDistance < 2.75)
                     || leftDistance < 0.75
                     || rightDistance < 0.75
-                    || (rightDistance < 1.5 && leftDistance < 2.75) ) {
+                    || (rightDistance < 1.75 && leftDistance < 2.75) ) {
                 drive.cancelCurrentTrajectory();
                 Log.d("StackDistance_Logger", "Cancel trajectory called at " + String.format("%3.3f", timer.milliseconds()));
 

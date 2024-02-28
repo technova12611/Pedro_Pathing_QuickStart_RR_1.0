@@ -482,7 +482,8 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
                                 new SequentialAction(
                                         drive.actionBuilder(backdropAlignmentCycle[SPIKE])
                                                 .setReversed(true)
-                                                .strafeToLinearHeading(cycleScorePosition, cycleScore[SPIKE].heading)
+                                                .strafeToLinearHeading(cycleScorePosition, cycleScore[SPIKE].heading,
+                                                        drive.slowVelConstraint, drive.slowAccelConstraint)
                                                 .build(),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_score_position")
                                 ),
@@ -652,11 +653,11 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
 
         if(Globals.COLOR == AlliancePosition.RED && preloadPosition != Side.RIGHT) {
             if(SPIKE == 1) {
-                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.85);
+                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.6);
             } else if(SPIKE == 0) {
-                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.75);
+                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.5);
             } else {
-                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 0.95);
+                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.0);
             }
         } else if(Globals.COLOR == AlliancePosition.BLUE && preloadPosition != Side.LEFT) {
             if(SPIKE == 1) {
@@ -671,7 +672,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
 //                }
                 backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.20);
             } else {
-                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.28);
+                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y + 1.05);
             }
         }
 
