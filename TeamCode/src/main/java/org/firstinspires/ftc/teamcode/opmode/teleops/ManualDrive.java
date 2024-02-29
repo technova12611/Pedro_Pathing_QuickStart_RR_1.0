@@ -781,7 +781,7 @@ public class ManualDrive extends LinearOpMode {
 
         if (g1.start() && g1.guideOnce()) {
             sched.queueAction(outtake.resetSliderZeroPosition());
-        } else if (g1.guideOnce()) {
+        } else if (g1.guideLong()) {
             if(isSlideOut) {
                 sched.queueAction(outtake.reverseDump());
             }

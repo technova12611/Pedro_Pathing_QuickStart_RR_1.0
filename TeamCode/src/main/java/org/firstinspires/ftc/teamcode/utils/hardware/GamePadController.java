@@ -178,6 +178,8 @@ public class GamePadController {
     public boolean guide() {return 0 < guide;}
     public boolean guideOnce() {return 1 == guide;}
 
+    public boolean guideLong() {return 5< guide;}
+
     public boolean bReleased() {return bReleased;}
 
     /**

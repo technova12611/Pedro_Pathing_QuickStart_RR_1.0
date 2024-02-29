@@ -30,7 +30,7 @@ public class DriveWithPID {
     private int internalOffset = 0;
     private int tolerance = 25;
     private long maxElapsedTime = 525;
-    private double maxPower = 0.6;
+    private double maxPower = 0.80;
     private DriveDirection direction;
     private Long startTime = null;
 

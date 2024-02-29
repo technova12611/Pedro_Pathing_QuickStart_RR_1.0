@@ -68,7 +68,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                 new SequentialAction(
                                         new SleepAction(1.0),
                                         outtake.extendOuttakeLow(),
-                                        new SleepAction(1.1),
+                                        new SleepAction(1.0),
                                         outtake.prepareToScore()
                                 )
                         ),
@@ -81,12 +81,12 @@ public abstract class NearCycleAutoBase extends AutoBase {
                         }),
                         new SleepAction(0.2),
                         getBackdropDistanceAdjustmentAction(),
-                        new SleepAction(0.3),
+                        new SleepAction(0.25),
                         outtake.latchScore1(),
-                        new SleepAction(0.40),
+                        new SleepAction(0.50),
                         intake.stackIntakeLinkageDown(),
                         outtake.afterScore(),
-                        new SleepAction(0.10),
+                        new SleepAction(0.15),
                         new ActionUtil.RunnableAction(() -> {
                             pidDriveActivated = false;
                             pidDriveStarted = false;
@@ -268,7 +268,7 @@ public abstract class NearCycleAutoBase extends AutoBase {
                                         new SleepAction(0.40),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_outtake_start"),
                                         outtake.prepareToScoreCycle(),
-                                        new SleepAction(0.2),
+                                        new SleepAction(0.1),
                                         new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_" + cycleCount + "_outtake_end")
                                 )
                         )

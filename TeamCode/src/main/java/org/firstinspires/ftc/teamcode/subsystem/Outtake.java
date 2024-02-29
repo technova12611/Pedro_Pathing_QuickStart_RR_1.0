@@ -59,7 +59,7 @@ public class Outtake {
     public static double LATCH_SCORE_1 = 0.415;
     public static double LATCH_SCORE_2 = 0.49;
 
-    public static double OUTTAKE_PIVOT_REVERSE_DUMP = 0.01;
+    public static double OUTTAKE_PIVOT_REVERSE_DUMP = 0.75;
     public static double OUTTAKE_PIVOT_INIT = 0.182;
     public static double OUTTAKE_PIVOT_SLIDING = 0.22;
     public static double OUTTAKE_PIVOT_DUMP_LOW = 0.38;
@@ -89,7 +89,7 @@ public class Outtake {
 
     public static double SLIDE_PIVOT_DUMP_2 = 0.265;
 
-    public static double SLIDE_PIVOT_STRAFE = 0.25;
+    public static double SLIDE_PIVOT_STRAFE = 0.275;
 
     public static double SLIDE_PIVOT_DUMP_HIGH = 0.10;
 
@@ -105,7 +105,7 @@ public class Outtake {
 
     public static double OUTTAKE_WIRE_QUARTER_DOWN = 0.55;
 
-    public static double OUTTAKE_WIRE_MIDDLE = 0.47;
+    public static double OUTTAKE_WIRE_MIDDLE = 0.45;
     public static double OUTTAKE_WIRE_HIGH = 0.40;
     public static double OUTTAKE_WIRE_VERY_HIGH = 0.35;
 
@@ -431,9 +431,9 @@ public class Outtake {
     }
     public Action reverseDump() {
         return new SequentialAction(
-                new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED_0, "latch"),
+                new ActionUtil.ServoPositionAction(latch, LATCH_SCORE_1, "latch"),
                 new SleepAction(0.2),
-                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_DUMP_VERY_HIGH, "slidePivot"),
+                new ActionUtil.ServoPositionAction(slidePivot, SLIDE_PIVOT_DUMP, "slidePivot"),
             new ActionUtil.ServoPositionAction(outtakePivot, OUTTAKE_PIVOT_REVERSE_DUMP, "outtakePivot")
         );
     }
@@ -527,8 +527,9 @@ public class Outtake {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
                 new OuttakeLatchStateAction(OuttakeLatchState.CLOSED),
-                new ActionUtil.ServoPositionAction(outtakePivot, outtakeDumpPosition, "outtakePivot"),
-                new ActionUtil.ServoPositionAction(slidePivot, slideDumpPosition, "slidePivot")
+                new ActionUtil.ServoPositionAction(slidePivot, slideDumpPosition, "slidePivot"),
+                new SleepAction(0.05),
+                new ActionUtil.ServoPositionAction(outtakePivot, outtakeDumpPosition, "outtakePivot")
         );
     }
 
@@ -543,8 +544,9 @@ public class Outtake {
         return new SequentialAction(
                 new ActionUtil.ServoPositionAction(latch, LATCH_CLOSED, "latch"),
                 new OuttakeLatchStateAction(OuttakeLatchState.CLOSED),
-                new ActionUtil.ServoPositionAction(outtakePivot, outtakeDumpPosition, "outtakePivot"),
-                new ActionUtil.ServoPositionAction(slidePivot, slideDumpPosition, "slidePivot")
+                new ActionUtil.ServoPositionAction(slidePivot, slideDumpPosition, "slidePivot"),
+                new SleepAction(0.05),
+                new ActionUtil.ServoPositionAction(outtakePivot, outtakeDumpPosition, "outtakePivot")
         );
     }
 
