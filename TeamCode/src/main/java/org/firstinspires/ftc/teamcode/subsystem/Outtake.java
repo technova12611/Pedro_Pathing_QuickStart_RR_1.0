@@ -235,8 +235,16 @@ public class Outtake {
     }
 
     public void update() {
+        long loopTimer = System.currentTimeMillis();
+        long elapsedTime = 0;
         if(slidePIDEnabled) {
             slide.update();
+
+            elapsedTime = System.currentTimeMillis() - loopTimer;
+
+            if(elapsedTime > 200) {
+                Log.d("OuttakeSlide_update_logger", "slide.update() took " + elapsedTime + " ms.");
+            }
         }
 
         if (NEED_RESET && isSlideDown()) {
@@ -244,9 +252,15 @@ public class Outtake {
             slide.resetIntegralGain();
         }
 
+        loopTimer = System.currentTimeMillis();
         checkSlidePivotPosition();
         if(isAuto) {
             measureBackdropDistance();
+
+            elapsedTime = System.currentTimeMillis() - loopTimer;
+            if(elapsedTime > 200) {
+                Log.d("OuttakeSlide_update_logger", "slide.update() took " + elapsedTime + " ms.");
+            }
         }
 
 //        if (!this.slide.isBusy()) {

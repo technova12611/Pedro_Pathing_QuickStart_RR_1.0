@@ -22,12 +22,12 @@ public class RedLeftAuto extends FarAutoBase {
         super.onInit();
         this.start = new Pose2d(-38.5, -62.0, Math.toRadians(90));
         this.spike = new Pose2d[] {
-                new Pose2d(-46.5, -45.0, Math.toRadians(90)),
+                new Pose2d(-47.2, -46.0, Math.toRadians(90)),
                 new Pose2d(-42.0, -36.1, Math.toRadians(90)),
                 new Pose2d(-35.6, -36.2, Math.toRadians(25))
         };
         this.backdrop = new Pose2d[] {
-                new Pose2d(47.9, -28.1, Math.toRadians(180)),
+                new Pose2d(47.9, -28.5, Math.toRadians(180)),
                 new Pose2d(47.9, -34.5, Math.toRadians(180)),
                 new Pose2d(47.9, -40.8, Math.toRadians(180))
         };
@@ -35,7 +35,7 @@ public class RedLeftAuto extends FarAutoBase {
         this.parking = new Pose2d(45.0, -24.0, Math.toRadians(180));
 
         this.backOffFromSpike = new Pose2d[] {
-                new Pose2d(-34.9, -49.2, Math.toRadians(90)),
+                new Pose2d(-35.5, -49.5, Math.toRadians(90)),
                 new Pose2d(-38.5, -43.5, Math.toRadians(90)),
                 new Pose2d(-39.2, -45.0, Math.toRadians(90))
         };
@@ -52,15 +52,15 @@ public class RedLeftAuto extends FarAutoBase {
                 new Pose2d(-57.9, -12.0, Math.toRadians(180))
         };
         this.crossFieldAlignment = new Pose2d[] {
-                new Pose2d(-46.5, -11.25, Math.toRadians(180)),
+                new Pose2d(-46.5, -11.5, Math.toRadians(180)),
                 new Pose2d(-38.5, -35.7, Math.toRadians(180)),
-                new Pose2d(-46.5, -11.25, Math.toRadians(180))
+                new Pose2d(-46.5, -11.5, Math.toRadians(180))
         };
 
         this.backdropAlignment = new Pose2d[] {
-                new Pose2d(38.0, -11.25, Math.toRadians(180)),
+                new Pose2d(38.0, -11.5, Math.toRadians(180)),
                 new Pose2d(24.0, -36.0, Math.toRadians(180)),
-                new Pose2d(38.0, -11.25, Math.toRadians(180))
+                new Pose2d(38.0, -11.5, Math.toRadians(180))
         };
 
         cycleScore = new Pose2d[] {

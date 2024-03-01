@@ -351,6 +351,7 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
         if(doCycle()) {
             waitTime = 0.3;
         }
+
         sched.addAction(
                 new SequentialAction(
                         new MecanumDrive.DrivePoseLoggingAction(drive, "start_scoring"),
@@ -653,9 +654,9 @@ public abstract class FarAutoBase extends AutoBase implements PreloadPositionDet
 
         if(Globals.COLOR == AlliancePosition.RED && preloadPosition != Side.RIGHT) {
             if(SPIKE == 1) {
-                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.6);
-            } else if(SPIKE == 0) {
                 backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.5);
+            } else if(SPIKE == 0) {
+                backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.45);
             } else {
                 backdrop_position = new Vector2d(backdrop_position.x, backdrop_position.y - 1.0);
             }

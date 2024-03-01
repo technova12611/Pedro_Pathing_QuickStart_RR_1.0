@@ -140,11 +140,14 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
         drive.startIMUThread(this);
 
+        long previousLoopTime = System.currentTimeMillis();
         while (opModeInInit()) {
             double loopTimeBegin = loopTimer.milliseconds();
             g1.update();
 
             telemetry.addLine("IMU: " + String.format("%3.5f", drive.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)));
+            telemetry.addLine("LOOP TIME (ms): " +  (System.currentTimeMillis() - previousLoopTime));
+            previousLoopTime = System.currentTimeMillis();
 
             teamPropPosition = teamProPipeline.getLocation();
             SPIKE = teamPropPosition.ordinal();
@@ -153,7 +156,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
             printDescription();
             telemetry.addLine("   ");
             telemetry.addLine(" <----- Team Prop Vision Detection " + "(" + Globals.COLOR + ", " + getFieldPosition() + ")" + " -----> ");
-            telemetry.addLine(" Check if the right alliance program is running ... ");
+            telemetry.addLine(" Check if the CORRECT alliance program is running ... ");
             telemetry.addLine(" Wait a few seconds to capture the Maximum color value ");
             telemetry.addLine(" before placing the team prop on the field ");
 
@@ -199,21 +202,21 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                     intake.stackIntakeDown();
                 }
 
-                // cycle the idx
-                if (selectionIdx < 0) {
-                    selectionIdx = waitTimeOptions.length-1;
-                } else if (selectionIdx >= waitTimeOptions.length) {
-                    selectionIdx = 0;
-                }
-
-                farSideAutoWaitTimeInSeconds = waitTimeOptions[selectionIdx];
-
-                telemetry.addLine("   ");
-                telemetry.addLine("<------- FAR side Wait Time Selection ------->");
-                telemetry.addLine("  Use DPAD Up/Down button to select wait time ");
-                telemetry.addLine("   ");
-                telemetry.addLine("    Wait Time to Score Yellow: " + farSideAutoWaitTimeInSeconds + " (seconds)");
-                telemetry.addLine("   ");
+//                // cycle the idx
+//                if (selectionIdx < 0) {
+//                    selectionIdx = waitTimeOptions.length-1;
+//                } else if (selectionIdx >= waitTimeOptions.length) {
+//                    selectionIdx = 0;
+//                }
+//
+//                farSideAutoWaitTimeInSeconds = waitTimeOptions[selectionIdx];
+//
+//                telemetry.addLine("   ");
+//                telemetry.addLine("<------- FAR side Wait Time Selection ------->");
+//                telemetry.addLine("  Use DPAD Up/Down button to select wait time ");
+//                telemetry.addLine("   ");
+//                telemetry.addLine("    Wait Time to Score Yellow: " + farSideAutoWaitTimeInSeconds + " (seconds)");
+//                telemetry.addLine("   ");
             }
 
             double loopTimeForAfterProp = loopTimer.milliseconds();
@@ -462,33 +465,40 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 double adjustment_y = 0.0;
                 double adjustment_x = 0.0;
 
-                double delta_stack_position = avg_y_adj_left - avg_y_adj_right;
+                if(avg_y_adj_left < 9.0 || avg_y_adj_left > 16.0 || avg_y_adj_right < 9.0 || avg_y_adj_right > 16.0) {
+                    Log.d("StackIntakePosition_Logger", "!!!! Incorrect distance sensor data !!! ");
+                } else {
+                    double delta_stack_position = avg_y_adj_left - avg_y_adj_right;
 
-                double y_offset = 1.25;
-                if (Math.abs(delta_stack_position) <= 0.75 && avg_y_adj_left > 5.0 && avg_y_adj_right > 5.0) {
-                    adjustment_x = (avg_y_adj_left + avg_y_adj_right) / 2 - 0.5;
-                } else if (delta_stack_position < -2.25) {
-                    adjustment_y = -1.75;
-                    adjustment_x = avg_y_adj_right - y_offset;
-                } else if (delta_stack_position < -1.5) {
-                    adjustment_y = -1.05;
-                    adjustment_x = avg_y_adj_right - y_offset;
-                } else if (delta_stack_position < -0.75) {
-                    adjustment_y = -0.5;
-                    adjustment_x = avg_y_adj_right - y_offset;
-                } else if (delta_stack_position > 2.25) {
-                    adjustment_y = 2.05;
-                    adjustment_x = avg_y_adj_left - y_offset;
-                } else if (delta_stack_position > 1.5) {
-                    adjustment_y = 1.05;
-                    adjustment_x = avg_y_adj_left - y_offset;
-                } else if (delta_stack_position > 0.75) {
-                    adjustment_y = 0.5;
-                    adjustment_x = avg_y_adj_left - y_offset;
-                }
+                    double y_offset = 1.25;
+                    if (Math.abs(delta_stack_position) <= 0.75 && avg_y_adj_left > 5.0 && avg_y_adj_right > 5.0) {
+                        adjustment_x = (avg_y_adj_left + avg_y_adj_right) / 2 - 0.5;
+                    } else if (delta_stack_position < -2.25) {
+                        adjustment_y = -2.05;
+                        adjustment_x = avg_y_adj_right - y_offset;
+                    } else if (delta_stack_position < -1.5) {
+                        adjustment_y = -1.05;
+                        adjustment_x = avg_y_adj_right - y_offset;
+                    } else if (delta_stack_position < -0.75) {
+                        adjustment_y = -0.5;
+                        adjustment_x = avg_y_adj_right - y_offset;
+                    } else if (delta_stack_position > 2.25) {
+                        adjustment_y = 2.35;
+                        adjustment_x = avg_y_adj_left - y_offset;
+                    } else if (delta_stack_position > 1.5) {
+                        adjustment_y = 1.75;
+                        adjustment_x = avg_y_adj_left - y_offset;
+                    } else if (delta_stack_position > 0.75) {
+                        adjustment_y = 1.25;
+                        adjustment_x = avg_y_adj_left - y_offset;
+                    } else if (delta_stack_position > 0.45) {
+                        adjustment_y = 0.5;
+                        adjustment_x = avg_y_adj_left - y_offset;
+                    }
 
-                if (avg_y_adj_left < 5.0) {
-                    adjustment_y = -1.0;
+                    if (avg_y_adj_left < 5.0) {
+                        adjustment_y = -1.0;
+                    }
                 }
 
                 Log.d("StackIntakePosition_Logger", "calculated adjustment (x,y): " +
@@ -505,9 +515,9 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
 
                 double y_position = drive.pose.position.y + adjustment_y;
                 if (Globals.COLOR == AlliancePosition.RED) {
-                    y_position = Range.clip(y_position, -15.0, -9.0);
+                    y_position = Range.clip(y_position, -16.0, -11.0);
                 } else {
-                    y_position = Range.clip(y_position, 9.0, 15.0);
+                    y_position = Range.clip(y_position, 11.0, 16.0);
                 }
 
                 Pose2d proposedPose = new Pose2d(x_position, y_position, stackPose.heading.toDouble());
@@ -524,11 +534,11 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 return false;
             }
 
-            if (counter >= 1 && stackDistanceLeft > 6.0 && stackDistanceLeft < 16.0) {
+            if (counter >= 1 && stackDistanceLeft > 9.0 && stackDistanceLeft < 16.0) {
                 sensorDistancesLeftList.add(stackDistanceLeft);
             }
 
-            if (counter >= 1 && stackDistanceRight > 6.0 && stackDistanceRight < 16.0) {
+            if (counter >= 1 && stackDistanceRight > 9.0 && stackDistanceRight < 16.0) {
                 sensorDistancesRightList.add(stackDistanceRight);
             }
 
@@ -668,7 +678,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                         " | back distance: " + String.format("%3.2f", backDistance));
 
                 if((backDistance > 6.25 && straightDistance > 0) ||
-                      ( backDistance < 7.05) && straightDistance < 0) {
+                      ( backDistance < 7.25) && straightDistance < 0) {
                     pidDriveStraight.resetStartTime();
                     pidDriveStraight.update();
 
