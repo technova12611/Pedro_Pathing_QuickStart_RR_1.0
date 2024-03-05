@@ -39,6 +39,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.pathing.geometry.Pose;
 import org.firstinspires.ftc.teamcode.roadrunner.LazyImu;
 import org.firstinspires.ftc.teamcode.roadrunner.Localizer;
 import org.firstinspires.ftc.teamcode.roadrunner.messages.DriveCommandMessage;
@@ -662,5 +663,13 @@ public final class MecanumDrive {
 
     public void startIMUThread(LinearOpMode opMode) {
         ((TwoDeadWheelLocalizer)localizer).startIMUThread(opMode);
+    }
+
+    public double getVoltage() {
+        return voltageSensor.getVoltage();
+    }
+
+    public void setPower(Pose pose) {
+        setDrivePowers(new PoseVelocity2d(new Vector2d(pose.x, pose.y), pose.heading));
     }
 }
