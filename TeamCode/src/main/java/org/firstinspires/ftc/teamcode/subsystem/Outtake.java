@@ -253,9 +253,9 @@ public class Outtake {
         }
 
         loopTimer = System.currentTimeMillis();
-        checkSlidePivotPosition();
+//        checkSlidePivotPosition();
         if(isAuto) {
-            measureBackdropDistance();
+//            measureBackdropDistance();
 
             elapsedTime = System.currentTimeMillis() - loopTimer;
             if(elapsedTime > 200) {

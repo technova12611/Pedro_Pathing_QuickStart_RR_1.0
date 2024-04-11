@@ -11,7 +11,8 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.roadrunner.TwoDeadWheelLocalizer;
+import org.firstinspires.ftc.teamcode.roadrunner.ThreeDeadWheelLocalizer;
+//import org.firstinspires.ftc.teamcode.roadrunner.TwoDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.utils.control.PIDCoefficients;
 import org.firstinspires.ftc.teamcode.utils.control.PIDFController;
 import org.firstinspires.ftc.teamcode.wolfdrive.WolfDrive;
@@ -55,9 +56,9 @@ public class DriveWithPID {
         this.direction = direction;
 
         if(direction == DriveDirection.STRAFE) {
-            internalOffset =  ((TwoDeadWheelLocalizer)drive.localizer).perp.getPositionAndVelocity().position;
+            internalOffset =  ((ThreeDeadWheelLocalizer)drive.localizer).perp.getPositionAndVelocity().position;
         } else if(direction == DriveDirection.STRAIGHT) {
-            internalOffset =  ((TwoDeadWheelLocalizer)drive.localizer).par.getPositionAndVelocity().position;
+            internalOffset =  ((ThreeDeadWheelLocalizer)drive.localizer).par0.getPositionAndVelocity().position;
         }
     }
 
@@ -70,9 +71,9 @@ public class DriveWithPID {
      */
     public void update() {
         drive.updatePoseEstimate();
-        int perp_encoderTicks = ((TwoDeadWheelLocalizer) drive.localizer).perp.getPositionAndVelocity().position;;
-        int par_encoderTicks = ((TwoDeadWheelLocalizer) drive.localizer).par.getPositionAndVelocity().position;
-        double angle = ((TwoDeadWheelLocalizer) drive.localizer).imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+        int perp_encoderTicks = ((ThreeDeadWheelLocalizer) drive.localizer).perp.getPositionAndVelocity().position;;
+        int par_encoderTicks = ((ThreeDeadWheelLocalizer) drive.localizer).par0.getPositionAndVelocity().position;
+        double angle = ((ThreeDeadWheelLocalizer) drive.localizer).imuYawHeading;
 
         long startTimeLocal = this.startTime==null?System.currentTimeMillis():this.startTime;
 
@@ -127,22 +128,22 @@ public class DriveWithPID {
     public void setTargetPosition(int position) {
 
         if(direction == DriveDirection.STRAFE) {
-            this.internalOffset = ((TwoDeadWheelLocalizer) drive.localizer).perp.getPositionAndVelocity().position;
+            this.internalOffset = ((ThreeDeadWheelLocalizer) drive.localizer).perp.getPositionAndVelocity().position;
         }
         if(direction == DriveDirection.STRAIGHT) {
-            this.internalOffset = ((TwoDeadWheelLocalizer) drive.localizer).par.getPositionAndVelocity().position;
+            this.internalOffset = ((ThreeDeadWheelLocalizer) drive.localizer).par0.getPositionAndVelocity().position;
         }
         this.targetPosition = position + this.internalOffset;
         if(direction == DriveDirection.STRAFE) {
             this.perp_pidfController.setTargetPosition(this.targetPosition);
-            this.par_pidfController.setTargetPosition(((TwoDeadWheelLocalizer) drive.localizer).par.getPositionAndVelocity().position);
-            this.turn_pidfController.setTargetPosition(((TwoDeadWheelLocalizer) drive.localizer).imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
+            this.par_pidfController.setTargetPosition(((ThreeDeadWheelLocalizer) drive.localizer).par0.getPositionAndVelocity().position);
+            this.turn_pidfController.setTargetPosition(((ThreeDeadWheelLocalizer) drive.localizer).imuYawHeading);
         }
 
         if(direction == DriveDirection.STRAIGHT) {
             this.par_pidfController.setTargetPosition(this.targetPosition);
-            this.perp_pidfController.setTargetPosition(((TwoDeadWheelLocalizer) drive.localizer).perp.getPositionAndVelocity().position);
-            this.turn_pidfController.setTargetPosition(((TwoDeadWheelLocalizer) drive.localizer).imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
+            this.perp_pidfController.setTargetPosition(((ThreeDeadWheelLocalizer) drive.localizer).perp.getPositionAndVelocity().position);
+            this.turn_pidfController.setTargetPosition(((ThreeDeadWheelLocalizer) drive.localizer).imuYawHeading);
         }
         this.setStartTime();
         Log.d("DriveWithPID_Logger_0_1_set", "position: " + position + ", TargetPosition: "
@@ -234,10 +235,10 @@ public class DriveWithPID {
 
     public int getCurrentPosition() {
         if(direction == DriveDirection.STRAFE) {
-            return ((TwoDeadWheelLocalizer)drive.localizer).perp.getPositionAndVelocity().position;
+            return ((ThreeDeadWheelLocalizer)drive.localizer).perp.getPositionAndVelocity().position;
         }
         if(direction == DriveDirection.STRAIGHT) {
-            return ((TwoDeadWheelLocalizer)drive.localizer).par.getPositionAndVelocity().position;
+            return ((ThreeDeadWheelLocalizer)drive.localizer).par0.getPositionAndVelocity().position;
         }
         return 0;
     }

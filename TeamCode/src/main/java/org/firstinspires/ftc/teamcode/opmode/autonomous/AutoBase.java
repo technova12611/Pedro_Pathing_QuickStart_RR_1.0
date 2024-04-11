@@ -68,7 +68,7 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
     private double[] waitTimeOptions = {0.0, 5.0, 8.0, 11.0};
     private int selectionIdx = 0;
 
-    public static boolean displayDistanceSensor = true;
+    public static boolean displayDistanceSensor = false;
 
     protected static Pose2d stackPosition;
     protected Side preloadPosition = Side.RIGHT;
@@ -264,9 +264,11 @@ public abstract class AutoBase extends LinearOpMode implements StackPositionCall
                 Log.d("Auto_logger", " OpModeInit::onRun() finished, elapsed time (ms):  "
                         + (System.currentTimeMillis() - start_onrun) + " | # of actions: " + sched.size());
 
+                if (displayDistanceSensor) {
                 Log.d("Auto_logger"," Spike position changed!!! Distance sensor: Left: " + String.format("%3.2f", intake.getStackDistanceLeft()) +
                         " | Right: " + String.format("%3.2f", intake.getStackDistanceRight()) +
                         " | Back: "+ String.format("%3.2f", outtake.getBackdropDistance()));
+                }
 
                 Log.d("Auto_logger", centerStr + " color:" + String.format("Mean: %3.2f | Max: %3.2f ", teamProPipeline.meanCenterColor, teamProPipeline.maxCenterColor)
                 + " | " + sideStr + " color:" + String.format("Mean: %3.2f | Max: %3.2f ", teamProPipeline.meanSideColor, teamProPipeline.maxSideColor)

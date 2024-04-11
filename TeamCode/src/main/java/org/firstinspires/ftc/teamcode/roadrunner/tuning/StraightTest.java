@@ -15,17 +15,18 @@ import org.firstinspires.ftc.teamcode.roadrunner.messages.PoseMessage;
 import org.firstinspires.ftc.teamcode.roadrunner.ThreeDeadWheelLocalizer;
 
 public final class StraightTest extends LinearOpMode {
-    public static double distance = 36.0;
+    public static double distance = 24.0;
     public static int mode = 0;
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0), true);
-        TwoDeadWheelLocalizer localizer = (TwoDeadWheelLocalizer)drive.localizer;
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0), false);
+        drive.startIMUThread(this);
+        ThreeDeadWheelLocalizer localizer = (ThreeDeadWheelLocalizer)drive.localizer;
 
-        int begin = localizer.par.getPositionAndVelocity().position;
+        int begin = localizer.par0.getPositionAndVelocity().position;
         telemetry.addData("par0 encoder begin value: ", begin);
-        //telemetry.addData("par1 encoder begin value: ", localizer.par1.getPositionAndVelocity().position);
+        telemetry.addData("par1 encoder begin value: ", localizer.par1.getPositionAndVelocity().position);
         telemetry.addData("perp encoder begin value: ", localizer.perp.getPositionAndVelocity().position);
         telemetry.update();
         waitForStart();
@@ -50,10 +51,10 @@ public final class StraightTest extends LinearOpMode {
         while (!isStopRequested()) {
             drive.updatePoseEstimate();
             telemetry.addData("Pose estimate: ", new PoseMessage(drive.pose));
-            int end = localizer.par.getPositionAndVelocity().position;
+            int end = localizer.par0.getPositionAndVelocity().position;
             telemetry.addData("par0 encoder end value: ", end);
             telemetry.addData("par0 encoder delta value: ", end-begin);
-//            telemetry.addData("par1 encoder end value: ", localizer.par1.getPositionAndVelocity().position);
+            telemetry.addData("par1 encoder end value: ", localizer.par1.getPositionAndVelocity().position);
             telemetry.addData("perp encoder end value: ", localizer.perp.getPositionAndVelocity().position);
             telemetry.addData("IMU value: ", String.format("%3.2f",drive.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)));
             telemetry.update();

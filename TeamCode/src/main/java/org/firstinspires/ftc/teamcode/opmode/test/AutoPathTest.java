@@ -9,6 +9,7 @@ import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -21,8 +22,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Outtake;
 import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 
 @Config
-@Disabled
-@Autonomous(group = "Test")
+@Autonomous(name = "Blue Auto Path Test",group = "Test")
 public final class AutoPathTest extends LinearOpMode {
     public static Pose2d starting = new Pose2d(14.5, -62.0, Math.PI/2);
     public static Pose2d cycleStart = new Pose2d(28.5, -11.0, Math.PI);
@@ -55,7 +55,7 @@ public final class AutoPathTest extends LinearOpMode {
         outtake.initialize();
         drone.initialize();
 
-        waitForStart();
+        drive.startIMUThread(this);
 
         // 1. drive to the backstage
         // 2. raise the slide and prepare the yellow pixel drop
@@ -64,12 +64,52 @@ public final class AutoPathTest extends LinearOpMode {
         // 5. drive to the spike position
         // 6. drop the purple pixel
         // 7. drive to parking
+        drive.pose = new Pose2d(14.5, 62, Math.toRadians(-90));
+        Pose2d backdrop = new Pose2d(48.0,36.0, Math.toRadians(180.00));
+
         sched.addAction(
                 new SequentialAction(
                         new MecanumDrive.DrivePoseLoggingAction(drive, "path_begin"),
+                        intake.intakeOff(),
                         drive.actionBuilder(drive.pose)
+                                .strafeToSplineHeading(new Vector2d(28.0, 24.0), Math.toRadians(180.00))
                                 .strafeToLinearHeading(backdrop.position, backdrop.heading)
-                                .build()
+                                .build()));
+        sched.addAction(
+                new SequentialAction(
+                        new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_begin"),
+                        drive.actionBuilder(backdrop)
+                                .setReversed(false)
+                                .splineToConstantHeading(new Vector2d(24.0, 14), Math.toRadians(180.00))
+                                .splineToConstantHeading(new Vector2d(-36, 14), Math.toRadians(180.00))
+                                .splineToConstantHeading(new Vector2d(-56.0, 12), Math.toRadians(180.00))
+                                .setReversed(true)
+                                .splineToConstantHeading(new Vector2d(-36.00, 12), Math.toRadians(0.00))
+                                .splineToConstantHeading(new Vector2d(28, 12.0), Math.toRadians(0.00))
+                                .splineToConstantHeading(new Vector2d(48, 33.0), Math.toRadians(0.00))
+//                .splineToSplineHeading(new Pose2d(50, 32.0, Math.toRadians(180)),Math.toRadians(180.00))
+                                .setReversed(false)
+//                                .splineToConstantHeading(new Vector2d(24, 15.0), Math.toRadians(180.00))
+                .splineToSplineHeading(new Pose2d(24.0, 15, Math.toRadians(180.0)), Math.toRadians(180.00))
+                                .splineToConstantHeading(new Vector2d(-36, 12), Math.toRadians(180.00))
+                                .splineToConstantHeading(new Vector2d(-56.0, 14), Math.toRadians(180.00))
+                                .setReversed(true)
+                                .splineToConstantHeading(new Vector2d(-36.00, 14), Math.toRadians(0.00))
+                                .splineToConstantHeading(new Vector2d(28, 12.0), Math.toRadians(0.00))
+                                .splineToConstantHeading(new Vector2d(48, 33.0), Math.toRadians(0.00))
+//                .splineToSplineHeading(new Pose2d(55, 22.0, Math.toRadians(200.00)),20)
+                                .setReversed(false)
+                                .splineToConstantHeading(new Vector2d(24, 15.0), Math.toRadians(180.00))
+//                .splineToSplineHeading(new Pose2d(24.0, 10, Math.toRadians(180.0)), Math.toRadians(180.00))
+                                .splineToConstantHeading(new Vector2d(-36, 14), Math.toRadians(180.00))
+                                .splineToConstantHeading(new Vector2d(-56.0, 14), Math.toRadians(180.00))
+                                .setReversed(true)
+                                .splineToConstantHeading(new Vector2d(-36.00, 12), Math.toRadians(0.00))
+                                .splineToConstantHeading(new Vector2d(28, 12.0), Math.toRadians(0.00))
+                                .splineToConstantHeading(new Vector2d(49, 35.0), Math.toRadians(0.00))
+                                .build(),
+                new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_end")));
+
 
 //                        new MecanumDrive.DrivePoseLoggingAction(drive, "backdrop"),
 //                        drive.actionBuilder(backdrop)
@@ -116,8 +156,13 @@ public final class AutoPathTest extends LinearOpMode {
 //                                        new MecanumDrive.DrivePoseLoggingAction(drive, "Intake_off")
 //                                )
 //                        )
-                )
-        );
+//                )
+//        );
+
+        while(!isStarted() && !isStopRequested()) {
+            telemetry.addLine("Ready to start!! Blue Auto Test");
+            telemetry.update();
+        }
 
         sched.run();
 

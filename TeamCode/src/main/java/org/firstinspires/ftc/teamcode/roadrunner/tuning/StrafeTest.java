@@ -10,28 +10,33 @@ import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.TwoDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.roadrunner.messages.PoseMessage;
 import org.firstinspires.ftc.teamcode.roadrunner.ThreeDeadWheelLocalizer;
+import org.firstinspires.ftc.teamcode.utils.software.MovingArrayList;
 
 public final class StrafeTest extends LinearOpMode {
     public static double distance = 24.0;
-    public static int mode = 3;
+    public static int mode = 0;
     @Override
     public void runOpMode() throws InterruptedException {
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, Math.PI/2), true);
-
-        TwoDeadWheelLocalizer localizer = (TwoDeadWheelLocalizer)drive.localizer;
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, Math.PI/2), false);
+        drive.startIMUThread(this);
+        ThreeDeadWheelLocalizer localizer = (ThreeDeadWheelLocalizer)drive.localizer;
 
         int begin = localizer.perp.getPositionAndVelocity().position;
         telemetry.addData("perp encoder begin value: ", begin);
-        telemetry.addData("par0 encoder begin value: ", localizer.par.getPositionAndVelocity().position);
- //       telemetry.addData("par1 encoder begin value: ", localizer.par1.getPositionAndVelocity().position);
+        telemetry.addData("par0 encoder begin value: ", localizer.par0.getPositionAndVelocity().position);
+        telemetry.addData("par1 encoder begin value: ", localizer.par1.getPositionAndVelocity().position);
         telemetry.update();
+
+        MovingArrayList avgLoopTime = new MovingArrayList(50);
+        ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
         waitForStart();
 
@@ -73,8 +78,8 @@ public final class StrafeTest extends LinearOpMode {
             telemetry.addData("perp encoder delta value: ", end-begin);
             telemetry.addData("perp *inPerTick* : ", String.format("%5.6f",distance/Math.abs(end-begin)));
             telemetry.addData("perp *position* : ", String.format("%3.2f",Math.abs(end-begin)*MecanumDrive.PARAMS.inPerTick));
-            telemetry.addData("par0 encoder end value: ", localizer.par.getPositionAndVelocity().position);
-//            telemetry.addData("par1 encoder end value: ", localizer.par1.getPositionAndVelocity().position);
+            telemetry.addData("par0 encoder end value: ", localizer.par0.getPositionAndVelocity().position);
+            telemetry.addData("par1 encoder end value: ", localizer.par1.getPositionAndVelocity().position);
 
             TelemetryPacket p = new TelemetryPacket();
             Canvas c = p.fieldOverlay();
@@ -82,6 +87,10 @@ public final class StrafeTest extends LinearOpMode {
 
             FtcDashboard dash = FtcDashboard.getInstance();
             dash.sendTelemetryPacket(p);
+
+            avgLoopTime.add(timer.milliseconds());
+            timer.reset();
+            telemetry.addData("Loop Time: Mean:", String.format("%3.3f",avgLoopTime.getMean()) + " | Avg: " + String.format("%3.3f",avgLoopTime.getAvg()));
 
             telemetry.update();
         }

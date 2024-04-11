@@ -333,6 +333,7 @@ public class Intake {
 
     public void update() {
 
+        long start = System.currentTimeMillis();
         curBeamBreakerState = beamBreakerActive.getState();
 
         if(prevBeamBreakerState != curBeamBreakerState) {
@@ -359,6 +360,9 @@ public class Intake {
             intakeOffDirect();
             reverseStartTime = null;
         }
+
+//        Log.d("Beam_Breaker_Pixel_Detected_logger", "Processing time: " + (System.currentTimeMillis() - start));
+        //intakeReverseDirect();
     }
 
     private Long reverseStartTime;

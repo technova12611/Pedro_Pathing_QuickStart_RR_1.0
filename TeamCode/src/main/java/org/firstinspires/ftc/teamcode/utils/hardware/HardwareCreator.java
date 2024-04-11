@@ -9,6 +9,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.teamcode.utils.hardware.cachinghardware.CachingCRServo;
+import org.firstinspires.ftc.teamcode.utils.hardware.cachinghardware.CachingDcMotorEX;
+import org.firstinspires.ftc.teamcode.utils.hardware.cachinghardware.CachingServo;
 import org.firstinspires.ftc.teamcode.utils.hardware.fake.CRServoFake;
 import org.firstinspires.ftc.teamcode.utils.hardware.fake.DcMotorFake;
 import org.firstinspires.ftc.teamcode.utils.hardware.fake.ServoFake;
@@ -33,7 +36,7 @@ public class HardwareCreator {
     public static DcMotorEx createMotor(HardwareMap hardwareMap, String deviceName) {
         if (SIMULATE_HARDWARE) return new DcMotorFake();
         try {
-            return hardwareMap.get(DcMotorEx.class, deviceName);
+            return new CachingDcMotorEX(hardwareMap.get(DcMotorEx.class, deviceName), 0.01);
         } catch (IllegalArgumentException e) { // Could not find device
             RobotLog.addGlobalWarningMessage("Failed to find DcMotorEx '%s'", deviceName);
             return new DcMotorFake();
@@ -47,7 +50,7 @@ public class HardwareCreator {
     public static Servo createServo(HardwareMap hardwareMap, String deviceName, ServoType type) {
         if (SIMULATE_HARDWARE) return setServoRange(new ServoFake(), type);
         try {
-            return setServoRange(hardwareMap.get(ServoImplEx.class, deviceName), type);
+            return setServoRange(new CachingServo(hardwareMap.get(ServoImplEx.class, deviceName), 0.002), type);
         } catch (IllegalArgumentException e) {
             RobotLog.addGlobalWarningMessage("Failed to find Servo '%s'", deviceName);
             return setServoRange(new ServoFake(), type);
@@ -61,7 +64,7 @@ public class HardwareCreator {
     public static CRServo createCRServo(HardwareMap hardwareMap, String deviceName, ServoType type) {
         if (SIMULATE_HARDWARE) return setServoRange(new CRServoFake(), type);
         try {
-            return setServoRange(hardwareMap.get(CRServo.class, deviceName), type);
+            return setServoRange(new CachingCRServo(hardwareMap.get(CRServo.class, deviceName), 0.005), type);
         } catch (IllegalArgumentException e) {
             RobotLog.addGlobalWarningMessage("Failed to find CRServo '%s'", deviceName);
             return setServoRange(new CRServoFake(), type);
