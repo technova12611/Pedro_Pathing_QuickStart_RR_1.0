@@ -52,6 +52,7 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
     public double imuHeadingVelo = 0.0;
     private ExecutorService imuExecutor = Executors.newSingleThreadExecutor();
     private Rotation2d lastHeading;
+    private long lastHeadingTime = System.currentTimeMillis();
 
 //    private final Object imuLock = new Object();
 //    @GuardedBy("imuLock")
@@ -185,6 +186,9 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
         double headingDelta = heading.minus(lastHeading);
         lastHeading = heading;
 
+        double calHeadingVel = headingVelOffset + (headingDelta)*1000/(System.currentTimeMillis() - lastHeadingTime);
+        lastHeadingTime = System.currentTimeMillis();
+
         double calcHeading = (par0PosDelta - par1PosDelta) / (PARAMS.par0YTicks - PARAMS.par1YTicks);
         double calcAngularVelo = (par0PosVel.velocity - par1PosVel.velocity) / (PARAMS.par0YTicks - PARAMS.par1YTicks);
 //        double headingVel = calcAngularVelo;
@@ -211,8 +215,8 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
         lastPerpPos = perpPosVel.position;
 
 
-//        Log.d("Localizer_logger", String.format("par0_delta: %d | par1_delta: %d | angle_delta: %3.3f (imu: %3.3f) | velo: %3.3f (imu: %3.3f)" ,
-//                par0PosDelta, par1PosDelta, Math.toDegrees(calcHeading), Math.toDegrees(headingDelta), calcAngularVelo, headingVel));
+        Log.d("Localizer_logger", String.format("par0_delta: %d | par1_delta: %d | angle_delta: %3.3f (imu: %3.3f) | velo: %3.3f (imu: %3.3f) (cal: %3.3f)" ,
+                par0PosDelta, par1PosDelta, Math.toDegrees(calcHeading), Math.toDegrees(headingDelta), calcAngularVelo, headingVel, calHeadingVel));
 
 //        Log.d("Localizer_logger", " * 3DW_Localizer ElapsedTime (ms): " + (System.currentTimeMillis() - start));
 
