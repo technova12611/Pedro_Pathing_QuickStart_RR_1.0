@@ -93,15 +93,16 @@ public final class AutoPathTest extends LinearOpMode {
                     new SequentialAction(
                             new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_begin"),
                             drive.actionBuilder(start)
-                                    .splineToConstantHeading(new Vector2d(24.0, 14), Math.toRadians(180.00))
-//                                    .splineToSplineHeading(new Pose2d(28.0, 14, Math.toRadians(180.0)), Math.toRadians(180.00))
+                                    .setReversed(false)
+//                                    .splineToConstantHeading(new Vector2d(24.0, 14), Math.toRadians(180.00))
+                                    .splineToSplineHeading(new Pose2d(28.0, 14, Math.toRadians(180.0)), Math.toRadians(180.00))
                                     .splineToConstantHeading(new Vector2d(-36, 12), Math.toRadians(180.00))
                                     .splineToConstantHeading(new Vector2d(-54.0, 12), Math.toRadians(180.00))
                                     .setReversed(true)
                                     .splineToConstantHeading(new Vector2d(-36.00, 12), Math.toRadians(0.00))
                                     .splineToConstantHeading(new Vector2d(16, 13.0), Math.toRadians(0.00))
-                                .splineToConstantHeading(new Vector2d(46, 31.0), Math.toRadians(0.00)).build(),
-//                                    .splineToSplineHeading(new Pose2d(46, 30.0, Math.toRadians(180)), Math.toRadians(0.00)).build(),
+//                                .splineToConstantHeading(new Vector2d(46, 31.0), Math.toRadians(0.00)).build(),
+                                    .splineToSplineHeading(new Pose2d(46, 30.0, Math.toRadians(180)), Math.toRadians(0.00)).build(),
                             new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_end")));
 
 
