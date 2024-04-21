@@ -133,38 +133,13 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
         return twist;
     }
 
-    public Twist2dDual<Time> update() {
+    private int headingCounter = 0;
 
-        long start = System.currentTimeMillis();
+    public Twist2dDual<Time> update() {
 
         PositionVelocityPair par0PosVel = par0.getPositionAndVelocity();
         PositionVelocityPair par1PosVel = par1.getPositionAndVelocity();
         PositionVelocityPair perpPosVel = perp.getPositionAndVelocity();
-
-//        Log.d("Localizer_logger", "  - 3DW_Localizer encoder time: " + (System.currentTimeMillis() - start));
-
-        long start1 = System.currentTimeMillis();
-
-        YawPitchRollAngles angles = imu.getRobotYawPitchRollAngles();
-        Rotation2d heading = Rotation2d.exp(angles.getYaw(AngleUnit.RADIANS));
-//        Log.d("Localizer_logger", "  - 3DW_Localizer imu heading time: " + (System.currentTimeMillis() - start1));
-
-        long start2 = System.currentTimeMillis();
-        AngularVelocity angularVelocity = imu.getRobotAngularVelocity(AngleUnit.RADIANS);
-        double rawHeadingVel = angularVelocity.zRotationRate;
-
-//        Log.d("Localizer_logger", "  - 3DW_Localizer imu velo time: " + (System.currentTimeMillis() - start2));
-
-//        Rotation2d heading = Rotation2d.exp(imuYawHeading);
-//        double rawHeadingVel = imuHeadingVelo;
-
-        // see https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/617
-
-//        if (Math.abs(rawHeadingVel - lastRawHeadingVel) > Math.PI) {
-//            headingVelOffset -= Math.signum(rawHeadingVel) * 2 * Math.PI;
-//        }
-        lastRawHeadingVel = rawHeadingVel;
-        double headingVel = headingVelOffset + rawHeadingVel;
 
         if (!initialized) {
             initialized = true;
@@ -172,6 +147,10 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
             lastPar0Pos = par0PosVel.position;
             lastPar1Pos = par1PosVel.position;
             lastPerpPos = perpPosVel.position;
+
+            YawPitchRollAngles angles = imu.getRobotYawPitchRollAngles();
+            Rotation2d heading = Rotation2d.exp(angles.getYaw(AngleUnit.RADIANS));
+
             lastHeading = heading;
 
             return new Twist2dDual<>(
@@ -183,15 +162,32 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
         int par0PosDelta = par0PosVel.position - lastPar0Pos;
         int par1PosDelta = par1PosVel.position - lastPar1Pos;
         int perpPosDelta = perpPosVel.position - lastPerpPos;
-        double headingDelta = heading.minus(lastHeading);
-        lastHeading = heading;
 
-        double calHeadingVel = headingVelOffset + (headingDelta)*1000/(System.currentTimeMillis() - lastHeadingTime);
-        lastHeadingTime = System.currentTimeMillis();
+        double headingDelta = (par0PosDelta - par1PosDelta) / (PARAMS.par0YTicks - PARAMS.par1YTicks);
 
-        double calcHeading = (par0PosDelta - par1PosDelta) / (PARAMS.par0YTicks - PARAMS.par1YTicks);
+        if(headingCounter++ > 3) {
+            YawPitchRollAngles angles = imu.getRobotYawPitchRollAngles();
+            Rotation2d heading = Rotation2d.exp(angles.getYaw(AngleUnit.RADIANS));
+            headingDelta = heading.minus(lastHeading);
+            lastHeading = heading;
+            headingCounter = 0;
+        } else {
+            lastHeading = lastHeading.plus(headingDelta);
+        }
+
+
+//        AngularVelocity angularVelocity = imu.getRobotAngularVelocity(AngleUnit.RADIANS);
+//        double rawHeadingVel = angularVelocity.zRotationRate;
+
         double calcAngularVelo = (par0PosVel.velocity - par1PosVel.velocity) / (PARAMS.par0YTicks - PARAMS.par1YTicks);
-//        double headingVel = calcAngularVelo;
+        double rawHeadingVel = calcAngularVelo;
+
+        // see https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/617
+        if (Math.abs(rawHeadingVel - lastRawHeadingVel) > Math.PI) {
+            headingVelOffset -= Math.signum(rawHeadingVel) * 2 * Math.PI;
+        }
+        lastRawHeadingVel = rawHeadingVel;
+        double headingVel = headingVelOffset + rawHeadingVel;
 
         Twist2dDual<Time> twist = new Twist2dDual<>(
                 new Vector2dDual<>(
@@ -214,11 +210,8 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
         lastPar1Pos = par1PosVel.position;
         lastPerpPos = perpPosVel.position;
 
-
 //        Log.d("Localizer_logger", String.format("par0_delta: %d | par1_delta: %d | angle_delta: %3.3f (imu: %3.3f) | velo: %3.3f (imu: %3.3f) (cal: %3.3f)" ,
 //                par0PosDelta, par1PosDelta, Math.toDegrees(calcHeading), Math.toDegrees(headingDelta), calcAngularVelo, headingVel, calHeadingVel));
-
-//        Log.d("Localizer_logger", " * 3DW_Localizer ElapsedTime (ms): " + (System.currentTimeMillis() - start));
 
         return twist;
     }

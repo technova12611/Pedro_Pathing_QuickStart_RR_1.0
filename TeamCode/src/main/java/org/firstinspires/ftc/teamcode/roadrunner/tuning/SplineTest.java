@@ -57,7 +57,7 @@ public final class SplineTest extends LinearOpMode {
         int runCounter = 0;
 
         while (runCounter++ < 2) {
-            scheduler.addAction(drive.actionBuilderSlow(drive.pose)
+            scheduler.addAction(drive.actionBuilder(drive.pose)
                     .splineTo(new Vector2d(distance + 6, distance), 0)
 //                       .splineTo(new Vector2d(60, 0), Math.PI)
                     .build());
@@ -74,28 +74,18 @@ public final class SplineTest extends LinearOpMode {
                 Thread.sleep(2000);
                 drive.updatePoseEstimate();
 
-                scheduler.addAction(drive.actionBuilderSlow(drive.pose)
+                scheduler.addAction(drive.actionBuilder(drive.pose)
                         .setReversed(true)
                         .splineTo(new Vector2d(0, 0), Math.toRadians(180))
                         .build());
 
                 scheduler.run();
 
-                Thread.sleep(1000);
-//            Actions.runBlocking(
-//                    drive.actionBuilderSlow(drive.pose)
-//                            .setReversed(true)
-//                            .splineTo(new Vector2d(0, 0), Math.toRadians(180))
-//                            .build());
+                Thread.sleep(2000);
             }
         }
 
         while (!isStopRequested()) {
-            List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
-            for (LynxModule module : allHubs) {
-                module.clearBulkCache();
-            }
-
             drive.updatePoseEstimate();
             telemetry.addData("Pose estimate: ", new PoseMessage(drive.pose));
             //telemetry.addData("IMU heading: ", String.format("%3.2f",drive.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)));

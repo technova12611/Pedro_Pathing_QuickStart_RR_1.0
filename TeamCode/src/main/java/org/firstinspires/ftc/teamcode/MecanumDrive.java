@@ -73,9 +73,9 @@ public final class MecanumDrive {
         public double maxProfileAccelSlow = 50;
 
         // path profile parameters (in inches)
-        public double maxWheelVel = 70;
-        public double minProfileAccel = -45;
-        public double maxProfileAccel = 65.0;
+        public double maxWheelVel = 60.0;
+        public double minProfileAccel = -40;
+        public double maxProfileAccel = 55.0;
 
 //        public double maxWheelVelHighSpeed = 72.5;
 //        public double minProfileAccelHighSpeed = -52.0;
@@ -90,12 +90,12 @@ public final class MecanumDrive {
         public double maxAngAccel = Math.PI;
 
         // path controller gains
-        public double axialGain = 5.25; //5.25;
-        public double lateralGain = 7.25; //16.5;
+        public double axialGain = 7.05; //5.25;
+        public double lateralGain = 10.25; //16.5;
         public double headingGain = 8.05; //7.5; // shared with turn
 
-        public double axialVelGain = 0.125; //0.25;
-        public double lateralVelGain = 0.05; //0.01;
+        public double axialVelGain = 0.5; //0.25;
+        public double lateralVelGain = 0.025; //0.01;
         public double headingVelGain = 0.05; //0.01; // shared with turn
     }
 
@@ -573,7 +573,8 @@ public final class MecanumDrive {
     }
 
     public TrajectoryActionBuilder actionBuilder(Pose2d beginPose) {
-        Log.d("TrajectoryActionBuilder_default", "Default Drive path builder begin position: " + new PoseMessage(beginPose));
+        Log.d("TrajectoryActionBuilder_logger", "Default Drive path builder begin position: " + new PoseMessage(beginPose));
+        Log.d("TrajectoryActionBuilder_logger", String.format("Params: (%3.3f, %3.3f, %3.3f) ", PARAMS.maxWheelVel, PARAMS.maxProfileAccel, PARAMS.minProfileAccel));
         return new TrajectoryActionBuilder(
                 TurnAction::new,
                 FollowTrajectoryAction::new,
@@ -584,7 +585,8 @@ public final class MecanumDrive {
     }
 
     public TrajectoryActionBuilder actionBuilderSlow(Pose2d beginPose) {
-        Log.d("TrajectoryActionBuilder_slow", "Slow Drive path builder begin position: " + new PoseMessage(beginPose));
+        Log.d("TrajectoryActionBuilder_logger", "Slow Drive path builder begin position: " + new PoseMessage(beginPose));
+        Log.d("TrajectoryActionBuilder_logger", String.format("Params: (%3.3f, %3.3f, %3.3f) ", PARAMS.maxWheelVelSlow, PARAMS.maxProfileAccelSlow, PARAMS.minProfileAccelSlow));
         return new TrajectoryActionBuilder(
                 TurnAction::new,
                 FollowTrajectoryAction::new,
@@ -595,7 +597,8 @@ public final class MecanumDrive {
     }
 
     public TrajectoryActionBuilder actionBuilderFast(Pose2d beginPose) {
-        Log.d("TrajectoryActionBuilder_fast", "Fast Drive path builder begin position: " + new PoseMessage(beginPose));
+        Log.d("TrajectoryActionBuilder_logger", "Fast Drive path builder begin position: " + new PoseMessage(beginPose));
+        Log.d("TrajectoryActionBuilder_logger", String.format("Params: (%3.3f, %3.3f, %3.3f) ", PARAMS.maxWheelVelHighSpeed, PARAMS.maxProfileAccelHighSpeed, PARAMS.minProfileAccelHighSpeed));
         return new TrajectoryActionBuilder(
                 TurnAction::new,
                 FollowTrajectoryAction::new,
