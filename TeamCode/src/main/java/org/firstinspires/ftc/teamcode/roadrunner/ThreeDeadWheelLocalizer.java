@@ -1,9 +1,5 @@
 package org.firstinspires.ftc.teamcode.roadrunner;
 
-import android.util.Log;
-
-import androidx.annotation.GuardedBy;
-
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.DualNum;
 import com.acmerobotics.roadrunner.Rotation2d;
@@ -198,7 +194,7 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
                         new DualNum<Time>(new double[] {
                                 (PARAMS.perpXTicks / (PARAMS.par0YTicks - PARAMS.par1YTicks) * (par1PosDelta - par0PosDelta) + perpPosDelta),
                                 (PARAMS.perpXTicks / (PARAMS.par0YTicks - PARAMS.par1YTicks) * (par1PosVel.velocity - par0PosVel.velocity) + perpPosVel.velocity),
-                        }).times(inPerTick*1.00)
+                        }).times(inPerTick*0.990)
                 ),
                 new DualNum<>(new double[] {
                         headingDelta,

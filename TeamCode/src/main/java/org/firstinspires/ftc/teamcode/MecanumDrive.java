@@ -68,14 +68,14 @@ public final class MecanumDrive {
         public double kV = 0.0004003;// 0.0003895;//0.0004008; //0.00027;//0.00009;
         public double kA = 0.0000739; //0.000075;
 
-        public double maxWheelVelSlow = 50;
+        public double maxWheelVelSlow = 55;
         public double minProfileAccelSlow = -35;
-        public double maxProfileAccelSlow = 50;
+        public double maxProfileAccelSlow = 55;
 
         // path profile parameters (in inches)
-        public double maxWheelVel = 60.0;
-        public double minProfileAccel = -40;
-        public double maxProfileAccel = 55.0;
+        public double maxWheelVel = 70;
+        public double minProfileAccel = -45;
+        public double maxProfileAccel = 65.0;
 
 //        public double maxWheelVelHighSpeed = 72.5;
 //        public double minProfileAccelHighSpeed = -52.0;
@@ -154,7 +154,7 @@ public final class MecanumDrive {
             }
         } else {
             for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
-                module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+                module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
             }
         }
 

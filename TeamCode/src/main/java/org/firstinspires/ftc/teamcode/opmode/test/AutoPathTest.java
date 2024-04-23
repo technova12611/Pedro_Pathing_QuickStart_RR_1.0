@@ -84,28 +84,39 @@ public final class AutoPathTest extends LinearOpMode {
         sched.run();
 
         int i = 0;
-        Pose2d start = backdrop;
+        double position_y = 12;
         while(i++ < 3) {
-            if(i > 1) {
-                start = scoring;
+            if(i == 2) {
+                position_y = 12.75;
             }
+            if(i==3) {
+                position_y = 13.5;
+            }
+            drive.updatePoseEstimate();
             sched.addAction(
                     new SequentialAction(
-                            new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_begin"),
-                            drive.actionBuilder(start)
-                                    .setReversed(false)
-//                                    .splineToConstantHeading(new Vector2d(24.0, 14), Math.toRadians(180.00))
-                                    .splineToSplineHeading(new Pose2d(28.0, 14, Math.toRadians(180.0)), Math.toRadians(180.00))
-                                    .splineToConstantHeading(new Vector2d(-36, 12), Math.toRadians(180.00))
-                                    .splineToConstantHeading(new Vector2d(-54.0, 12), Math.toRadians(180.00))
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_stack_begin"),
+                            drive.actionBuilder(drive.pose)
+//                                    .splineToConstantHeading(new Vector2d(24.0, position_y), Math.toRadians(180.00),
+//                                            this.drive.slowVelConstraint, this.drive.slowAccelConstraint)
+                                    .splineToSplineHeading(new Pose2d(20.0, position_y, Math.toRadians(180.0)), Math.toRadians(180.00),
+                                              this.drive.slowVelConstraint, this.drive.slowAccelConstraint)
+                                    .splineToConstantHeading(new Vector2d(-36.0, position_y), Math.toRadians(180.00))
+                                    .splineToConstantHeading(new Vector2d(-56.0, position_y), Math.toRadians(180.00)).build(),
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_statck_end")));
+            sched.run();
+
+            sched.addAction(
+                    new SequentialAction(
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_backdrop_begin"),
+                            drive.actionBuilder(drive.pose)
                                     .setReversed(true)
-                                    .splineToConstantHeading(new Vector2d(-36.00, 12), Math.toRadians(0.00))
-                                    .splineToConstantHeading(new Vector2d(16, 13.0), Math.toRadians(0.00))
-//                                .splineToConstantHeading(new Vector2d(46, 31.0), Math.toRadians(0.00)).build(),
-                                    .splineToSplineHeading(new Pose2d(46, 30.0, Math.toRadians(180)), Math.toRadians(0.00)).build(),
-                            new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_end")));
-
-
+                                    .splineToConstantHeading(new Vector2d(-36.00, position_y), Math.toRadians(0.00))
+                                    .splineToConstantHeading(new Vector2d(20, position_y), Math.toRadians(0.00))
+                                .splineToConstantHeading(new Vector2d(48, 32.0),
+//                                    .splineToSplineHeading(new Pose2d(48, 31.0, Math.toRadians(180)),
+                                            Math.toRadians(0.00), this.drive.slowVelConstraint, this.drive.slowAccelConstraint).build(),
+                            new MecanumDrive.DrivePoseLoggingAction(drive, "cycle_backdrop_end")));
             sched.run();
         }
 

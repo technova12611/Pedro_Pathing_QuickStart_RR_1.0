@@ -9,14 +9,15 @@ java {
 
 repositories {
     maven { url = 'https://jitpack.io' }
+    maven { url = 'https://maven.brott.dev/' }
     mavenCentral()
     mavenLocal()
 }
 
 dependencies {
-    implementation 'com.acmerobotics.roadrunner:MeepMeep:0.1.2'
-    implementation "com.acmerobotics.roadrunner:core:1.0.0-beta6"
-    implementation "com.acmerobotics.roadrunner:actions:1.0.0-beta6"
-    implementation "com.acmerobotics.roadrunner:ftc:0.1.11"
-    implementation "com.acmerobotics.dashboard:dashboard:0.4.14"
+    implementation 'com.acmerobotics.roadrunner:MeepMeep:0.1.3'
+//    implementation "com.acmerobotics.roadrunner:core:1.0.0-beta6"
+//    implementation "com.acmerobotics.roadrunner:actions:1.0.0-beta6"
+//    implementation "com.acmerobotics.roadrunner:ftc:0.1.11"
+//    implementation "com.acmerobotics.dashboard:dashboard:0.4.14"
 }

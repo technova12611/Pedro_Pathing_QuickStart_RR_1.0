@@ -97,7 +97,6 @@ public class AutoActionScheduler {
          for (LynxModule module : allHubs) {
             module.clearBulkCache();
          }
-
       }
 
       autoRunElapsedTime = System.currentTimeMillis() - startTime;
