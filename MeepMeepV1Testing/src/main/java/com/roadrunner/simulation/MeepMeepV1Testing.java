@@ -18,14 +18,15 @@ import java.util.Arrays;
 public class MeepMeepV1Testing {
 
     public static void main(String[] args) {
-        MeepMeep meepMeep = new MeepMeep(800);
+        MeepMeep meepMeep = new MeepMeep(600);
 
+        AccelConstraint defaultAccelConstraint = new ProfileAccelConstraint(-50, 65);
 
         // Declare our first bot
         RoadRunnerBotEntity myFirstBot = new DefaultBotBuilder(meepMeep)
                 // We set this bot to be blue
                 .setColorScheme(new ColorSchemeRedDark())
-                .setConstraints(70.0, 67.50, Math.toRadians(180), Math.toRadians(180), 18)
+                .setConstraints(70.0, 65.00, Math.toRadians(180), Math.toRadians(180), 18)
                 .build();
 
 //        myFirstBot.runAction(myFirstBot.getDrive().actionBuilder(new Pose2d(16.0, -62, Math.toRadians(90)))
@@ -100,39 +101,39 @@ public class MeepMeepV1Testing {
 
 
         myFirstBot.runAction(myFirstBot.getDrive().actionBuilder(new Pose2d(12.0, 63, Math.toRadians(-90)))
-                .strafeToSplineHeading(new Vector2d(26.0, 22.0), Math.toRadians(180.00))
-                .strafeToLinearHeading(new Vector2d(48.0, 36), Math.toRadians(180.00))
+                .strafeToSplineHeading(new Vector2d(26.0, 22.0), Math.toRadians(180.00), null, defaultAccelConstraint)
+                .strafeToLinearHeading(new Vector2d(48.0, 36), Math.toRadians(180.00), null, defaultAccelConstraint)
                 .setReversed(false)
 //                .splineToSplineHeading(new Pose2d(28.0, 14, Math.toRadians(180.0)), Math.toRadians(180.00))
-                .splineToConstantHeading(new Vector2d(20, 12), Math.toRadians(180.00))
-//                .splineToConstantHeading(new Vector2d(-36, 12), Math.oRadians(180.00))
-                .splineToConstantHeading(new Vector2d(-54.0, 12), Math.toRadians(180.00))
+                .splineToConstantHeading(new Vector2d(20, 12), Math.toRadians(180.00), null, defaultAccelConstraint)
+                .splineToConstantHeading(new Vector2d(-36, 12), Math.toRadians(180.00),null, defaultAccelConstraint)
+                .splineToConstantHeading(new Vector2d(-56.0, 12), Math.toRadians(180.00),null, defaultAccelConstraint)
                 .setReversed(true)
-                .splineToConstantHeading(new Vector2d(-36.00, 12), Math.toRadians(0.00))
-                .splineToConstantHeading(new Vector2d(16, 12.0), Math.toRadians(0.00))
-                .splineToConstantHeading(new Vector2d(45, 30.0), Math.toRadians(0.00))
+                .splineToConstantHeading(new Vector2d(-36.0, 12), Math.toRadians(0.00), null, defaultAccelConstraint)
+                .splineToConstantHeading(new Vector2d(24, 12.0), Math.toRadians(0.00), null, defaultAccelConstraint)
+                .splineToConstantHeading(new Vector2d(48, 32.0), Math.toRadians(0.00), null, defaultAccelConstraint)
 //                .splineTo(new Vector2d(48, 33.0),Math.toRadians(0.00))
                 .setReversed(false)
-                .splineToConstantHeading(new Vector2d(20, 12.0), Math.toRadians(180.00))
+                .splineToConstantHeading(new Vector2d(20, 12.0), Math.toRadians(180.00), null, defaultAccelConstraint)
 //                .splineToSplineHeading(new Pose2d(28.0, 14, Math.toRadians(180.0)), Math.toRadians(180.00))
-//                .splineToConstantHeading(new Vector2d(-36, 12), Math.toRadians(180.00))
-                .splineToConstantHeading(new Vector2d(-54.0, 12), Math.toRadians(180.00))
+                .splineToConstantHeading(new Vector2d(-36, 12), Math.toRadians(180.00), null, defaultAccelConstraint)
+                .splineToConstantHeading(new Vector2d(-56.0, 12), Math.toRadians(180.00), null, defaultAccelConstraint)
                 .setReversed(true)
-                .splineToConstantHeading(new Vector2d(-36.00, 12), Math.toRadians(0.00))
-                .splineToConstantHeading(new Vector2d(16, 12.0), Math.toRadians(0.00))
-                .splineToConstantHeading(new Vector2d(46, 30.0), Math.toRadians(0.00))
+                .splineToConstantHeading(new Vector2d(-36.00, 12), Math.toRadians(0.00), null, defaultAccelConstraint)
+                .splineToConstantHeading(new Vector2d(16, 12.0), Math.toRadians(0.00), null, defaultAccelConstraint)
+                .splineToConstantHeading(new Vector2d(48, 32.0), Math.toRadians(0.00), null, defaultAccelConstraint)
  //               .splineToSplineHeading(new Pose2d(46, 30.0, Math.toRadians(180)),Math.toRadians(0.00))
 //                .splineToSplineHeading(new Pose2d(55, 22.0, Math.toRadians(200.00)),20)
                 .setReversed(false)
-                .splineToConstantHeading(new Vector2d(20, 12.0), Math.toRadians(180.00))
+                .splineToConstantHeading(new Vector2d(20, 12.0), Math.toRadians(180.00), null, defaultAccelConstraint)
 //                .splineToSplineHeading(new Pose2d(28.0, 14, Math.toRadians(180.0)), Math.toRadians(180.00))
-//                .splineToConstantHeading(new Vector2d(-36, 12), Math.toRadians(180.00))
-                .splineToConstantHeading(new Vector2d(-54.0, 12), Math.toRadians(180.00))
+                .splineToConstantHeading(new Vector2d(-36, 12), Math.toRadians(180.00), null, defaultAccelConstraint)
+                .splineToConstantHeading(new Vector2d(-56.0, 12), Math.toRadians(180.00), null, defaultAccelConstraint)
                 .setReversed(true)
-                .splineToConstantHeading(new Vector2d(-36.00, 12), Math.toRadians(0.00))
-                .splineToConstantHeading(new Vector2d(16, 12.0), Math.toRadians(0.00))
+                .splineToConstantHeading(new Vector2d(-36.00, 12), Math.toRadians(0.00), null, defaultAccelConstraint)
+                .splineToConstantHeading(new Vector2d(24, 12.0), Math.toRadians(0.00), null, defaultAccelConstraint)
 //                .splineToSplineHeading(new Pose2d(46, 30.0, Math.toRadians(180)),Math.toRadians(0.00))
-                .splineToConstantHeading(new Vector2d(48, 30.0), Math.toRadians(0.00))
+                .splineToConstantHeading(new Vector2d(48, 32.0), Math.toRadians(0.00), null, defaultAccelConstraint)
 //                .splineToSplineHeading(new Pose2d(54, 22.0, Math.toRadians(200.00)),20)
                 .build());
 

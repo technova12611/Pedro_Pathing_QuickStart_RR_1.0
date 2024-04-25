@@ -71,7 +71,6 @@ public final class AutoPathTest extends LinearOpMode {
 
         drive.pose = new Pose2d(14.5, 62, Math.toRadians(-90));
         Pose2d backdrop = new Pose2d(48.0,36.0, Math.toRadians(180.00));
-        Pose2d scoring = new Pose2d(48.0,36.0, Math.toRadians(180.00));
 
         sched.addAction(
                 new SequentialAction(
@@ -199,6 +198,7 @@ public final class AutoPathTest extends LinearOpMode {
                 if(firstTime) {
                     endPose = drive.pose;
                     firstTime = false;
+                    Log.d("Drive_logger", "End drive pose: " + new PoseMessage(drive.pose));
                 }
 
                 telemetry.addData("Auto elapsed time: ", sched.autoRunElapsedTime);
@@ -207,8 +207,6 @@ public final class AutoPathTest extends LinearOpMode {
             }
             idle();
         }
-
-        Log.d("Drive_logger", "End drive pose: " + new PoseMessage(drive.pose));
     }
 
     final public void update() {
