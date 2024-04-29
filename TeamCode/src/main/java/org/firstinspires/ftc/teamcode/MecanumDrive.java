@@ -27,6 +27,7 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.FlightRecorder;
 import com.acmerobotics.roadrunner.ftc.LynxFirmware;
+import com.arcrobotics.ftclib.drivebase.RobotDrive;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -37,8 +38,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.pathing.geometry.Pose;
+import org.firstinspires.ftc.teamcode.pathing.geometry.Vector2D;
 import org.firstinspires.ftc.teamcode.roadrunner.LazyImu;
 import org.firstinspires.ftc.teamcode.roadrunner.Localizer;
 import org.firstinspires.ftc.teamcode.roadrunner.ThreeDeadWheelLocalizer;
@@ -706,5 +709,57 @@ public final class MecanumDrive {
 
     public void setPower(Pose pose) {
         setDrivePowers(new PoseVelocity2d(new Vector2d(pose.x, pose.y), pose.heading));
+    }
+
+    public void set(Pose pose) {
+        set(pose, 0);
+    }
+
+    public void set(double strafeSpeed, double forwardSpeed,
+                    double turnSpeed, double gyroAngle) {
+
+        Vector2D input = new Vector2D(strafeSpeed, forwardSpeed).rotate(-gyroAngle);
+
+        strafeSpeed = Range.clip(input.x, -1, 1);
+        forwardSpeed = Range.clip(input.y, -1, 1);
+        turnSpeed = Range.clip(turnSpeed, -1, 1);
+
+        double[] wheelSpeeds = new double[4];
+
+        wheelSpeeds[RobotDrive.MotorType.kFrontLeft.value] = forwardSpeed + strafeSpeed + turnSpeed;
+        wheelSpeeds[RobotDrive.MotorType.kFrontRight.value] = forwardSpeed - strafeSpeed - turnSpeed;
+        wheelSpeeds[RobotDrive.MotorType.kBackLeft.value] = (forwardSpeed - strafeSpeed + turnSpeed);
+        wheelSpeeds[RobotDrive.MotorType.kBackRight.value] = (forwardSpeed + strafeSpeed - turnSpeed);
+        // 1.06, 1.04
+
+        if (Globals.IS_AUTO) {
+            // feedforward & voltage comp
+            double correction = 12 / 12.75; //robot.getVoltage();
+            for (int i = 0; i < wheelSpeeds.length; i++) {
+                wheelSpeeds[i] = Math.abs(wheelSpeeds[i]) < 0.01 ?
+                        wheelSpeeds[i] * correction :
+                        (wheelSpeeds[i] + Math.signum(wheelSpeeds[i]) * 0.085) * correction;
+            }
+        }
+
+        double max = 1;
+        for (double wheelSpeed : wheelSpeeds) max = Math.max(max, Math.abs(wheelSpeed));
+
+
+        if (max > 1) {
+            wheelSpeeds[RobotDrive.MotorType.kFrontLeft.value] /= max;
+            wheelSpeeds[RobotDrive.MotorType.kFrontRight.value] /= max;
+            wheelSpeeds[RobotDrive.MotorType.kBackLeft.value] /= max;
+            wheelSpeeds[RobotDrive.MotorType.kBackRight.value] /= max;
+        }
+
+        leftFront.setPower(wheelSpeeds[0]);
+        rightFront.setPower(wheelSpeeds[1]);
+        leftBack.setPower(wheelSpeeds[2]);
+        rightBack.setPower(wheelSpeeds[3]);
+    }
+
+    public void set(Pose pose, double angle) {
+        set(pose.x, pose.y, pose.heading, angle);
     }
 }

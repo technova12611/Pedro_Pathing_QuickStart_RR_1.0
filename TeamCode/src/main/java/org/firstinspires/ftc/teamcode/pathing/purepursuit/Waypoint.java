@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.pathing.geometry.Pose;
 import java.util.Locale;
 
 public class Waypoint {
-    private final Waypoint.Type type;
+    private final Type type;
     private final Point point;
     private final double radius;
 
@@ -16,7 +16,7 @@ public class Waypoint {
         this.radius = radius;
     }
 
-    public Waypoint.Type getType() {
+    public Type getType() {
         return this.type;
     }
 

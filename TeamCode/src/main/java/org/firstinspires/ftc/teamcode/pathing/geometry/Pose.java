@@ -27,10 +27,9 @@ public class Pose extends Point {
     }
 
     public Pose(AprilTagPoseFtc ftcPose) {
-        double heading = Math.toRadians(-ftcPose.yaw);
+        this.heading = Math.toRadians(-ftcPose.yaw);
         this.x = ftcPose.x * Math.cos(heading) - ftcPose.y * Math.sin(heading);
         this.y = ftcPose.x * Math.sin(heading) + ftcPose.y * Math.cos(heading);
-        this.heading = heading;
     }
 
     public void set(Pose other) {
@@ -51,6 +50,9 @@ public class Pose extends Point {
         return new Pose(this.x / other.x, this.y / other.y, this.heading / other.heading);
     }
 
+    public Pose scale(double scalar){
+        return new Pose(this.x * scalar, this.y * scalar, this.heading * scalar);
+    }
 
     public Pose subt(Pose other) {
         return new Pose(x - other.x, y - other.y, heading - other.heading);
@@ -62,6 +64,6 @@ public class Pose extends Point {
 
     @Override
     public String toString() {
-        return String.format(Locale.ENGLISH, "%.2f %.2f %.3f", x, y, heading);
+        return String.format(Locale.ENGLISH, "(%.2f,%.2f,%.3f)", x, y, Math.toDegrees(heading));
     }
 }

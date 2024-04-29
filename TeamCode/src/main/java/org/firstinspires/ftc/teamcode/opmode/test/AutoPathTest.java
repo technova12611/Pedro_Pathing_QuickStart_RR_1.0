@@ -22,6 +22,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Outtake;
 import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 
 @Config
+@Disabled
 @Autonomous(name = "Blue Auto Path Test",group = "Test")
 public final class AutoPathTest extends LinearOpMode {
     public static Pose2d starting = new Pose2d(14.5, -62.0, Math.PI/2);
