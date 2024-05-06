@@ -31,6 +31,8 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
         public double par0YTicks = -2441.9133801212834;//-2426.512456471011; y position of the first parallel encoder (in tick units)
         public double par1YTicks = 2467.6258;//2467.9133801212834;//2530.6258; // y position of the second parallel encoder (in tick units)
         public double perpXTicks = -466.222994370873; //-566.222994370873; //-650.620899175634;//-560.3783221003024; // x position of the perpendicular encoder (in tick units)
+
+        public double perpXScalingFactor = 1.005;
     }
 
     public static Params PARAMS = new Params();
@@ -90,45 +92,6 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
 //        });
     }
 
-    public Twist2dDual<Time> update1() {
-        PositionVelocityPair par0PosVel = par0.getPositionAndVelocity();
-        PositionVelocityPair par1PosVel = par1.getPositionAndVelocity();
-        PositionVelocityPair perpPosVel = perp.getPositionAndVelocity();
-
-        int par0PosDelta = par0PosVel.position - lastPar0Pos;
-        int par1PosDelta = par1PosVel.position - lastPar1Pos;
-        int perpPosDelta = perpPosVel.position - lastPerpPos;
-
-        Twist2dDual<Time> twist = new Twist2dDual<>(
-                new Vector2dDual<>(
-                        new DualNum<Time>(new double[] {
-                                (PARAMS.par0YTicks * par1PosDelta - PARAMS.par1YTicks * par0PosDelta) / (PARAMS.par0YTicks - PARAMS.par1YTicks),
-                                (PARAMS.par0YTicks * par1PosVel.velocity - PARAMS.par1YTicks * par0PosVel.velocity) / (PARAMS.par0YTicks - PARAMS.par1YTicks),
-                        }).times(inPerTick),
-                        new DualNum<Time>(new double[] {
-                                (PARAMS.perpXTicks / (PARAMS.par0YTicks - PARAMS.par1YTicks) * (par1PosDelta - par0PosDelta) + perpPosDelta),
-                                (PARAMS.perpXTicks / (PARAMS.par0YTicks - PARAMS.par1YTicks) * (par1PosVel.velocity - par0PosVel.velocity) + perpPosVel.velocity),
-                        }).times(inPerTick*0.993)
-                ),
-                new DualNum<>(new double[] {
-                        (par0PosDelta - par1PosDelta) / (PARAMS.par0YTicks - PARAMS.par1YTicks),
-                        (par0PosVel.velocity - par1PosVel.velocity) / (PARAMS.par0YTicks - PARAMS.par1YTicks),
-                })
-        );
-
-        lastPar0Pos = par0PosVel.position;
-        lastPar1Pos = par1PosVel.position;
-        lastPerpPos = perpPosVel.position;
-
-//        Log.d("Localizer_Update", String.format("par0_delta: %d | par1_delta: %d | angle: %3.3f | IMU:%3.3f",
-//                par0PosDelta, par1PosDelta, Math.toDegrees(twist.value().angle), imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)));
-
-//        Log.d("Localizer_Update", String.format("par0_delta: %d | par1_delta: %d | angle: %3.3f",
-//        par0PosDelta, par1PosDelta, Math.toDegrees(twist.value().angle)));
-
-        return twist;
-    }
-
     private int headingCounter = 0;
 
     public Twist2dDual<Time> update() {
@@ -161,7 +124,7 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
 
         double headingDelta = (par0PosDelta - par1PosDelta) / (PARAMS.par0YTicks - PARAMS.par1YTicks);
 
-        if(headingCounter++ > 3) {
+        if(headingCounter++ > 4) {
             YawPitchRollAngles angles = imu.getRobotYawPitchRollAngles();
             Rotation2d heading = Rotation2d.exp(angles.getYaw(AngleUnit.RADIANS));
             headingDelta = heading.minus(lastHeading);
@@ -194,7 +157,7 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
                         new DualNum<Time>(new double[] {
                                 (PARAMS.perpXTicks / (PARAMS.par0YTicks - PARAMS.par1YTicks) * (par1PosDelta - par0PosDelta) + perpPosDelta),
                                 (PARAMS.perpXTicks / (PARAMS.par0YTicks - PARAMS.par1YTicks) * (par1PosVel.velocity - par0PosVel.velocity) + perpPosVel.velocity),
-                        }).times(inPerTick*0.990)
+                        }).times(inPerTick*PARAMS.perpXScalingFactor)
                 ),
                 new DualNum<>(new double[] {
                         headingDelta,

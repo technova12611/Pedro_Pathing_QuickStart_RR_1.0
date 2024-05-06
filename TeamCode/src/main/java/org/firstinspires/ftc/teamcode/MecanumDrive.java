@@ -715,6 +715,9 @@ public final class MecanumDrive {
         set(pose, 0);
     }
 
+    private double voltage = 12.0;
+    private int voltageCounter = 0;
+
     public void set(double strafeSpeed, double forwardSpeed,
                     double turnSpeed, double gyroAngle) {
 
@@ -732,9 +735,13 @@ public final class MecanumDrive {
         wheelSpeeds[RobotDrive.MotorType.kBackRight.value] = (forwardSpeed + strafeSpeed - turnSpeed);
         // 1.06, 1.04
 
+
         if (Globals.IS_AUTO) {
+            if(voltageCounter++ >=10) {
+                voltage = voltageSensor.getVoltage();
+            }
             // feedforward & voltage comp
-            double correction = 12 / 12.75; //robot.getVoltage();
+            double correction = 12.5 / voltage; //;
             for (int i = 0; i < wheelSpeeds.length; i++) {
                 wheelSpeeds[i] = Math.abs(wheelSpeeds[i]) < 0.01 ?
                         wheelSpeeds[i] * correction :

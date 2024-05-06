@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.pathing.purepursuit;
 
 
+import android.util.Log;
+
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.pathing.geometry.Point;
 import org.firstinspires.ftc.teamcode.pathing.geometry.Pose;
@@ -19,12 +21,14 @@ public class PurePursuitPath {
         if(waypoints.getLast().getType() != Waypoint.Type.POSE) throw new IllegalArgumentException();
     }
 
-    public Pose update(Pose robot) {
+    protected Pose update(Pose robot) {
 
         Waypoint prev = waypoints.get(targetIdx - 1);
         Waypoint target = waypoints.get(targetIdx);
 
         double distance = robot.distanceTo(target.getPoint());
+
+ //       Log.d("PP_Path_logger", "Robot to target distance: " + distance);
 
         if(distance > target.getRadius()){
             Point intersection = PurePursuitUtil.lineCircleIntersection(
@@ -47,8 +51,9 @@ public class PurePursuitPath {
             }
 
             return targetPose;
-        }else{
+        } else {
             if(targetIdx == waypoints.size() - 1){
+ //               Log.d("PP_Path_logger", "Last waypoint in the path!!!!");
                 finished = true;
                 return getEndPose();
             }else{

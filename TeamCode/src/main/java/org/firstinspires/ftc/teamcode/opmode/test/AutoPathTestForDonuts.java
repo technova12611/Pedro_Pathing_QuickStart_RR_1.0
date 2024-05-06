@@ -26,15 +26,10 @@ public final class AutoPathTestForDonuts extends LinearOpMode {
     //   public static Pose2d starting = new Pose2d(16.0, -63.0, Math.PI/2);
 
     public static Pose2d backdrop = new Pose2d(49.0, -35.5, Math.PI);
-
     public static Pose2d spike = new Pose2d(28.5, -25.5, Math.PI);
-
-
     protected AutoActionScheduler sched;
-
     protected Intake intake;
     protected Outtake outtake;
-
     protected MecanumDrive drive;
 
     @Override

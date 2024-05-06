@@ -25,7 +25,7 @@ import org.firstinspires.ftc.teamcode.subsystem.Outtake;
 import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 
 @Config
-@Autonomous(name = "Blue PP Auto Path Test",group = "Test")
+@Autonomous(name = "Test Blue PP Simple",group = "Test")
 public final class PPAutoPathTest extends LinearOpMode {
     public static Pose2d starting = new Pose2d(0, 0, 0);
 
@@ -54,15 +54,15 @@ public final class PPAutoPathTest extends LinearOpMode {
             telemetry.update();
         }
 
-        drive.pose = new Pose2d(0.0, 0.0, Math.toRadians(0.0));
+        drive.pose = new Pose2d(-14.5, -56.0, Math.toRadians(90.0));
 
-        Pose start = new Pose(0, 0.0, 0);
-        Pose target = new Pose(-24, 53.0, Math.toRadians(0.0));
+        Pose2d start = new Pose2d(-14.5, -56.0,  Math.toRadians(90.0));
+        Pose2d target = new Pose2d(38.5, -32.0, Math.toRadians(180.0));
 
         PurePursuitPath test_path = new PurePursuitPath(
                 new Waypoint(start, 15),
-                new Waypoint(new Point(-10, 12.0), 15),
-                new Waypoint(new Point(-22, 24.0), 15),
+                new Waypoint(new Pose2d(10, -43.0, Math.toRadians(180)), 15),
+                new Waypoint(new Vector2d(20, -38), 15),
                 new Waypoint(target, 15)
         );
 
@@ -79,19 +79,19 @@ public final class PPAutoPathTest extends LinearOpMode {
 
         drive.updatePoseEstimate();
         Pose2d path1_pose = drive.pose;
-
-        timer1.reset();
-        PurePursuitPath test_path2 = new PurePursuitPath(
-                new Waypoint(target, 16),
-                new Waypoint(new Point(-22, 24.0), 16),
-                new Waypoint(new Point(-10, 12.0), 16),
-                new Waypoint(start, 16)
-        );
-        sched.addAction(
-                new SequentialAction(
-                        new MecanumDrive.DrivePoseLoggingAction(drive, "path_begin"),
-                        new PurePursuitAction(drive, test_path2)));
-        sched.run();
+//
+//        timer1.reset();
+//        PurePursuitPath test_path2 = new PurePursuitPath(
+//                new Waypoint(target, 16),
+//                new Waypoint(new Point(-22, 24.0), 16),
+//                new Waypoint(new Point(-10, 12.0), 16),
+//                new Waypoint(start, 16)
+//        );
+//        sched.addAction(
+//                new SequentialAction(
+//                        new MecanumDrive.DrivePoseLoggingAction(drive, "path_begin"),
+//                        new PurePursuitAction(drive, test_path2)));
+//        sched.run();
 
         double elapsedTime2 = timer1.milliseconds();
         Thread.sleep(500);
