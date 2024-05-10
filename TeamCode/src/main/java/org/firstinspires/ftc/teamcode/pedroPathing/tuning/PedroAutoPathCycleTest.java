@@ -49,20 +49,21 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
         Follower follower = new Follower(hardwareMap);
         follower.setStartingPose(new Pose2d(14.5, 62, Math.toRadians(-90)));
 
-        Point backdrop = new Point(48.0,36.0, Point.CARTESIAN);
-        Point cycle = new Point(47.0,32.0, Point.CARTESIAN);
+        Point backdrop = new Point(49.0,36.0, Point.CARTESIAN);
+        Point cycle = new Point(48.0,31.5, Point.CARTESIAN);
+        Point cycle1 = new Point(45.0,31.5, Point.CARTESIAN);
 
         Path purplePath = new Path(
                 new BezierCurve(new Point(14.5, 62.0, Point.CARTESIAN),
                         new Point(30, 24.0, Point.CARTESIAN)));
 
         purplePath.setLinearHeadingInterpolation(Math.toRadians(-90), Math.toRadians(180));
-        purplePath.setZeroPowerAccelerationMultiplier(2.0);
+        purplePath.setZeroPowerAccelerationMultiplier(3.0);
 
         sched.addAction(
                 new SequentialAction(
                         new DrivePoseLoggingAction(follower, "purple_path_begin", true),
-                        new FollowPathAction(follower, purplePath),
+                        new FollowPathAction(follower, purplePath, true),
                         new DrivePoseLoggingAction(follower, "purple_path_end"),
                         new SleepAction(0.75)
                 ));
@@ -79,56 +80,67 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
         yellowPath.setZeroPowerAccelerationMultiplier(2.05);
         //yellowPath.setReversed(true);
 
-        follower.update();
-        sched.addAction(
-                new SequentialAction(
-                        new DrivePoseLoggingAction(follower, "yellow_path_begin"),
-                        new FollowPathAction(follower, yellowPath),
-                        new DrivePoseLoggingAction(follower, "yellow_path_end"),
-                        new SleepAction(1.0)
-                ));
-        sched.run();
-/*
-        int cycleCount = 0;
+//        follower.update();
+//        sched.addAction(
+//                new SequentialAction(
+//                        new DrivePoseLoggingAction(follower, "yellow_path_begin"),
+//                        new FollowPathAction(follower, yellowPath),
+//                        new DrivePoseLoggingAction(follower, "yellow_path_end"),
+//                        new SleepAction(1.0)
+//                ));
+//        sched.run();
 
+        int cycleCount = 5;
+
+        double y_position0 = 12.0;
+        double y_position = 12.0;
         while(cycleCount++ < 3) {
 
             // cycle
             Pose2d backdrop0 = follower.getPose();
 
+            if(cycleCount == 2) {
+                y_position0 = 12.5;
+                y_position = 12.5;
+                follower.setPose(new Pose2d(backdrop0.position.x, backdrop0.position.y-1.0,backdrop0.heading.toDouble()));
+            }
             if(cycleCount == 3) {
+                y_position0 = 13.0;
+                y_position = 13.0;
                 follower.setPose(new Pose2d(backdrop0.position.x, backdrop0.position.y-1.0,backdrop0.heading.toDouble()));
             }
 
             Point stagePoint = new Point(backdrop0.position.x, backdrop0.position.y, Point.CARTESIAN);
 
             Path toStack = new Path(new BezierCurve(stagePoint,
-                    new Point(30, 11.5, Point.CARTESIAN),
-                    new Point(-24, 11.5, Point.CARTESIAN),
-                    new Point(-56, 12, Point.CARTESIAN)));
+                    new Point(45, y_position0, Point.CARTESIAN),
+                    new Point(12, y_position0, Point.CARTESIAN),
+                    new Point(-24, y_position0, Point.CARTESIAN),
+                    new Point(-54, y_position, Point.CARTESIAN)));
 
-            //toStack.setConstantHeadingInterpolation(Math.toRadians(180));
-            toStack.setZeroPowerAccelerationMultiplier(4.75);
+            toStack.setZeroPowerAccelerationMultiplier(4.5);
+            toStack.setConstantHeadingInterpolation(Math.PI);
 
             sched.addAction(
                     new SequentialAction(
                             new DrivePoseLoggingAction(follower, "stack_path_begin"),
                             new FollowPathAction(follower, toStack),
                             new DrivePoseLoggingAction(follower, "stack_path_end"),
-                            new SleepAction(1.75)
+                            new SleepAction(1.5)
                     ));
             sched.run();
 
             Pose2d stack0 = follower.getPose();
             Point stackPoint = new Point(stack0.position.x, stack0.position.y, Point.CARTESIAN);
             Path toStage = new Path(new BezierCurve(stackPoint,
-                    new Point(-24, 11.5, Point.CARTESIAN),
-                    new Point(30, 11.5, Point.CARTESIAN),
+                    new Point(-24, 12.0, Point.CARTESIAN),
+                    new Point(33, 12.0, Point.CARTESIAN),
+//                    cycle1,
                     cycle));
 
             toStage.setReversed(true);
             toStage.setConstantHeadingInterpolation(Math.toRadians(180));
-            toStage.setZeroPowerAccelerationMultiplier(2.05);
+            toStage.setZeroPowerAccelerationMultiplier(2.25);
 
             // drop yellow
             sched.addAction(
@@ -136,14 +148,20 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
                             new DrivePoseLoggingAction(follower, "stage_path_begin"),
                             new FollowPathAction(follower, toStage),
                             new DrivePoseLoggingAction(follower, "stage_path_end"),
-                            new SleepAction(1.25)
+                            new SleepAction(1.2)
                     ));
             sched.run();
         }
-*/
+
+        sched.addAction(
+                new SequentialAction(
+                        new SleepAction(2.0)
+                ));
+        sched.run();
+
         boolean firstTime = true;
         Pose2d endPose = follower.getPose();
-        while(!isStopRequested()) {
+        while(!isStopRequested() ) {
             if(sched.isEmpty()) {
                 follower.update();
                 if(firstTime) {

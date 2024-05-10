@@ -32,7 +32,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
 public class CurvedBackAndForth extends OpMode {
     private Telemetry telemetryA;
 
-    public static double DISTANCE = 30;
+    public static double DISTANCE = 24;
 
     private boolean forward = true;
 
@@ -49,12 +49,10 @@ public class CurvedBackAndForth extends OpMode {
     public void init() {
         follower = new Follower(hardwareMap);
 
-        forwards = new Path(new BezierCurve(new Point(0,0, Point.CARTESIAN), new Point(Math.abs(DISTANCE),0, Point.CARTESIAN), new Point(Math.abs(DISTANCE),DISTANCE-6, Point.CARTESIAN)));
-        backwards = new Path(new BezierCurve(new Point(Math.abs(DISTANCE-6),DISTANCE, Point.CARTESIAN), new Point(Math.abs(DISTANCE),0, Point.CARTESIAN), new Point(0,0, Point.CARTESIAN)));
+        forwards = new Path(new BezierCurve(new Point(0,0, Point.CARTESIAN), new Point(Math.abs(DISTANCE),0, Point.CARTESIAN), new Point(Math.abs(DISTANCE),DISTANCE, Point.CARTESIAN)));
+        backwards = new Path(new BezierCurve(new Point(Math.abs(DISTANCE),DISTANCE, Point.CARTESIAN), new Point(Math.abs(DISTANCE),0, Point.CARTESIAN), new Point(0,0, Point.CARTESIAN)));
 
-        forwards.setZeroPowerAccelerationMultiplier(3.75);
-        backwards.setReversed(true);
-
+        forwards.setZeroPowerAccelerationMultiplier(5.25);
         follower.followPath(forwards);
 
         telemetryA = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -81,6 +79,8 @@ public class CurvedBackAndForth extends OpMode {
             }
             if (forward) {
                 forward = false;
+                backwards.setReversed(true);
+                backwards.setZeroPowerAccelerationMultiplier(2.0);
                 follower.followPath(backwards);
             } else {
                 isDone = true;

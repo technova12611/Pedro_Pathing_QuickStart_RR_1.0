@@ -36,7 +36,7 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
     public static class Params {
         public double par0YTicks = -2441.9133801212834;//-2426.512456471011; y position of the first parallel encoder (in tick units)
         public double par1YTicks = 2467.6258;//2467.9133801212834;//2530.6258; // y position of the second parallel encoder (in tick units)
-        public double perpXTicks = -466.222994370873; //-566.222994370873; //-650.620899175634;//-560.3783221003024; // x position of the perpendicular encoder (in tick units)
+        public double perpXTicks = -570.222994370873; //-466.222994370873; //-566.222994370873; //-650.620899175634;//-560.3783221003024; // x position of the perpendicular encoder (in tick units)
     }
 
     public static Params PARAMS = new Params();
@@ -133,14 +133,17 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
         int par1PosDelta = par1PosVel.position - lastPar1Pos;
         int perpPosDelta = perpPosVel.position - lastPerpPos;
 
-        double headingDelta = (par0PosDelta - par1PosDelta) / (PARAMS.par0YTicks - PARAMS.par1YTicks);
+        double headingDelta0 = (par0PosDelta - par1PosDelta) / (PARAMS.par0YTicks - PARAMS.par1YTicks);
+        double headingDelta = headingDelta0;
 
-        if(headingCounter++ > 3) {
+        if(headingCounter++ > 5) {
             YawPitchRollAngles angles = imu.getRobotYawPitchRollAngles();
             Rotation2d heading = Rotation2d.exp(angles.getYaw(AngleUnit.RADIANS));
+//            Log.d("ThreeDeadWheelLocalizer_logger", String.format("Calc:%3.3f, IMU:%3.3f",Math.toDegrees(headingDelta),Math.toDegrees(heading.minus(lastHeading))));
             headingDelta = heading.minus(lastHeading);
             lastHeading = heading;
             headingCounter = 0;
+
         } else {
             lastHeading = lastHeading.plus(headingDelta);
         }
@@ -165,9 +168,9 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
                                 (PARAMS.par0YTicks * par1PosVel.velocity - PARAMS.par1YTicks * par0PosVel.velocity) / (PARAMS.par0YTicks - PARAMS.par1YTicks),
                         }).times(inPerTick),
                         new DualNum<Time>(new double[] {
-                                (PARAMS.perpXTicks / (PARAMS.par0YTicks - PARAMS.par1YTicks) * (par1PosDelta - par0PosDelta) + perpPosDelta),
+                                (-PARAMS.perpXTicks * headingDelta + perpPosDelta),
                                 (PARAMS.perpXTicks / (PARAMS.par0YTicks - PARAMS.par1YTicks) * (par1PosVel.velocity - par0PosVel.velocity) + perpPosVel.velocity),
-                        }).times(inPerTick*1.00)
+                        }).times(inPerTick*0.995)
                 ),
                 new DualNum<>(new double[] {
                         headingDelta,
@@ -185,6 +188,13 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
 //                par0PosDelta, par1PosDelta, Math.toDegrees(calcHeading), Math.toDegrees(headingDelta), calcAngularVelo, headingVel, calHeadingVel));
 
 //        Log.d("ThreeDeadWheelsOdometry_logger", "Processing time (ms): " + String.format("%3.2f", loopTimer.milliseconds()));
+
+        Log.d("Localizer_logger", "p0: " + lastPar0Pos +
+                " | p1: " + lastPar1Pos + " | perp: " + lastPerpPos  + " | delta_h: " + String.format("%3.3f", headingDelta)
+                + " | (delta_x: " + String.format("%3.3f", twist.value().line.x) + ", delta_y: " + String.format("%3.3f", twist.value().line.y) + ")"
+                + " | (pose_x: " + String.format("%3.3f", pose.position.x) + ", pose_y: " + String.format("%3.3f", pose.position.y) + ")"
+        );
+
         loopTimer.reset();
 
         return twist;

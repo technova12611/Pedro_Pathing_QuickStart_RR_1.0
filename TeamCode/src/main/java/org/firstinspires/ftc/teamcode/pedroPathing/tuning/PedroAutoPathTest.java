@@ -51,7 +51,7 @@ public final class PedroAutoPathTest extends LinearOpMode {
         PathBuilder builder = new PathBuilder();
 
         while(!isStarted() && !isStopRequested()) {
-            telemetry.addLine("Ready to start!! Blue Auto Test");
+            telemetry.addLine("Ready to start!! Blue Pedro Auto Test");
             telemetry.update();
         }
 
