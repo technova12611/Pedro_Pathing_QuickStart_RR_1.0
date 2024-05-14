@@ -41,6 +41,8 @@ import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Vector;
 import org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.tuning.PoseMessage;
+import org.firstinspires.ftc.teamcode.pedroPathing.util.DashboardPoseTracker;
+import org.firstinspires.ftc.teamcode.pedroPathing.util.Drawing;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.PIDFController;
 import org.firstinspires.ftc.teamcode.utils.hardware.cachinghardware.CachingDcMotorEX;
 
@@ -64,6 +66,8 @@ public class Follower {
     private List<DcMotorEx> motors;
 
     private DriveVectorScaler driveVectorScaler;
+
+    private DashboardPoseTracker dashboardPoseTracker;
 
     private PoseUpdater poseUpdater;
 
@@ -128,7 +132,7 @@ public class Follower {
     private final PIDFController smallDrivePIDF = new PIDFController(FollowerConstants.smallDrivePIDFCoefficients);
     private final PIDFController largeDrivePIDF = new PIDFController(FollowerConstants.largeDrivePIDFCoefficients);
 
-
+    public static boolean drawOnDashboard = true;
     public static boolean useTranslational = true;
     public static boolean useCentripetal = true;
     public static boolean useHeading = true;
@@ -195,6 +199,8 @@ public class Follower {
             accelerations.add(new Vector());
         }
         calculateAveragedVelocityAndAcceleration();
+
+        dashboardPoseTracker = new DashboardPoseTracker(poseUpdater);
 
         if(auto) {
             for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
@@ -432,6 +438,11 @@ public class Follower {
         double loop_timer_1 = loopTimer.milliseconds();
         ElapsedTime detail_timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         poseUpdater.update();
+
+        if (drawOnDashboard) {
+            dashboardPoseTracker.update();
+        }
+
         double odo_time = detail_timer.milliseconds();
         detail_timer.reset();
 
@@ -521,6 +532,18 @@ public class Follower {
                             reachedParametricPathEndTime = System.currentTimeMillis();
                         }
 
+                        Log.d("Follower_Logger_stop",
+                                String.format("time:%3.3f,timeout:%3.3f,velocity:%3.3f|%3.3f, distance:%3.3f|%3.3f, heading:%3.3f|%3.3f",
+                                        (System.currentTimeMillis() - reachedParametricPathEndTime)*1.0,
+                                        currentPath.getPathEndTimeoutConstraint(),
+                                        currentPath.getPathEndVelocityConstraint(),
+                                        poseUpdater.getVelocity().getMagnitude(),
+                                        MathFunctions.distance(poseUpdater.getPose(), closestPose),
+                                        currentPath.getPathEndTranslationalConstraint(),
+                                        MathFunctions.getSmallestAngleDifference(poseUpdater.getPose().heading.toDouble(), currentPath.getClosestPointHeadingGoal()),
+                                        currentPath.getPathEndHeadingConstraint()
+                                ));
+
                         if ((System.currentTimeMillis() - reachedParametricPathEndTime > currentPath.getPathEndTimeoutConstraint())
                                 || (poseUpdater.getVelocity().getMagnitude() < currentPath.getPathEndVelocityConstraint()
                                     && MathFunctions.distance(poseUpdater.getPose(), closestPose) < currentPath.getPathEndTranslationalConstraint()
@@ -550,42 +573,45 @@ public class Follower {
             }
         }
 
-        if(auto) {
-
-            // draw robot pose on the FTC dashboard
-            //------------------------------------------------------
-            Pose2d pose = poseUpdater.getPose();
-
-            poseHistory.add(pose);
-            if (POSE_HISTORY_LIMIT > -1 && poseHistory.size() > POSE_HISTORY_LIMIT) {
-                poseHistory.remove(0);
-            }
-
-            FtcDashboard dashboard = FtcDashboard.getInstance();
-            TelemetryPacket packet = new TelemetryPacket();
-            Canvas fieldOverlay = packet.fieldOverlay();
-            fieldOverlay.setStrokeWidth(1);
-
-            // Draw robot (current pose)
-            fieldOverlay.setStroke("#3F51B5");
-            drawRobot(fieldOverlay, poseUpdater.getPose());
-
-            // Draw pose history
-            drawPoseHistory(fieldOverlay, poseHistory);
-
-            if (currentPath != null) {
-                // Draw robot (target pose)
-                fieldOverlay.setStroke("#4CAF50");
-                Point lastControlPoint = currentPath.getLastControlPoint();
-                drawRobot(fieldOverlay, new Pose2d(lastControlPoint.getX(), lastControlPoint.getY(),
-                        currentPath.getPathEndHeadingConstraint()));
-
-                // Draw path
-                drawPath(fieldOverlay, currentPath, 2.0);
-            }
-
-            dashboard.sendTelemetryPacket(packet);
+        if(auto && drawOnDashboard) {
+            Drawing.drawDebug(this);
         }
+//        if(auto) {
+//
+//            // draw robot pose on the FTC dashboard
+//            //------------------------------------------------------
+//            Pose2d pose = poseUpdater.getPose();
+//
+//            poseHistory.add(pose);
+//            if (POSE_HISTORY_LIMIT > -1 && poseHistory.size() > POSE_HISTORY_LIMIT) {
+//                poseHistory.remove(0);
+//            }
+
+//            FtcDashboard dashboard = FtcDashboard.getInstance();
+//            TelemetryPacket packet = new TelemetryPacket();
+//            Canvas fieldOverlay = packet.fieldOverlay();
+//            fieldOverlay.setStrokeWidth(1);
+//
+//            // Draw robot (current pose)
+//            fieldOverlay.setStroke("#3F51B5");
+//            drawRobot(fieldOverlay, poseUpdater.getPose());
+//
+//            // Draw pose history
+//            drawPoseHistory(fieldOverlay, poseHistory);
+//
+//            if (currentPath != null) {
+//                // Draw robot (target pose)
+//                fieldOverlay.setStroke("#4CAF50");
+//                Point lastControlPoint = currentPath.getLastControlPoint();
+//                drawRobot(fieldOverlay, new Pose2d(lastControlPoint.getX(), lastControlPoint.getY(),
+//                        currentPath.getPathEndHeadingConstraint()));
+//
+//                // Draw path
+//                drawPath(fieldOverlay, currentPath, 2.0);
+//            }
+//
+//            dashboard.sendTelemetryPacket(packet);
+//        }
     }
 
     /**
@@ -991,6 +1017,10 @@ public class Follower {
         telemetry.addData("velocity magnitude", getVelocity().getMagnitude());
         telemetry.addData("velocity heading", getVelocity().getTheta());
         telemetry.update();
+
+        if (drawOnDashboard) {
+            Drawing.drawDebug(this);
+        }
     }
 
     /**
@@ -1003,38 +1033,34 @@ public class Follower {
         telemetryDebug(new MultipleTelemetry(telemetry));
     }
 
-    public static void drawPoseHistory(Canvas canvas, List<Pose2d> poseHistory) {
-        double[] xPoints = new double[poseHistory.size()];
-        double[] yPoints = new double[poseHistory.size()];
-        for (int i = 0; i < poseHistory.size(); i++) {
-            Pose2d pose = poseHistory.get(i);
-            xPoints[i] = pose.position.x;
-            yPoints[i] = pose.position.y;
+    /**
+     * This gets a Point from the current Path from a specified t-value.
+     *
+     * @return returns the Point.
+     */
+    public Point getPointFromPath(double t) {
+        if (currentPath != null) {
+            return currentPath.getPoint(t);
+        } else {
+            return null;
         }
-        canvas.strokePolyline(xPoints, yPoints);
     }
 
-    public static void drawPath(Canvas canvas, Path path, double resolution) {
-        int samples = (int) Math.ceil(path.length() / resolution);
-        double[] xPoints = new double[samples];
-        double[] yPoints = new double[samples];
-        for (int i = 0; i < samples; i++) {
-            double t = i / (double) (samples - 1);
-            Point pose = path.getPoint(t);
-            xPoints[i] = pose.getX();
-            yPoints[i] = pose.getY();
-        }
-        canvas.strokePolyline(xPoints, yPoints);
+    /**
+     * This returns the current Path the Follower is following. This can be null.
+     *
+     * @return returns the current Path.
+     */
+    public Path getCurrentPath() {
+        return currentPath;
     }
 
-    private static void drawRobot(Canvas c, Pose2d t) {
-
-        c.setStrokeWidth(1);
-        c.strokeCircle(t.position.x, t.position.y, ROBOT_RADIUS);
-
-        Vector2d halfv = t.heading.vec().times(0.5 * ROBOT_RADIUS);
-        Vector2d p1 = t.position.plus(halfv);
-        Vector2d p2 = p1.plus(halfv);
-        c.strokeLine(p1.x, p1.y, p2.x, p2.y);
+    /**
+     * This returns the pose tracker for the robot to draw on the Dashboard.
+     *
+     * @return returns the pose tracker
+     */
+    public DashboardPoseTracker getDashboardPoseTracker() {
+        return dashboardPoseTracker;
     }
 }

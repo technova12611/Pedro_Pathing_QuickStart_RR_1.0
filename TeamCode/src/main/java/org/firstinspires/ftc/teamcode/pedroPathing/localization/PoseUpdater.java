@@ -314,4 +314,13 @@ public class PoseUpdater {
     public double getNormalizedIMUHeading() {
         return MathFunctions.normalizeAngle(-imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
     }
+
+    /**
+     * This returns the Localizer.
+     *
+     * @return the Localizer
+     */
+    public Localizer getLocalizer() {
+        return localizer;
+    }
 }

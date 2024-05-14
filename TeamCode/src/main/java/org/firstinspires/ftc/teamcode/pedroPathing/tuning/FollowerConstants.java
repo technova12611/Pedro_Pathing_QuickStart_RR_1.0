@@ -29,7 +29,7 @@ public class FollowerConstants {
 
     // Large heading error PIDF coefficients
     public static CustomPIDFCoefficients largeHeadingPIDFCoefficients = new CustomPIDFCoefficients(
-            1.25,
+            1.5,
             0,
             0,
             0);
@@ -42,7 +42,7 @@ public class FollowerConstants {
 
     // Small heading error PIDF coefficients
     public static CustomPIDFCoefficients smallHeadingPIDFCoefficients = new CustomPIDFCoefficients(
-            5.75,
+            3.75,
             0,
             0.08,
             0);
@@ -52,7 +52,7 @@ public class FollowerConstants {
 
     // Large translational PIDF coefficients
     public static CustomPIDFCoefficients largeTranslationalPIDFCoefficients = new CustomPIDFCoefficients(
-            0.1,
+            0.15,
             0,
             0.005,
             0);
@@ -72,7 +72,7 @@ public class FollowerConstants {
 
     // Small translational PIDF coefficients
     public static CustomPIDFCoefficients smallTranslationalPIDFCoefficients = new CustomPIDFCoefficients(
-            0.275,
+            0.325,
             0,
             0.01,
             0);
@@ -103,9 +103,9 @@ public class FollowerConstants {
 
     // Small drive PIDF coefficients
     public static CustomPIDFCoefficients smallDrivePIDFCoefficients = new CustomPIDFCoefficients(
-            0.02,
+            0.0125,
             0,
-            0.000005,
+            0.00003,
             0);
 
     // Feed forward constant added on to the small drive PIDF
@@ -141,17 +141,17 @@ public class FollowerConstants {
     // When the robot is at the end of its current Path or PathChain and the velocity goes below
     // this value, then end the Path. This is in inches/second.
     // This can be custom set for each Path.
-    public static double pathEndVelocityConstraint = 0.1;
+    public static double pathEndVelocityConstraint = 3.1;
 
     // When the robot is at the end of its current Path or PathChain and the translational error
     // goes below this value, then end the Path. This is in inches.
     // This can be custom set for each Path.
-    public static double pathEndTranslationalConstraint = 0.1;
+    public static double pathEndTranslationalConstraint = 0.5;
 
     // When the robot is at the end of its current Path or PathChain and the heading error goes
     // below this value, then end the Path. This is in radians.
     // This can be custom set for each Path.
-    public static double pathEndHeadingConstraint = 0.007;
+    public static double pathEndHeadingConstraint = 0.03;
 
     // When the t-value of the closest point to the robot on the Path is greater than this value,
     // then the Path is considered at its end.
@@ -161,7 +161,7 @@ public class FollowerConstants {
     // When the Path is considered at its end parametrically, then the Follower has this many
     // seconds to further correct by default.
     // This can be custom set for each Path.
-    public static double pathEndTimeoutConstraint = 1.5;
+    public static double pathEndTimeoutConstraint = 250.0;
 
     // This is how many steps the BezierCurve class uses to approximate the length of a BezierCurve.
     public static int APPROXIMATION_STEPS = 1000;
@@ -175,7 +175,7 @@ public class FollowerConstants {
     // This is the number of times the velocity is recorded for averaging when approximating a first
     // and second derivative for on the fly centripetal correction. The velocity is calculated using
     // half of this number of samples, and the acceleration uses all of this number of samples.
-    public static int AVERAGED_VELOCITY_SAMPLE_NUMBER = 8;
+    public static int AVERAGED_VELOCITY_SAMPLE_NUMBER = 208;
 
     // This is the number of steps the binary search for closest point uses. More steps is more
     // accuracy, and this increases at an exponential rate. However, more steps also does take more

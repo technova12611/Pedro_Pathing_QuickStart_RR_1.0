@@ -49,23 +49,23 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
         Follower follower = new Follower(hardwareMap);
         follower.setStartingPose(new Pose2d(14.5, 62, Math.toRadians(-90)));
 
-        Point backdrop = new Point(49.0,36.0, Point.CARTESIAN);
-        Point cycle = new Point(48.0,31.5, Point.CARTESIAN);
-        Point cycle1 = new Point(45.0,31.5, Point.CARTESIAN);
+        Point backdrop = new Point(48.0,36.0, Point.CARTESIAN);
+        Point cycle = new Point(48.0,30.0, Point.CARTESIAN);
+        Point cycle1 = new Point(45.0,30.0, Point.CARTESIAN);
 
         Path purplePath = new Path(
                 new BezierCurve(new Point(14.5, 62.0, Point.CARTESIAN),
-                        new Point(30, 24.0, Point.CARTESIAN)));
+                        new Point(32.0, 23.0, Point.CARTESIAN)));
 
         purplePath.setLinearHeadingInterpolation(Math.toRadians(-90), Math.toRadians(180));
-        purplePath.setZeroPowerAccelerationMultiplier(3.0);
+        purplePath.setZeroPowerAccelerationMultiplier(3.5);
 
         sched.addAction(
                 new SequentialAction(
                         new DrivePoseLoggingAction(follower, "purple_path_begin", true),
-                        new FollowPathAction(follower, purplePath, true),
+                        new FollowPathAction(follower, purplePath, false),
                         new DrivePoseLoggingAction(follower, "purple_path_end"),
-                        new SleepAction(0.75)
+                        new SleepAction(0.5)
                 ));
         sched.run();
 
@@ -77,22 +77,22 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
         // drop yellow
 //        yellowPath.setLinearHeadingInterpolation(currentPose.heading.toDouble(), Math.toRadians(180));
         yellowPath.setConstantHeadingInterpolation(Math.toRadians(180));
-        yellowPath.setZeroPowerAccelerationMultiplier(2.05);
+        yellowPath.setZeroPowerAccelerationMultiplier(2.75);
         //yellowPath.setReversed(true);
 
-//        follower.update();
-//        sched.addAction(
-//                new SequentialAction(
-//                        new DrivePoseLoggingAction(follower, "yellow_path_begin"),
-//                        new FollowPathAction(follower, yellowPath),
-//                        new DrivePoseLoggingAction(follower, "yellow_path_end"),
-//                        new SleepAction(1.0)
-//                ));
-//        sched.run();
+        follower.update();
+        sched.addAction(
+                new SequentialAction(
+                        new DrivePoseLoggingAction(follower, "yellow_path_begin"),
+                        new FollowPathAction(follower, yellowPath),
+                        new DrivePoseLoggingAction(follower, "yellow_path_end"),
+                        new SleepAction(1.25)
+                ));
+        sched.run();
 
-        int cycleCount = 5;
+        int cycleCount = 0;
 
-        double y_position0 = 12.0;
+        double y_position0 = 11.0;
         double y_position = 12.0;
         while(cycleCount++ < 3) {
 
@@ -100,22 +100,23 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
             Pose2d backdrop0 = follower.getPose();
 
             if(cycleCount == 2) {
-                y_position0 = 12.5;
+                y_position0 = 12.0;
                 y_position = 12.5;
-                follower.setPose(new Pose2d(backdrop0.position.x, backdrop0.position.y-1.0,backdrop0.heading.toDouble()));
+                follower.setPose(new Pose2d(backdrop0.position.x, backdrop0.position.y-0.5,backdrop0.heading.toDouble()));
             }
             if(cycleCount == 3) {
-                y_position0 = 13.0;
+                y_position0 = 12.5;
                 y_position = 13.0;
-                follower.setPose(new Pose2d(backdrop0.position.x, backdrop0.position.y-1.0,backdrop0.heading.toDouble()));
+                follower.setPose(new Pose2d(backdrop0.position.x, backdrop0.position.y-1.5,backdrop0.heading.toDouble()));
             }
 
             Point stagePoint = new Point(backdrop0.position.x, backdrop0.position.y, Point.CARTESIAN);
 
             Path toStack = new Path(new BezierCurve(stagePoint,
                     new Point(45, y_position0, Point.CARTESIAN),
-                    new Point(12, y_position0, Point.CARTESIAN),
-                    new Point(-24, y_position0, Point.CARTESIAN),
+                    new Point(24, y_position, Point.CARTESIAN),
+//                    new Point(-0, y_position, Point.CARTESIAN)));
+                    new Point(-24, y_position, Point.CARTESIAN),
                     new Point(-54, y_position, Point.CARTESIAN)));
 
             toStack.setZeroPowerAccelerationMultiplier(4.5);
@@ -133,14 +134,15 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
             Pose2d stack0 = follower.getPose();
             Point stackPoint = new Point(stack0.position.x, stack0.position.y, Point.CARTESIAN);
             Path toStage = new Path(new BezierCurve(stackPoint,
-                    new Point(-24, 12.0, Point.CARTESIAN),
-                    new Point(33, 12.0, Point.CARTESIAN),
+                    new Point(8, 12.0, Point.CARTESIAN),
+                    new Point(32,
+                            12.0, Point.CARTESIAN),
 //                    cycle1,
                     cycle));
 
             toStage.setReversed(true);
             toStage.setConstantHeadingInterpolation(Math.toRadians(180));
-            toStage.setZeroPowerAccelerationMultiplier(2.25);
+            toStage.setZeroPowerAccelerationMultiplier(1.75);
 
             // drop yellow
             sched.addAction(
@@ -148,23 +150,18 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
                             new DrivePoseLoggingAction(follower, "stage_path_begin"),
                             new FollowPathAction(follower, toStage),
                             new DrivePoseLoggingAction(follower, "stage_path_end"),
-                            new SleepAction(1.2)
+                            new SleepAction(1.25),
+                            new DrivePoseLoggingAction(follower, "cycle_end")
                     ));
             sched.run();
         }
-
-        sched.addAction(
-                new SequentialAction(
-                        new SleepAction(2.0)
-                ));
-        sched.run();
 
         boolean firstTime = true;
         Pose2d endPose = follower.getPose();
         while(!isStopRequested() ) {
             if(sched.isEmpty()) {
-                follower.update();
                 if(firstTime) {
+                    follower.update();
                     endPose = follower.getPose();
                     firstTime = false;
                     Log.d("Drive_logger", "End drive pose: " + new PoseMessage(endPose));
