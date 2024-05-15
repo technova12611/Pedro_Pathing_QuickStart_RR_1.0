@@ -42,8 +42,8 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.pathing.geometry.Pose;
 import org.firstinspires.ftc.teamcode.pathing.geometry.Vector2D;
-import org.firstinspires.ftc.teamcode.roadrunner.LazyImu;
 import org.firstinspires.ftc.teamcode.roadrunner.Localizer;
+import com.acmerobotics.roadrunner.ftc.LazyImu;
 import org.firstinspires.ftc.teamcode.roadrunner.ThreeDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.roadrunner.messages.PoseMessage;
 import org.firstinspires.ftc.teamcode.roadrunner.TwoDeadWheelLocalizer;
@@ -130,6 +130,7 @@ public final class MecanumDrive {
 //    private final LazyImu lazyImu;
 
     public final IMU imu;
+    public final LazyImu lazyImu;
 
     public final Localizer localizer;
     public Pose2d pose;
@@ -170,7 +171,6 @@ public final class MecanumDrive {
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        LazyImu lazyImu;
         lazyImu = new LazyImu(hardwareMap, "imu", new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.LEFT, RevHubOrientationOnRobot.UsbFacingDirection.UP));
         imu = lazyImu.get();

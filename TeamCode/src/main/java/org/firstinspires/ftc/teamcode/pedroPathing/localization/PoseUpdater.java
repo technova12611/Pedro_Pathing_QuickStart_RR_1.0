@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.MathFunctions;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Vector;
-import org.firstinspires.ftc.teamcode.roadrunner.LazyImu;
+import com.acmerobotics.roadrunner.ftc.LazyImu;
 
 /**
  * This is the PoseUpdater class. This class handles getting pose data from the localizer and returning
