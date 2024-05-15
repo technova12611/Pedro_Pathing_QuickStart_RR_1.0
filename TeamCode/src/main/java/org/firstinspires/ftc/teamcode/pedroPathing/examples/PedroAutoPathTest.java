@@ -1,6 +1,4 @@
-package org.firstinspires.ftc.teamcode.pedroPathing.tuning;
-
-import android.util.Log;
+package org.firstinspires.ftc.teamcode.pedroPathing.examples;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -8,10 +6,8 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.follower.FollowPathAction;
 import org.firstinspires.ftc.teamcode.pedroPathing.follower.Follower;
@@ -21,6 +17,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.PathBuilder;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.AutoActionScheduler;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.DrivePoseLoggingAction;
+import org.firstinspires.ftc.teamcode.pedroPathing.util.PoseMessage;
 
 @Config
 @Autonomous(name = "Test Blue Pedro",group = "Test")
