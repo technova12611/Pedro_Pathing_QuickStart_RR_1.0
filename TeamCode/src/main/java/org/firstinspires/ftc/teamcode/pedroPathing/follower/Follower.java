@@ -119,10 +119,6 @@ public class Follower {
     public Vector centripetalVector;
     public Vector correctiveVector;
 
-    public static int POSE_HISTORY_LIMIT = 100;
-    private final ArrayList<Pose2d> poseHistory = new ArrayList<>();
-    private static final double ROBOT_RADIUS = 9;
-
     private final PIDFController smallTranslationalPIDF = new PIDFController(FollowerConstants.smallTranslationalPIDFCoefficients);
     private final PIDFController smallTranslationalIntegral = new PIDFController(FollowerConstants.smallTranslationalIntegral);
     private final PIDFController largeTranslationalPIDF = new PIDFController(FollowerConstants.largeTranslationalPIDFCoefficients);
@@ -137,6 +133,8 @@ public class Follower {
     public static boolean useCentripetal = true;
     public static boolean useHeading = true;
     public static boolean useDrive = true;
+
+    public static boolean logDebug = true;
 
     /**
      * This creates a new Follower given a HardwareMap.
@@ -495,21 +493,23 @@ public class Follower {
                     double power_set_timer = detail_timer.milliseconds();
                     detail_timer.reset();
 
-                    Log.d("Follower_logger", "Loop time: " + String.format("%3.1f", loopTimer.milliseconds()) +
-                            " | loop timer 1: " + String.format("%3.1f", loop_timer_1) +
-//                                    " | vec calc time: " + String.format("%3.1f", vec_calc_timer) +
-//                            " | odo time: " + String.format("%3.1f", odo_time) +
-//                            " | path_calc time: " + String.format("%3.1f", path_calc_timer) +
-//                            " | power_calc time: " + String.format("%3.1f", power_calc_timer) +
-                            " | power_set time: " + String.format("%3.1f", power_set_timer) +
-                            " | Robot Pose: " + new PoseMessage(poseUpdater.getPose()) +
-                            " | Closest Pose: " + new PoseMessage(closestPose) + " | " +
-                            String.format("lf:%.2f,lb:%.2f,rb:%.2f,rf:%.2f",
-                                    drivePowers[0],drivePowers[1],drivePowers[2],drivePowers[3])
-                    //        + " | T: " + transCorrectiveVector
-                    //        + " | H:" + headingVector
-                    //        + " | D:" + driveVector
-                    );
+                    if(logDebug) {
+                        Log.d("Follower_logger", "Loop time: " + String.format("%3.1f", loopTimer.milliseconds()) +
+                                        " | loop timer 1: " + String.format("%3.1f", loop_timer_1) +
+//                                        " | vec calc time: " + String.format("%3.1f", vec_calc_timer) +
+                                        " | odo time: " + String.format("%3.1f", odo_time) +
+//                                        " | path_calc time: " + String.format("%3.1f", path_calc_timer) +
+//                                        " | power_calc time: " + String.format("%3.1f", power_calc_timer) +
+                                        " | power_set time: " + String.format("%3.1f", power_set_timer) +
+                                        " | Robot Pose: " + new PoseMessage(poseUpdater.getPose()) +
+                                        " | Closest Pose: " + new PoseMessage(closestPose) + " | "
+                                        + String.format("lf:%.2f,lb:%.2f,rb:%.2f,rf:%.2f",
+                                                 drivePowers[0],drivePowers[1],drivePowers[2],drivePowers[3])
+//                                        + " | T: " + transCorrectiveVector
+//                                        + " | H:" + headingVector
+//                                        + " | D:" + driveVector
+                        );
+                    }
 
                     loopTimer.reset();
                 }
@@ -532,17 +532,19 @@ public class Follower {
                             reachedParametricPathEndTime = System.currentTimeMillis();
                         }
 
-                        Log.d("Follower_Logger_stop",
-                                String.format("time:%3.3f,timeout:%3.3f,velocity:%3.3f|%3.3f, distance:%3.3f|%3.3f, heading:%3.3f|%3.3f",
-                                        (System.currentTimeMillis() - reachedParametricPathEndTime)*1.0,
-                                        currentPath.getPathEndTimeoutConstraint(),
-                                        currentPath.getPathEndVelocityConstraint(),
-                                        poseUpdater.getVelocity().getMagnitude(),
-                                        MathFunctions.distance(poseUpdater.getPose(), closestPose),
-                                        currentPath.getPathEndTranslationalConstraint(),
-                                        MathFunctions.getSmallestAngleDifference(poseUpdater.getPose().heading.toDouble(), currentPath.getClosestPointHeadingGoal()),
-                                        currentPath.getPathEndHeadingConstraint()
-                                ));
+                        if(logDebug) {
+                            Log.d("Follower_Logger_stop",
+                                    String.format("time:%3.3f,timeout:%3.3f,velocity:%3.3f|%3.3f, distance:%3.3f|%3.3f, heading:%3.3f|%3.3f",
+                                            (System.currentTimeMillis() - reachedParametricPathEndTime) * 1.0,
+                                            currentPath.getPathEndTimeoutConstraint(),
+                                            currentPath.getPathEndVelocityConstraint(),
+                                            poseUpdater.getVelocity().getMagnitude(),
+                                            MathFunctions.distance(poseUpdater.getPose(), closestPose),
+                                            currentPath.getPathEndTranslationalConstraint(),
+                                            MathFunctions.getSmallestAngleDifference(poseUpdater.getPose().heading.toDouble(), currentPath.getClosestPointHeadingGoal()),
+                                            currentPath.getPathEndHeadingConstraint()
+                                    ));
+                        }
 
                         if ((System.currentTimeMillis() - reachedParametricPathEndTime > currentPath.getPathEndTimeoutConstraint())
                                 || (poseUpdater.getVelocity().getMagnitude() < currentPath.getPathEndVelocityConstraint()
@@ -576,42 +578,6 @@ public class Follower {
         if(auto && drawOnDashboard) {
             Drawing.drawDebug(this);
         }
-//        if(auto) {
-//
-//            // draw robot pose on the FTC dashboard
-//            //------------------------------------------------------
-//            Pose2d pose = poseUpdater.getPose();
-//
-//            poseHistory.add(pose);
-//            if (POSE_HISTORY_LIMIT > -1 && poseHistory.size() > POSE_HISTORY_LIMIT) {
-//                poseHistory.remove(0);
-//            }
-
-//            FtcDashboard dashboard = FtcDashboard.getInstance();
-//            TelemetryPacket packet = new TelemetryPacket();
-//            Canvas fieldOverlay = packet.fieldOverlay();
-//            fieldOverlay.setStrokeWidth(1);
-//
-//            // Draw robot (current pose)
-//            fieldOverlay.setStroke("#3F51B5");
-//            drawRobot(fieldOverlay, poseUpdater.getPose());
-//
-//            // Draw pose history
-//            drawPoseHistory(fieldOverlay, poseHistory);
-//
-//            if (currentPath != null) {
-//                // Draw robot (target pose)
-//                fieldOverlay.setStroke("#4CAF50");
-//                Point lastControlPoint = currentPath.getLastControlPoint();
-//                drawRobot(fieldOverlay, new Pose2d(lastControlPoint.getX(), lastControlPoint.getY(),
-//                        currentPath.getPathEndHeadingConstraint()));
-//
-//                // Draw path
-//                drawPath(fieldOverlay, currentPath, 2.0);
-//            }
-//
-//            dashboard.sendTelemetryPacket(packet);
-//        }
     }
 
     /**
@@ -778,10 +744,6 @@ public class Follower {
         Vector lateralVelocityError = new Vector(lateralVelocityGoal - lateralVelocityZeroPowerDecay - lateralVelocity, lateralHeadingVector.getTheta());
         Vector velocityErrorVector = MathFunctions.addVectors(forwardVelocityError, lateralVelocityError);
 
-        //Log.d("Follower_logger", "forwardVelocityGoal:" + forwardVelocityGoal + " | forwardVelocityZeroPowerDecay:" + forwardVelocityZeroPowerDecay + " | forwardVelocity:" + forwardVelocity
-        //        + " | lateralVelocityGoal:" + lateralVelocityGoal + " | lateralVelocityZeroPowerDecay: " + lateralVelocityZeroPowerDecay + " | lateralVelocity:" + lateralVelocity);
-        //Log.d("Follower_logger", "distanceToGoalVector:" + distanceToGoalVector + " | velocity:" + velocity + " | forwardVelocityError:" + forwardVelocityError
-        //        + " | lateralVelocityError:" + lateralVelocityError + " | velocityErrorVector:" + velocityErrorVector);
 //        Log.d("Follower_logger",
 //                "forwardDistanceToGoal:" + forwardDistanceToGoal
 //                + " | forwardVelocityGoal:" + forwardVelocityGoal

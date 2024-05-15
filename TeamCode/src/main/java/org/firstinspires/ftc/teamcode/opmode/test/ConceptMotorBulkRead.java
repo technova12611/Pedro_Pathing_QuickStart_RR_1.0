@@ -102,9 +102,9 @@ public class ConceptMotorBulkRead extends LinearOpMode {
         int cycles;
 
         // Important Step 1:  Make sure you use DcMotorEx when you instantiate your motors.
-        m1 = hardwareMap.get(DcMotorEx.class, "intake_for_perp");  // Configure the robot to use these 4 motor names,
-        m2 = hardwareMap.get(DcMotorEx.class, "par");  // or change these strings to match your existing Robot Configuration.
-        m3 = hardwareMap.get(DcMotorEx.class, "rightBack");
+        m2 = hardwareMap.get(DcMotorEx.class, "intake_for_perp");  // Configure the robot to use these 4 motor names,
+//        m2 = hardwareMap.get(DcMotorEx.class, "par");  // or change these strings to match your existing Robot Configuration.
+//        m3 = hardwareMap.get(DcMotorEx.class, "rightBack");
 
         // Important Step 2: Get access to a list of Expansion Hub Modules to enable changing caching methods.
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
@@ -128,13 +128,13 @@ public class ConceptMotorBulkRead extends LinearOpMode {
         timer.reset();
         cycles = 0;
         while (opModeIsActive() && (cycles++ < TEST_CYCLES)) {
-            e1 = m1.getCurrentPosition();
+  //          e1 = m1.getCurrentPosition();
             e2 = m2.getCurrentPosition();
-            e3 = m3.getCurrentPosition();
+  //          e3 = m3.getCurrentPosition();
 
-            v1 = m1.getVelocity();
+ //           v1 = m1.getVelocity();
             v2 = m2.getVelocity();
-            v3 = m3.getVelocity();
+ //           v3 = m3.getVelocity();
 
             // Put Control loop action code here.
 
@@ -156,13 +156,13 @@ public class ConceptMotorBulkRead extends LinearOpMode {
         timer.reset();
         cycles = 0;
         while (opModeIsActive() && (cycles++ < TEST_CYCLES)) {
-            e1 = m1.getCurrentPosition();  // Uses 1 bulk-read for all 4 encoder/velocity reads,
+//            e1 = m1.getCurrentPosition();  // Uses 1 bulk-read for all 4 encoder/velocity reads,
             e2 = m2.getCurrentPosition();  // but don't do any `get` operations more than once per cycle.
-            e3 = m3.getCurrentPosition();
+//            e3 = m3.getCurrentPosition();
 
-            v1 = m1.getVelocity();
+//            v1 = m1.getVelocity();
             v2 = m2.getVelocity();
-            v3 = m3.getVelocity();
+//            v3 = m3.getVelocity();
             // Put Control loop action code here.
 
         }
@@ -190,13 +190,13 @@ public class ConceptMotorBulkRead extends LinearOpMode {
                 module.clearBulkCache();
             }
 
-            e1 = m1.getCurrentPosition();   // Uses 1 bulk-read to obtain ALL the motor data
+//            e1 = m1.getCurrentPosition();   // Uses 1 bulk-read to obtain ALL the motor data
             e2 = m2.getCurrentPosition();   // There is no penalty for doing more `get` operations in this cycle,
-            e3 = m3.getCurrentPosition();
+//            e3 = m3.getCurrentPosition();
 
-            v1 = m1.getVelocity();
+//            v1 = m1.getVelocity();
             v2 = m2.getVelocity();
-            v3 = m3.getVelocity();
+//            v3 = m3.getVelocity();
 
             // Put Control loop action code here.
 

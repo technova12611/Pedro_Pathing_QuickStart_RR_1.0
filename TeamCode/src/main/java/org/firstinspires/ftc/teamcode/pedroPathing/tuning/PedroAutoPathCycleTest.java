@@ -77,7 +77,7 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
         // drop yellow
 //        yellowPath.setLinearHeadingInterpolation(currentPose.heading.toDouble(), Math.toRadians(180));
         yellowPath.setConstantHeadingInterpolation(Math.toRadians(180));
-        yellowPath.setZeroPowerAccelerationMultiplier(2.75);
+        yellowPath.setZeroPowerAccelerationMultiplier(2.5);
         //yellowPath.setReversed(true);
 
         follower.update();
@@ -90,7 +90,7 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
                 ));
         sched.run();
 
-        int cycleCount = 0;
+        int cycleCount = 3;
 
         double y_position0 = 11.0;
         double y_position = 12.0;
