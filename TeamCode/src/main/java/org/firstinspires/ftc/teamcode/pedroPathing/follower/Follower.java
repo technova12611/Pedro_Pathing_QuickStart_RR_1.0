@@ -40,7 +40,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.util.DashboardPoseTracker;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.Drawing;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.PIDFController;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.PoseMessage;
-import org.firstinspires.ftc.teamcode.utils.hardware.cachinghardware.CachingDcMotorEX;
+import org.firstinspires.ftc.teamcode.pedroPathing.util.cachinghardware.CachingDcMotorEX;
 
 import java.util.ArrayList;
 import java.util.Arrays;
