@@ -64,6 +64,7 @@ public class PoseUpdater {
         lazyImu = new LazyImu(hardwareMap, "imu", new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.LEFT, RevHubOrientationOnRobot.UsbFacingDirection.UP));
         imu = lazyImu.get();
+        imu.resetYaw();
         localizer = new ThreeDeadWheelLocalizer(hardwareMap, imu, inPerTick);
     }
 

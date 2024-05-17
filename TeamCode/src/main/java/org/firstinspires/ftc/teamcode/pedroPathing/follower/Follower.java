@@ -694,7 +694,7 @@ public class Follower {
         if (Math.abs(driveError) < drivePIDFSwitch) {
             smallDrivePIDF.updateError(driveError);
             driveVector = new Vector(MathFunctions.clamp(smallDrivePIDF.runPIDF() + smallDrivePIDFFeedForward * MathFunctions.getSign(driveError), -1, 1), currentPath.getClosestPointTangentVector().getTheta());
-//            Log.d("Follower_logger", "SmallPID: " + driveVector + " | velo error: " + driveError);
+            Log.d("Follower_logger", "SmallPID: " + driveVector + " | velo error: " + driveError);
             return MathFunctions.copyVector(driveVector);
         }
 

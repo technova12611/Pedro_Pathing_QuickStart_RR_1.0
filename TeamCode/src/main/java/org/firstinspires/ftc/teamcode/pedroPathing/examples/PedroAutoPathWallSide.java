@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.follower.Follower;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.BezierCurve;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.BezierLine;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Path;
+import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.PathBuilder;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.AutoActionScheduler;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.DrivePoseLoggingAction;
@@ -24,12 +25,8 @@ import org.firstinspires.ftc.teamcode.pedroPathing.util.PoseMessage;
 
 
 @Config
-@Autonomous(name = "Blue Pedro Cycle Test",group = "Test")
-public final class PedroAutoPathCycleTest extends LinearOpMode {
-    public static Pose2d starting = new Pose2d(14.5, -62.0, Math.PI/2);
-    public static Pose2d backdrop = new Pose2d(48.5, -36.0, Math.PI);
-    public static Pose2d spike = new Pose2d(28.5, -24.5, Math.PI);
-    public static Pose2d parking = new Pose2d(52.0, -60.0, Math.PI);
+@Autonomous(name = "Blue Pedro Wall side Test",group = "Test")
+public final class PedroAutoPathWallSide extends LinearOpMode {
 
     protected AutoActionScheduler sched;
 
@@ -49,8 +46,8 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
         Follower follower = new Follower(hardwareMap);
         follower.setStartingPose(new Pose2d(14.5, 62, Math.toRadians(-90)));
 
-        Point backdrop = new Point(48.0,36.0, Point.CARTESIAN);
-        Point cycle = new Point(48.0,30.0, Point.CARTESIAN);
+        Point backdrop = new Point(48.0,32.0, Point.CARTESIAN);
+        Point cycle = new Point(48.0,40.0, Point.CARTESIAN);
         Point cycle1 = new Point(45.0,30.0, Point.CARTESIAN);
 
         Path purplePath = new Path(
@@ -58,7 +55,7 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
                         new Point(32.0, 23.0, Point.CARTESIAN)));
 
         purplePath.setLinearHeadingInterpolation(Math.toRadians(-90), Math.toRadians(180));
-        purplePath.setZeroPowerAccelerationMultiplier(3.5);
+        purplePath.setZeroPowerAccelerationMultiplier(2.25);
 
         sched.addAction(
                 new SequentialAction(
@@ -77,7 +74,7 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
         // drop yellow
 //        yellowPath.setLinearHeadingInterpolation(currentPose.heading.toDouble(), Math.toRadians(180));
         yellowPath.setConstantHeadingInterpolation(Math.toRadians(180));
-        yellowPath.setZeroPowerAccelerationMultiplier(2.5);
+        yellowPath.setZeroPowerAccelerationMultiplier(2.75);
         //yellowPath.setReversed(true);
 
         follower.update();
@@ -92,65 +89,101 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
 
         int cycleCount = 0;
 
-        double y_position0 = 11.0;
-        double y_position = 12.0;
-        while(cycleCount++ < 3) {
+        double y_position0 = 58.5;
+        double y_position = 43.0;
+
+        while(cycleCount++ < 2) {
 
             // cycle
             Pose2d backdrop0 = follower.getPose();
 
             if(cycleCount == 2) {
-                y_position0 = 12.0;
-                y_position = 12.5;
+                y_position0 = 59.0;
+                //y_position = 47.5;
                 follower.setPose(new Pose2d(backdrop0.position.x, backdrop0.position.y-0.5,backdrop0.heading.toDouble()));
             }
-            if(cycleCount == 3) {
-                y_position0 = 12.5;
-                y_position = 13.0;
-                follower.setPose(new Pose2d(backdrop0.position.x, backdrop0.position.y-1.5,backdrop0.heading.toDouble()));
-            }
 
-            Point stagePoint = new Point(backdrop0.position.x, backdrop0.position.y, Point.CARTESIAN);
+            Point stagePoint = new Point(backdrop0);
 
-            Path toStack = new Path(new BezierCurve(stagePoint,
-                    new Point(45, y_position0, Point.CARTESIAN),
-                    new Point(24, y_position, Point.CARTESIAN),
-//                    new Point(-0, y_position, Point.CARTESIAN)));
-                    new Point(-24, y_position, Point.CARTESIAN),
-                    new Point(-54, y_position, Point.CARTESIAN)));
+            Path toStack0 = new Path(new BezierLine(stagePoint,
+                    new Point(30, y_position0, Point.CARTESIAN))
+                    );
+            toStack0.setConstantHeadingInterpolation(Math.PI);
+            toStack0.setZeroPowerAccelerationMultiplier(3.75);
 
-            toStack.setZeroPowerAccelerationMultiplier(4.5);
-            toStack.setConstantHeadingInterpolation(Math.PI);
+            sched.addAction(
+                    new SequentialAction(
+                            new DrivePoseLoggingAction(follower, "stack0_path_begin"),
+                            new FollowPathAction(follower, toStack0),
+                            new DrivePoseLoggingAction(follower, "stack0_path_end")
+                    ));
+
+            sched.run();
+
+            Path toStack1 = new Path(new BezierCurve(
+                    new Point(follower.getPose()),
+                    new Point(0, y_position0, Point.CARTESIAN),
+                    new Point(-16, y_position0, Point.CARTESIAN)));
+
+            toStack1.setZeroPowerAccelerationMultiplier(3.5);
+            toStack1.setConstantHeadingInterpolation(Math.PI);
+
+            Path toStack2 = new Path(new BezierCurve(
+                    new Point(-16, y_position0, Point.CARTESIAN),
+                    new Point(-38, y_position0, Point.CARTESIAN),
+                    new Point(-45, y_position0, Point.CARTESIAN),
+                    new Point(-52, y_position, Point.CARTESIAN)));
+
+            toStack2.setZeroPowerAccelerationMultiplier(4.25);
+            toStack2.setLinearHeadingInterpolation(Math.PI, Math.toRadians(205));
+
+            PathBuilder builder = new PathBuilder();
+            builder.addPath(toStack0).addPath(toStack1).addPath(toStack2);
 
             sched.addAction(
                     new SequentialAction(
                             new DrivePoseLoggingAction(follower, "stack_path_begin"),
-                            new FollowPathAction(follower, toStack),
+                            new FollowPathAction(follower,  builder.build()),
                             new DrivePoseLoggingAction(follower, "stack_path_end"),
-                            new SleepAction(1.5)
+                            new SleepAction(1.75)
                     ));
             sched.run();
 
+            follower.update();
             Pose2d stack0 = follower.getPose();
-            Point stackPoint = new Point(stack0.position.x, stack0.position.y, Point.CARTESIAN);
-            Path toStage = new Path(new BezierCurve(stackPoint,
-                    new Point(8, 12.0, Point.CARTESIAN),
-                    new Point(32,
-                            12.0, Point.CARTESIAN),
-//                    cycle1,
+            Path toStage0 = new Path(new BezierLine( new Point(stack0),
+                    new Point(-40, y_position0, Point.CARTESIAN)
+                    ));
+
+            toStage0.setReversed(true);
+            toStage0.setZeroPowerAccelerationMultiplier(2.75);
+            toStage0.setLinearHeadingInterpolation(stack0.heading.toDouble(), Math.PI);
+
+            sched.addAction(
+                    new SequentialAction(
+                            new DrivePoseLoggingAction(follower, "stage0_path_begin"),
+                            new FollowPathAction(follower, toStage0),
+                            new DrivePoseLoggingAction(follower, "stage0_path_end")
+                    ));
+            sched.run();
+
+            follower.update();
+            Path toStage1 = new Path(new BezierCurve(new Point(follower.getPose()),
+                    new Point(8, y_position0, Point.CARTESIAN),
+                    new Point(32,y_position0, Point.CARTESIAN),
                     cycle));
 
-            toStage.setReversed(true);
-            toStage.setConstantHeadingInterpolation(Math.toRadians(180));
-            toStage.setZeroPowerAccelerationMultiplier(2.25);
+            toStage1.setReversed(true);
+            toStage1.setConstantHeadingInterpolation(Math.toRadians(180));
+            toStage1.setZeroPowerAccelerationMultiplier(2.25);
 
             // drop yellow
             sched.addAction(
                     new SequentialAction(
-                            new DrivePoseLoggingAction(follower, "stage_path_begin"),
-                            new FollowPathAction(follower, toStage),
-                            new DrivePoseLoggingAction(follower, "stage_path_end"),
-                            new SleepAction(1.25),
+                            new DrivePoseLoggingAction(follower, "stage1_path_begin"),
+                            new FollowPathAction(follower, toStage1),
+                            new DrivePoseLoggingAction(follower, "stage1_path_end"),
+                            new SleepAction(1.75),
                             new DrivePoseLoggingAction(follower, "cycle_end")
                     ));
             sched.run();

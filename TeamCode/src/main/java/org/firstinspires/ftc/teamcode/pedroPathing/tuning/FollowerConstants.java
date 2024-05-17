@@ -42,7 +42,7 @@ public class FollowerConstants {
 
     // Small heading error PIDF coefficients
     public static CustomPIDFCoefficients smallHeadingPIDFCoefficients = new CustomPIDFCoefficients(
-            3.75,
+            3.25,
             0,
             0.08,
             0);
@@ -90,9 +90,9 @@ public class FollowerConstants {
 
     // Large drive PIDF coefficients
     public static CustomPIDFCoefficients largeDrivePIDFCoefficients = new CustomPIDFCoefficients(
-            0.025,
+            0.015,
             0,
-            0.00001,
+            0.0005,
             0);
 
     // Feed forward constant added on to the large drive PIDF
@@ -103,9 +103,9 @@ public class FollowerConstants {
 
     // Small drive PIDF coefficients
     public static CustomPIDFCoefficients smallDrivePIDFCoefficients = new CustomPIDFCoefficients(
-            0.0125,
+            0.0225,
             0,
-            0.00003,
+            0.0005,
             0);
 
     // Feed forward constant added on to the small drive PIDF
@@ -141,12 +141,12 @@ public class FollowerConstants {
     // When the robot is at the end of its current Path or PathChain and the velocity goes below
     // this value, then end the Path. This is in inches/second.
     // This can be custom set for each Path.
-    public static double pathEndVelocityConstraint = 3.1;
+    public static double pathEndVelocityConstraint = 5.0;
 
     // When the robot is at the end of its current Path or PathChain and the translational error
     // goes below this value, then end the Path. This is in inches.
     // This can be custom set for each Path.
-    public static double pathEndTranslationalConstraint = 0.707;
+    public static double pathEndTranslationalConstraint = 0.7;
 
     // When the robot is at the end of its current Path or PathChain and the heading error goes
     // below this value, then end the Path. This is in radians.
@@ -156,12 +156,12 @@ public class FollowerConstants {
     // When the t-value of the closest point to the robot on the Path is greater than this value,
     // then the Path is considered at its end.
     // This can be custom set for each Path.
-    public static double pathEndTValueConstraint = 0.995;
+    public static double pathEndTValueConstraint = 0.990;
 
     // When the Path is considered at its end parametrically, then the Follower has this many
     // seconds to further correct by default.
     // This can be custom set for each Path.
-    public static double pathEndTimeoutConstraint = 250.0;
+    public static double pathEndTimeoutConstraint = 100.0;
 
     // This is how many steps the BezierCurve class uses to approximate the length of a BezierCurve.
     public static int APPROXIMATION_STEPS = 1000;

@@ -36,6 +36,11 @@ public class FollowPathAction implements Action {
         this.holdEnd = holdEnd;
     }
 
+    public FollowPathAction(Follower follower, PathChain pathChain) {
+        this.m_follower = follower;
+        this.m_pathChain = pathChain;
+    }
+
     @Override
     public boolean run(TelemetryPacket packet) {
         if(!started) {
