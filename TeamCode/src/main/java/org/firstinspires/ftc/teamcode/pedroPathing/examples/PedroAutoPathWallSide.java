@@ -48,10 +48,9 @@ public final class PedroAutoPathWallSide extends LinearOpMode {
 
         Point backdrop = new Point(48.0,32.0, Point.CARTESIAN);
         Point cycle = new Point(48.0,40.0, Point.CARTESIAN);
-        Point cycle1 = new Point(45.0,30.0, Point.CARTESIAN);
 
         Path purplePath = new Path(
-                new BezierCurve(new Point(14.5, 62.0, Point.CARTESIAN),
+                new BezierLine(new Point(14.5, 62.0, Point.CARTESIAN),
                         new Point(32.0, 23.0, Point.CARTESIAN)));
 
         purplePath.setLinearHeadingInterpolation(Math.toRadians(-90), Math.toRadians(180));
@@ -92,7 +91,7 @@ public final class PedroAutoPathWallSide extends LinearOpMode {
         double y_position0 = 58.5;
         double y_position = 43.0;
 
-        while(cycleCount++ < 2) {
+        while(cycleCount++ < 3) {
 
             // cycle
             Pose2d backdrop0 = follower.getPose();

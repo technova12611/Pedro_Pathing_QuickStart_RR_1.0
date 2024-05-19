@@ -40,6 +40,7 @@ public class Path {
     // robot slower but reducing risk of end-of-path overshoots or localization slippage.
     // This can be set individually for each Path, but this is the default.
     private double zeroPowerAccelerationMultiplier = FollowerConstants.zeroPowerAccelerationMultiplier;
+    private double lateralZeroPowerAccelerationMultiplier = 0;
 
     // When the robot is at the end of its current Path or PathChain and the velocity goes
     // this value, then end the Path. This is in inches/second.
@@ -368,6 +369,10 @@ public class Path {
         zeroPowerAccelerationMultiplier = set;
     }
 
+    public void setLateralZeroPowerAccelerationMultiplier(double set) {
+        lateralZeroPowerAccelerationMultiplier = set;
+    }
+
     /**
      * This sets the velocity stop criteria. When velocity is below this amount, then this is met.
      *
@@ -418,12 +423,24 @@ public class Path {
     }
 
     /**
-     * This gets the deceleration multiplier.
+     * This gets the forward deceleration multiplier.
      *
-     * @return This returns the deceleration multiplier.
+     * @return This returns the forward deceleration multiplier.
      */
     public double getZeroPowerAccelerationMultiplier() {
         return zeroPowerAccelerationMultiplier;
+    }
+
+    /**
+     * This gets the lateral deceleration multiplier.
+     *
+     * @return This returns the lateral deceleration multiplier.
+     */
+    public double getLateralZeroPowerAccelerationMultiplier() {
+        if(lateralZeroPowerAccelerationMultiplier == 0) {
+            return zeroPowerAccelerationMultiplier;
+        }
+        return lateralZeroPowerAccelerationMultiplier;
     }
 
     /**

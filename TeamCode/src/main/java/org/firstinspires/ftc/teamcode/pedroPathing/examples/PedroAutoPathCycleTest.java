@@ -54,7 +54,7 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
         Point cycle1 = new Point(45.0,30.0, Point.CARTESIAN);
 
         Path purplePath = new Path(
-                new BezierCurve(new Point(14.5, 62.0, Point.CARTESIAN),
+                new BezierLine(new Point(14.5, 62.0, Point.CARTESIAN),
                         new Point(32.0, 23.0, Point.CARTESIAN)));
 
         purplePath.setLinearHeadingInterpolation(Math.toRadians(-90), Math.toRadians(180));
