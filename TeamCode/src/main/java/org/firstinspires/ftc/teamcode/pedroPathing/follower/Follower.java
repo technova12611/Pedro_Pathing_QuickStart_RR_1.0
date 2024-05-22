@@ -571,9 +571,9 @@ public class Follower {
             }
         }
 
-        if(auto && drawOnDashboard) {
-            Drawing.drawDebug(this);
-        }
+//        if(auto && drawOnDashboard) {
+//            Drawing.drawDebug(this);
+//        }
     }
 
     /**

@@ -58,7 +58,7 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
                         new Point(32.0, 23.0, Point.CARTESIAN)));
 
         purplePath.setLinearHeadingInterpolation(Math.toRadians(-90), Math.toRadians(180));
-        purplePath.setZeroPowerAccelerationMultiplier(3.5);
+        purplePath.setZeroPowerAccelerationMultiplier(3.75);
 
         sched.addAction(
                 new SequentialAction(
@@ -90,7 +90,7 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
                 ));
         sched.run();
 
-        int cycleCount = 0;
+        int cycleCount = 3;
 
         double y_position0 = 11.0;
         double y_position = 12.0;

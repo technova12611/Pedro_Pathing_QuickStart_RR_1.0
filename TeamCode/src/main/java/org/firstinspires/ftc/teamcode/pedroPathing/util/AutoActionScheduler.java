@@ -50,7 +50,7 @@ public class AutoActionScheduler {
          dash.sendTelemetryPacket(packet);
 
          if (!running) {
-            Log.d("AutoScheduler_Logger", a + " is removed");
+            //Log.d("AutoScheduler_Logger", a + " is removed");
             actions.remove();
          }
 

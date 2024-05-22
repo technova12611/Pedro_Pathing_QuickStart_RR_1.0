@@ -117,7 +117,7 @@ public class FollowerConstants {
     // Centripetal force to power scaling
     // todo: there are currently issues with the centripetal force correction, so just don't use it for now
     // i will fix these in another commit soon
-    public static double centripetalScaling = 0.0003;
+    public static double centripetalScaling = 0.0002;
 
     // Acceleration of the drivetrain when power is cut in inches/second^2 (should be negative)
     // if not negative, then the robot thinks that its going to go faster under 0 power

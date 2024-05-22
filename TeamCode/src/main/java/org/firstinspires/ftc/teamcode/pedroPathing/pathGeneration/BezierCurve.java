@@ -138,6 +138,7 @@ public class BezierCurve {
      *
      * @return returns the end tangent Vector.
      */
+
     public Vector getEndTangent() {
         return MathFunctions.copyVector(endTangent);
     }

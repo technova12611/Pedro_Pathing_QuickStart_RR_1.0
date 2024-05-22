@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.Action;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Path;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.PathChain;
+import org.firstinspires.ftc.teamcode.pedroPathing.util.Drawing;
 
 public class FollowPathAction implements Action {
 
@@ -53,6 +54,7 @@ public class FollowPathAction implements Action {
         }
 
         m_follower.update();
+        Drawing.drawDebug(m_follower, packet);
 
         return m_follower.isBusy();
     }

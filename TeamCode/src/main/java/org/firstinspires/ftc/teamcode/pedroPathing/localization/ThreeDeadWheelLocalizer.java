@@ -1,23 +1,19 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.localization;
 
-import android.util.Log;
-
-import androidx.annotation.GuardedBy;
-
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.DualNum;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.Time;
 import com.acmerobotics.roadrunner.Twist2dDual;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.Vector2dDual;
 import com.acmerobotics.roadrunner.ftc.Encoder;
-import com.acmerobotics.roadrunner.ftc.FlightRecorder;
+import com.acmerobotics.roadrunner.ftc.LazyImu;
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder;
 import com.acmerobotics.roadrunner.ftc.PositionVelocityPair;
 import com.acmerobotics.roadrunner.ftc.RawEncoder;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -27,12 +23,13 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Vector;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Config
-public final class ThreeDeadWheelLocalizer implements Localizer {
+public final class ThreeDeadWheelLocalizer extends Localizer {
     public static class Params {
         public double par0YTicks = -2480.0;//-2441.9133801212834;//-2426.512456471011; y position of the first parallel encoder (in tick units)
         public double par1YTicks = 2480; //2467.6258;//2467.9133801212834;//2530.6258; // y position of the second parallel encoder (in tick units)
@@ -43,7 +40,7 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
 
     public final Encoder par0, par1, perp;
 
-    public final double inPerTick;
+    public double inPerTick = 0.002948; //0.002934; //24.0 / 8163.0;;
 
     private int lastPar0Pos, lastPar1Pos, lastPerpPos;
 
@@ -67,7 +64,7 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
 
     public Pose2d pose = new Pose2d(0.0,0.0,0.0);
 
-    public ThreeDeadWheelLocalizer(HardwareMap hardwareMap, IMU imu, double inPerTick) {
+    public ThreeDeadWheelLocalizer(HardwareMap hardwareMap) {
         par0 = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "par")));
         par0.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -76,13 +73,16 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
 
         perp = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "intake_for_perp")));
 
-        this.imu = imu;
+        LazyImu lazyImu;
+        lazyImu = new LazyImu(hardwareMap, "imu", new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                RevHubOrientationOnRobot.UsbFacingDirection.UP));
+        imu = lazyImu.get();
+        imu.resetYaw();
 
         lastPar0Pos = par0.getPositionAndVelocity().position;
         lastPar1Pos = par1.getPositionAndVelocity().position;
         lastPerpPos = perp.getPositionAndVelocity().position;
-
-        this.inPerTick = inPerTick;
     }
 
     public void startIMUThread(LinearOpMode opMode) {
@@ -103,7 +103,7 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
 
     private int headingCounter = 0;
 
-    public Twist2dDual<Time> update() {
+    public void update() {
 
         ElapsedTime loopTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
@@ -122,11 +122,6 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
             Rotation2d heading = Rotation2d.exp(angles.getYaw(AngleUnit.RADIANS));
 
             lastHeading = heading;
-
-            return new Twist2dDual<>(
-                    Vector2dDual.constant(new Vector2d(0.0, 0.0), 2),
-                    DualNum.constant(0.0, 2)
-            );
         }
 
         int par0PosDelta = par0PosVel.position - lastPar0Pos;
@@ -139,7 +134,7 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
         if(headingCounter++ > 5) {
             YawPitchRollAngles angles = imu.getRobotYawPitchRollAngles();
             Rotation2d heading = Rotation2d.exp(angles.getYaw(AngleUnit.RADIANS));
-//            Log.d("ThreeDeadWheelLocalizer_logger", String.format("Calc:%3.3f, IMU:%3.3f",Math.toDegrees(headingDelta),Math.toDegrees(heading.minus(lastHeading))));
+//            Log.d("ThreeDeadWheelLocalizer_logger", String.format("Calc:%3.3f, IMU:%3.3f"headingDelta,heading.minus(lastHeading)));
             headingDelta = heading.minus(lastHeading);
             lastHeading = heading;
             headingCounter = 0;
@@ -196,8 +191,6 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
 //        );
 
         loopTimer.reset();
-
-        return twist;
     }
 
     public void setPoseEstimate(Pose2d poseEstimate) {
@@ -212,4 +205,37 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
         this.pose = new Pose2d(this.pose.position.x, this.pose.position.y, newHeading);
     }
 
+    @Override
+    public Pose getPose() {
+        return new Pose(pose.position.x,pose.position.y, pose.heading.toDouble());
+    }
+
+    @Override
+    public Pose getVelocity() {
+        return null;
+    }
+
+    @Override
+    public Vector getVelocityVector() {
+        return null;
+    }
+
+    @Override
+    public void setStartPose(Pose setStart) {
+        pose = new Pose2d(setStart.getX(), setStart.getY(), setStart.getHeading());
+    }
+
+    public void setStartPose(Pose2d setStart) {
+        pose = setStart;
+    }
+
+    @Override
+    public void setPose(Pose setPose) {
+        pose = new Pose2d(setPose.getX(), setPose.getY(), setPose.getHeading());
+    }
+
+    @Override
+    public double getTotalHeading() {
+        return pose.heading.toDouble();
+    }
 }

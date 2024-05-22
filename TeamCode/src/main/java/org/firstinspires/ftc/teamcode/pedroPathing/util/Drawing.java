@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.util;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -29,6 +31,11 @@ public class Drawing {
      * @param follower
      */
     public static void drawDebug(Follower follower) {
+        boolean send = false;
+        if (packet == null){
+            packet = new TelemetryPacket();
+            send = true;
+        }
         if (follower.getCurrentPath() != null) {
             drawPath(follower.getCurrentPath(), "#3F51B5");
             Point closestPoint = follower.getPointFromPath(follower.getCurrentPath().getClosestPointTValue());
@@ -36,7 +43,13 @@ public class Drawing {
         }
         drawPoseHistory(follower.getDashboardPoseTracker(), "#4CAF50");
         drawRobot(follower.getPose(), "#4CAF50");
-        sendPacket();
+        if (send) sendPacket();
+        packet = null;
+    }
+
+    public static void drawDebug(Follower follower, TelemetryPacket mypacket) {
+        packet = mypacket;
+        drawDebug(follower);
     }
 
     /**
@@ -47,8 +60,6 @@ public class Drawing {
      * @param color the color to draw the robot with
      */
     public static void drawRobot(Pose2d pose, String color) {
-        if (packet == null) packet = new TelemetryPacket();
-
         packet.fieldOverlay().setStroke(color);
         Pose2d newPose = new Pose2d(pose.position.x,pose.position.y, pose.heading.toDouble());
         Drawing.drawRobotOnCanvas(packet.fieldOverlay(), newPose);
@@ -62,8 +73,6 @@ public class Drawing {
      * @param color the color to draw the Path with
      */
     public static void drawPath(Path path, String color) {
-        if (packet == null) packet = new TelemetryPacket();
-
         packet.fieldOverlay().setStroke(color);
         Drawing.drawPath(packet.fieldOverlay(), path.getDashboardDrawingPoints());
     }
@@ -89,8 +98,6 @@ public class Drawing {
      * @param color the color to draw the pose history with
      */
     public static void drawPoseHistory(DashboardPoseTracker poseTracker, String color) {
-        if (packet == null) packet = new TelemetryPacket();
-
         packet.fieldOverlay().setStroke(color);
         packet.fieldOverlay().strokePolyline(poseTracker.getXPositionsArray(), poseTracker.getYPositionsArray());
     }
@@ -100,13 +107,8 @@ public class Drawing {
      *
      * @return returns if the operation was successful.
      */
-    public static boolean sendPacket() {
-        if (packet != null) {
-            FtcDashboard.getInstance().sendTelemetryPacket(packet);
-            packet = null;
-            return true;
-        }
-        return false;
+    public static void sendPacket() {
+        FtcDashboard.getInstance().sendTelemetryPacket(packet);
     }
 
     /**

@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.pedroPathing.localization;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Twist2d;
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -26,7 +25,7 @@ public class PoseUpdater {
 
     private IMU imu;
 
-    private ThreeDeadWheelLocalizer localizer;
+    private Localizer localizer;
 
     private Pose2d startingPose = new Pose2d(0,0,0);
 
@@ -47,10 +46,7 @@ public class PoseUpdater {
     private long previousPoseTime;
     private long currentPoseTime;
 
-    public double inPerTick = 0.002948; //0.002934; //24.0 / 8163.0;
-    public double lateralInPerTick = 0.00273;
-    public double trackWidthTicks = 4665.3368763274475;//4810.861094343746;//4623.060031773916;//4620.300191769058; //4982.1078188621495; //4691.229665989946;
-
+    public final boolean useRRLocalizer = true;
 
     /**
      * Creates a new PoseUpdater from a HardwareMap.
@@ -59,13 +55,11 @@ public class PoseUpdater {
      */
     public PoseUpdater(HardwareMap hardwareMap) {
         this.hardwareMap = hardwareMap;
-
-        LazyImu lazyImu;
-        lazyImu = new LazyImu(hardwareMap, "imu", new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.LEFT, RevHubOrientationOnRobot.UsbFacingDirection.UP));
-        imu = lazyImu.get();
-        imu.resetYaw();
-        localizer = new ThreeDeadWheelLocalizer(hardwareMap, imu, inPerTick);
+        if (useRRLocalizer) {
+            localizer = new ThreeDeadWheelLocalizer(hardwareMap);
+        } else {
+            localizer = new ThreeWheelLocalizer(hardwareMap);
+        }
     }
 
     /**
@@ -94,7 +88,7 @@ public class PoseUpdater {
         previousPose = startingPose;
         previousPoseTime = System.nanoTime();
         currentPoseTime = System.nanoTime();
-        localizer.setPoseEstimate(set);
+        localizer.setStartPose(set);
     }
 
     /**
@@ -258,7 +252,8 @@ public class PoseUpdater {
         if (currentVelocity == null) {
             currentVelocity = new Vector();
             currentVelocity.setOrthogonalComponents(getPose().position.x - previousPose.position.x, getPose().position.y - previousPose.position.y);
-            currentVelocity.setMagnitude(MathFunctions.distance(getPose(), previousPose) / ((currentPoseTime - previousPoseTime) / Math.pow(10.0, 9)));
+            currentVelocity.setMagnitude(MathFunctions.distance(
+                    getPose(),previousPose) / ((currentPoseTime - previousPoseTime) / Math.pow(10.0, 9)));
             return MathFunctions.copyVector(currentVelocity);
         } else {
             return MathFunctions.copyVector(currentVelocity);
@@ -289,13 +284,6 @@ public class PoseUpdater {
         } else {
             return MathFunctions.copyVector(currentAcceleration);
         }
-    }
-
-    /**
-     * This resets the heading of the robot to the IMU's heading, using Road Runner's pose reset.
-     */
-    public void resetHeadingToIMU() {
-        localizer.resetHeading(getNormalizedIMUHeading() + startingPose.heading.toDouble());
     }
 
     /**
