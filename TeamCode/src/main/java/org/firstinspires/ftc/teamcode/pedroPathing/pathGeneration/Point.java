@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration;
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Vector2d;
 
 /**
  * This is the Point class. This class handles storing information about the location of points in
@@ -42,6 +43,14 @@ public class Point {
      */
     public Point(double rOrX, double thetaOrY, int identifier) {
         setCoordinates(rOrX, thetaOrY, identifier);
+    }
+
+    public Point(double rOrX, double thetaOrY) {
+        setCoordinates(rOrX, thetaOrY, CARTESIAN);
+    }
+
+    public Point(Vector2d vector) {
+        setCoordinates(vector.x, vector.y, CARTESIAN);
     }
 
     /**

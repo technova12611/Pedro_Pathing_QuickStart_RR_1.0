@@ -51,11 +51,10 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
 
         Point backdrop = new Point(48.0,36.0, Point.CARTESIAN);
         Point cycle = new Point(48.0,30.0, Point.CARTESIAN);
-        Point cycle1 = new Point(45.0,30.0, Point.CARTESIAN);
 
         Path purplePath = new Path(
-                new BezierLine(new Point(14.5, 62.0, Point.CARTESIAN),
-                        new Point(32.0, 23.0, Point.CARTESIAN)));
+                new BezierLine(new Point(14.5, 62.0),
+                        new Point(32.0, 23.0)));
 
         purplePath.setLinearHeadingInterpolation(Math.toRadians(-90), Math.toRadians(180));
         purplePath.setZeroPowerAccelerationMultiplier(3.75);
@@ -70,12 +69,10 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
         sched.run();
 
         Pose2d currentPose = follower.getPose();
-        //follower.setStartingPose(currentPose);
 
         Path yellowPath = new Path(new BezierLine(new Point(currentPose), backdrop));
 
         // drop yellow
-//        yellowPath.setLinearHeadingInterpolation(currentPose.heading.toDouble(), Math.toRadians(180));
         yellowPath.setConstantHeadingInterpolation(Math.toRadians(180));
         yellowPath.setZeroPowerAccelerationMultiplier(2.5);
         //yellowPath.setReversed(true);
@@ -90,7 +87,7 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
                 ));
         sched.run();
 
-        int cycleCount = 3;
+        int cycleCount = 0;
 
         double y_position0 = 11.0;
         double y_position = 12.0;
@@ -100,24 +97,25 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
             Pose2d backdrop0 = follower.getPose();
 
             if(cycleCount == 2) {
-                y_position0 = 12.0;
+                y_position0 = 11.5;
                 y_position = 12.5;
-                follower.setPose(new Pose2d(backdrop0.position.x, backdrop0.position.y-0.5,backdrop0.heading.toDouble()));
+                follower.setPose(new Pose2d(backdrop0.position.x, backdrop0.position.y-0.75,backdrop0.heading.toDouble()));
             }
             if(cycleCount == 3) {
-                y_position0 = 12.5;
+                y_position0 = 12.0;
                 y_position = 13.0;
                 follower.setPose(new Pose2d(backdrop0.position.x, backdrop0.position.y-1.5,backdrop0.heading.toDouble()));
             }
 
-            Point stagePoint = new Point(backdrop0.position.x, backdrop0.position.y, Point.CARTESIAN);
+            Point stagePoint = new Point(backdrop0);
 
             Path toStack = new Path(new BezierCurve(stagePoint,
                     new Point(45, y_position0, Point.CARTESIAN),
                     new Point(24, y_position, Point.CARTESIAN),
 //                    new Point(-0, y_position, Point.CARTESIAN)));
                     new Point(-24, y_position, Point.CARTESIAN),
-                    new Point(-54, y_position, Point.CARTESIAN)));
+                    new Point(-54, y_position, Point.CARTESIAN))
+            );
 
             toStack.setZeroPowerAccelerationMultiplier(4.5);
             toStack.setConstantHeadingInterpolation(Math.PI);
@@ -134,15 +132,14 @@ public final class PedroAutoPathCycleTest extends LinearOpMode {
             Pose2d stack0 = follower.getPose();
             Point stackPoint = new Point(stack0.position.x, stack0.position.y, Point.CARTESIAN);
             Path toStage = new Path(new BezierCurve(stackPoint,
-                    new Point(8, 12.0, Point.CARTESIAN),
-                    new Point(32,
-                            12.0, Point.CARTESIAN),
-//                    cycle1,
+                    new Point(8, 11.0, Point.CARTESIAN),
+//                    new Point(20, 12.0, Point.CARTESIAN),
+                    new Point(28, 11.0, Point.CARTESIAN),
                     cycle));
 
             toStage.setReversed(true);
             toStage.setConstantHeadingInterpolation(Math.toRadians(180));
-            toStage.setZeroPowerAccelerationMultiplier(2.25);
+            toStage.setZeroPowerAccelerationMultiplier(2.20);
 
             // drop yellow
             sched.addAction(

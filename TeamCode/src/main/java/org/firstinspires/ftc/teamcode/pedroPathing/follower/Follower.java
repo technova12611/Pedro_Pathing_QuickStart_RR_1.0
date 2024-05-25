@@ -570,10 +570,6 @@ public class Follower {
                 motors.get(i).setPower(drivePowers[i]);
             }
         }
-
-//        if(auto && drawOnDashboard) {
-//            Drawing.drawDebug(this);
-//        }
     }
 
     /**

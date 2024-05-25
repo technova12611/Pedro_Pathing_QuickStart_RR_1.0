@@ -91,7 +91,7 @@ public final class PedroAutoPathWallSide extends LinearOpMode {
         double y_position0 = 58.5;
         double y_position = 43.0;
 
-        while(cycleCount++ < 3) {
+        while(cycleCount++ < 2) {
 
             // cycle
             Pose2d backdrop0 = follower.getPose();

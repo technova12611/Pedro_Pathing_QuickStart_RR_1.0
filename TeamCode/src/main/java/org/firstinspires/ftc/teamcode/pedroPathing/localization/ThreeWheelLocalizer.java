@@ -56,7 +56,8 @@ public class ThreeWheelLocalizer extends Localizer {
     private Pose leftEncoderPose;
     private Pose rightEncoderPose;
     private Pose strafeEncoderPose;
-    private double totalHeading;
+    private double
+            totalHeading;
     public static double FORWARD_TICKS_TO_INCHES = 0.002948;//8192 * 1.37795 * 2 * Math.PI * 0.5008239963;
     public static double STRAFE_TICKS_TO_INCHES = 0.00302;//8192 * 1.37795 * 2 * Math.PI * 0.5018874659;
     public static double TURN_TICKS_TO_RADIANS = 0.002948;//8192 * 1.37795 * 2 * Math.PI * 0.5;
@@ -268,14 +269,14 @@ public class ThreeWheelLocalizer extends Localizer {
             double headingDelta1 = MathFunctions.normalizeAngle(heading.toDouble())-
                     MathFunctions.normalizeAngle(displacementPose.getHeading());
             headingCounter = 0;
-            Log.d("ThreeWheelLocalizer_logger",
-                    String.format("Calc: %3.3f, Calc1: %3.3f, heading: %3.3f, prev_heading: %3.3f, delta: %3.3f",
-                            headingDelta, calHeadingDelta,
-                            MathFunctions.normalizeAngle(heading.toDouble()),
-                            MathFunctions.normalizeAngle(displacementPose.getHeading()),
-                            headingDelta1)
-                    
-            );
+
+//            Log.d("ThreeWheelLocalizer_logger",
+//                    String.format("Calc: %3.3f, Calc1: %3.3f, heading: %3.3f, prev_heading: %3.3f, delta: %3.3f",
+//                            headingDelta, calHeadingDelta,
+//                            MathFunctions.normalizeAngle(heading.toDouble()),
+//                            MathFunctions.normalizeAngle(displacementPose.getHeading()),
+//                            headingDelta1)
+//            );
 
             calHeadingDelta = headingDelta1;
         }
@@ -283,9 +284,19 @@ public class ThreeWheelLocalizer extends Localizer {
         returnMatrix.set(0,0, FORWARD_TICKS_TO_INCHES * ((rightEncoder.getDeltaPosition() * leftEncoderPose.getY() - leftEncoder.getDeltaPosition() * rightEncoderPose.getY()) / (leftEncoderPose.getY() - rightEncoderPose.getY())));
         //y/strafe movement
         returnMatrix.set(1,0, STRAFE_TICKS_TO_INCHES * (strafeEncoder.getDeltaPosition() - strafeEncoderPose.getX() * headingDelta));
-
         // theta/turning
         returnMatrix.set(2,0, calHeadingDelta);
+
+//        Log.d("ThreeWheelLocalizer_logger",
+//                    String.format("Y: %3.3f, Y0: %3.3f, Y1: %3.3f, Y2: %3.3f, heading: %3.3f",
+//                            returnMatrix.get(1,0),
+//                            STRAFE_TICKS_TO_INCHES * (strafeEncoder.getDeltaPosition()),
+//                            STRAFE_TICKS_TO_INCHES * (strafeEncoderPose.getX() * headingDelta),
+//                            (STRAFE_TICKS_TO_INCHES * (strafeEncoder.getDeltaPosition())-
+//                            TURN_TICKS_TO_RADIANS * (strafeEncoderPose.getX() * headingDelta)),
+//                            calHeadingDelta)
+//            );
+
         return returnMatrix;
     }
 
