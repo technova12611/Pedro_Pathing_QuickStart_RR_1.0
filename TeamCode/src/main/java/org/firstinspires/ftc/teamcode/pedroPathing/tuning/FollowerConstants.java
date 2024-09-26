@@ -2,10 +2,12 @@ package org.firstinspires.ftc.teamcode.pedroPathing.tuning;
 
 import com.acmerobotics.dashboard.config.Config;
 
+import org.firstinspires.ftc.teamcode.pedroPathing.util.CustomFilteredPIDFCoefficients;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.CustomPIDFCoefficients;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.MathFunctions;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Vector;
+import org.firstinspires.ftc.teamcode.pedroPathing.util.KalmanFilterParameters;
 
 /**
  * This is the FollowerConstants class. It holds many constants and parameters for various parts of
@@ -28,88 +30,95 @@ public class FollowerConstants {
     public static Vector frontLeftVector = MathFunctions.normalizeVector(new Vector(convertToPolar[0],convertToPolar[1]));
 
     // Large heading error PIDF coefficients
-    public static CustomPIDFCoefficients largeHeadingPIDFCoefficients = new CustomPIDFCoefficients(
+    public static CustomPIDFCoefficients headingPIDFCoefficients = new CustomPIDFCoefficients(
             1.5,
             0,
             0,
             0);
 
     // Feed forward constant added on to the large heading PIDF
-    public static double largeHeadingPIDFFeedForward = 0.01;
+    public static double headingPIDFFeedForward = 0.01;
 
     // the limit at which the heading PIDF switches between the large and small heading PIDFs
     public static double headingPIDFSwitch = Math.PI/20;
 
     // Small heading error PIDF coefficients
-    public static CustomPIDFCoefficients smallHeadingPIDFCoefficients = new CustomPIDFCoefficients(
+    public static CustomPIDFCoefficients secondaryHeadingPIDFCoefficients = new CustomPIDFCoefficients(
             3.25,
             0,
             0.08,
             0);
 
     // Feed forward constant added on to the small heading PIDF
-    public static double smallHeadingPIDFFeedForward = 0.01;
+    public static double secondaryHeadingPIDFFeedForward = 0.01;
 
     // Large translational PIDF coefficients
-    public static CustomPIDFCoefficients largeTranslationalPIDFCoefficients = new CustomPIDFCoefficients(
+    public static CustomPIDFCoefficients translationalPIDFCoefficients = new CustomPIDFCoefficients(
             0.15,
             0,
             0.005,
             0);
 
     // Feed forward constant added on to the large translational PIDF
-    public static double largeTranslationalPIDFFeedForward = 0.01;
+    public static double translationalPIDFFeedForward = 0.01;
 
     // Large translational Integral
-    public static CustomPIDFCoefficients largeTranslationalIntegral = new CustomPIDFCoefficients(
+    public static CustomPIDFCoefficients translationalIntegral = new CustomPIDFCoefficients(
             0,
             0,
             0,
             0);
 
-    // the limit at which the strafe PIDF switches between the large and small translational PIDFs
+    // the limit at which the strafe PIDF switches between the large and Secondary translational PIDFs
     public static double translationalPIDFSwitch = 3;
 
-    // Small translational PIDF coefficients
-    public static CustomPIDFCoefficients smallTranslationalPIDFCoefficients = new CustomPIDFCoefficients(
+    // Secondary translational PIDF coefficients
+    public static CustomPIDFCoefficients secondaryTranslationalPIDFCoefficients = new CustomPIDFCoefficients(
             0.325,
             0,
             0.01,
             0);
 
-    // Small translational Integral value
-    public static CustomPIDFCoefficients smallTranslationalIntegral = new CustomPIDFCoefficients(
+    // Secondary translational Integral value
+    public static CustomPIDFCoefficients secondaryTranslationalIntegral = new CustomPIDFCoefficients(
             0,
             0,
             0,
             0);
 
     
-    // Feed forward constant added on to the small translational PIDF
-    public static double smallTranslationalPIDFFeedForward = 0.015;
+    // Feed forward constant added on to the Secondary translational PIDF
+    public static double secondaryTranslationalPIDFFeedForward = 0.015;
 
     // Large drive PIDF coefficients
-    public static CustomPIDFCoefficients largeDrivePIDFCoefficients = new CustomPIDFCoefficients(
+    public static CustomFilteredPIDFCoefficients drivePIDFCoefficients = new CustomFilteredPIDFCoefficients(
             0.015,
-            0,
+            0.0,
             0.0005,
-            0);
+            0.6,
+            0.0);
 
     // Feed forward constant added on to the large drive PIDF
-    public static double largeDrivePIDFFeedForward = 0.01;
+    public static double drivePIDFFeedForward = 0.01;
 
-    // the limit at which the direction PIDF switches between the large and small drive PIDFs
+    // the limit at which the direction PIDF switches between the large and Secondary drive PIDFs
     public static double drivePIDFSwitch = 10;
 
-    // Small drive PIDF coefficients
-    public static CustomPIDFCoefficients smallDrivePIDFCoefficients = new CustomPIDFCoefficients(
+    // Secondary drive PIDF coefficients
+    public static CustomFilteredPIDFCoefficients secondaryDrivePIDFCoefficients = new CustomFilteredPIDFCoefficients(
             0.0225,
-            0,
+            0.0,
             0.0005,
-            0);
+            0.6,
+            0.0);
 
-    // Feed forward constant added on to the small drive PIDF
-    public static double smallDrivePIDFFeedForward = 0.01;
+    // Feed forward constant added on to the Secondary drive PIDF
+    public static double secondaryDrivePIDFFeedForward = 0.01;
+
+    // Kalman filter parameters for the drive error Kalman filter
+    public static KalmanFilterParameters driveKalmanFilterParameters = new KalmanFilterParameters(
+            6,
+            1);
 
     // Mass of robot in kilograms
     public static double mass = 14.5; //10.65942;
@@ -117,7 +126,7 @@ public class FollowerConstants {
     // Centripetal force to power scaling
     // todo: there are currently issues with the centripetal force correction, so just don't use it for now
     // i will fix these in another commit soon
-    public static double centripetalScaling = 0.0003;
+    public static double centripetalScaling = 0.0002;
 
     // Acceleration of the drivetrain when power is cut in inches/second^2 (should be negative)
     // if not negative, then the robot thinks that its going to go faster under 0 power
@@ -181,4 +190,5 @@ public class FollowerConstants {
     // accuracy, and this increases at an exponential rate. However, more steps also does take more
     // time.
     public static int BEZIER_CURVE_BINARY_STEP_LIMIT = 10;
+
 }

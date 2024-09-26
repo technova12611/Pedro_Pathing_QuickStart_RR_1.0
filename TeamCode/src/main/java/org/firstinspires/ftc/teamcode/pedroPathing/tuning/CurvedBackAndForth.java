@@ -50,10 +50,14 @@ public class CurvedBackAndForth extends OpMode {
     public void init() {
         follower = new Follower(hardwareMap);
 
-        forwards = new Path(new BezierCurve(new Point(0,0, Point.CARTESIAN), new Point(Math.abs(DISTANCE+6),0, Point.CARTESIAN), new Point(Math.abs(DISTANCE+6),DISTANCE, Point.CARTESIAN)));
-        backwards = new Path(new BezierCurve(new Point(Math.abs(DISTANCE),DISTANCE, Point.CARTESIAN), new Point(Math.abs(DISTANCE),0, Point.CARTESIAN), new Point(0,0, Point.CARTESIAN)));
+        forwards = new Path(new BezierCurve(new Point(0,0, Point.CARTESIAN),
+                                            new Point(Math.abs(DISTANCE+6),0, Point.CARTESIAN),
+                                            new Point(Math.abs(DISTANCE+6),DISTANCE, Point.CARTESIAN)));
+        backwards = new Path(new BezierCurve(new Point(Math.abs(DISTANCE),DISTANCE, Point.CARTESIAN),
+                                             new Point(Math.abs(DISTANCE),0, Point.CARTESIAN),
+                                             new Point(0,0, Point.CARTESIAN)));
 
-        forwards.setZeroPowerAccelerationMultiplier(5.25);
+        forwards.setZeroPowerAccelerationMultiplier(3.05);
         follower.followPath(forwards);
 
         telemetryA = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -74,7 +78,7 @@ public class CurvedBackAndForth extends OpMode {
         if (!follower.isBusy() && !isDone) {
             try {
                 Log.d("Petro_logger", "Robot pose: " + new PoseMessage(follower.getPose()));
-                Thread.sleep(2000);
+                Thread.sleep(1000);
             } catch(Exception e) {
                 //
             }
@@ -86,7 +90,7 @@ public class CurvedBackAndForth extends OpMode {
             } else {
                 isDone = true;
             }
- //           else {
+//            else {
 //                forward = true;
 //                follower.followPath(forwards);
 //            }
