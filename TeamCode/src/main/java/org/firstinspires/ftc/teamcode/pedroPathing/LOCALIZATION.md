@@ -4,7 +4,7 @@ the pose exponential method of localization. It's basically a way of turning mov
 robot's coordinate frame to the global coordinate frame. If you're interested in reading more about
 it, then check out pages 177 - 183 of [Controls Engineering in the FIRST Robotics Competition](https://file.tavsys.net/control/controls-engineering-in-frc.pdf)
 by Tyler Veness. However, the OTOS localizer uses its own onboard system for calculating localization,
-which I do not know about.
+which we do not know about.
 
 ## Setting Your Localizer
 Go to line `70` in the `PoseUpdater` class, and replace the `new ThreeWheelLocalizer(hardwareMap)`
@@ -15,6 +15,7 @@ with the localizer that applies to you:
   don't change it from the default
 * If you're using three wheel odometry with the IMU, put `new ThreeWheelIMULocalizer(hardwareMap)`
 * If you're using OTOS, put `new OTOSLocalizer(hardwareMap)`
+* If you're using Pinpoint, put `new PinpointLocalizer(hardwareMap)`
 
 ## Tuning
 To start, you'll want to select your localizer of choice. Below, I'll have instructions for the drive
@@ -24,9 +25,8 @@ that applies to you and follow the directions there.
 
 # Drive Encoders
 * First, you'll need all of your drive motors to have encoders attached.
-* Then, go to `DriveEncoderLocalizer.java`. Go to where it tells you to replace the current statements with your encoder ports in the constructor.
-Replace the `deviceName` parameter with the name of the port that the encoder for each motor is connected
-to. The names of the variables is where on the robot the corresponding motor should be.
+* Then, go to `DriveEncoderLocalizer.java`. The motor names are already set, so you don't have to do
+  anything to change the encoder names there.
 * Then, reverse the direction of any encoders so that all encoders tick up when the robot is moving forward.
 * Now, you'll have to tune the multipliers. These convert your measurements from encoder ticks into 
   inches or radians, essentially scaling your localizer so that your numbers are accurate to the real
@@ -236,6 +236,23 @@ to. The names of the variables is where on the robot the corresponding motor sho
   replace the linear scalar on line `77` in the localizer with your scalar. Make sure you replace the number,
   not add on or multiply it to the previous number. The tuner takes into account your current scalar.
 * Once you're done with all this, your localizer should be tuned. To test it out, you can go to
+  `Localization Test` and push around or drive around your robot. Go to [FTC Dashboard](http://192.168.43.1:8080/dash)
+  and on the top right, switch the drop down from the default view to the field view. Then, on the bottom
+  left corner, you should see a field and the robot being drawn on the field. You can then move your
+  robot around and see if the movements look accurate on FTC Dashboard. If they don't, then you'll
+  want to re-run some of the previous steps. Otherwise, congrats on tuning your localizer!
+
+## Pinpoint Localizer
+* First you will need to plug in the pinpoint to the i2c port. Ensure that the dead wheel encoder wires are
+  plugged into the proper ports on the pinpoint to ensure no error within the tuning steps.
+* Then, go to the `PinpointLocalier.java` file and go to where it tells you to replace
+  the current statement with your pinpoint port in the constructor. Replace the `deviceName` parameter
+  with the name of the port that the pinpoint is connected to.
+* Next, follow the instructions left by the TODO: comment and enter in the odometry measurements either in
+  mms or inches (We have the conversion rates listed).
+* First, to ensure that your pinpoint is properly connected, please run the `SensorGoBildaPinpointExample.java`
+  file left in the `tuning` folder located within `localization`.
+* Once completed, the localizer should be properly tuned. To test it out, you can go to
   `Localization Test` and push around or drive around your robot. Go to [FTC Dashboard](http://192.168.43.1:8080/dash)
   and on the top right, switch the drop down from the default view to the field view. Then, on the bottom
   left corner, you should see a field and the robot being drawn on the field. You can then move your

@@ -1,7 +1,8 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration;
 
-import com.acmerobotics.roadrunner.Pose2d;
+import android.util.Log;
 
+import org.firstinspires.ftc.teamcode.pedroPathing.localization.Pose;
 import org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants;
 
 import java.util.ArrayList;
@@ -26,7 +27,6 @@ public class Path {
     private double linearInterpolationEndTime;
 
     private Vector closestPointTangentVector;
-    private Vector prev_closestPointTangentVector;
     private Vector closestPointNormalVector;
 
     private boolean isTangentHeadingInterpolation = true;
@@ -40,7 +40,6 @@ public class Path {
     // robot slower but reducing risk of end-of-path overshoots or localization slippage.
     // This can be set individually for each Path, but this is the default.
     private double zeroPowerAccelerationMultiplier = FollowerConstants.zeroPowerAccelerationMultiplier;
-    private double lateralZeroPowerAccelerationMultiplier = 0;
 
     // When the robot is at the end of its current Path or PathChain and the velocity goes
     // this value, then end the Path. This is in inches/second.
@@ -134,7 +133,7 @@ public class Path {
      * @param searchStepLimit the binary search step limit.
      * @return returns the closest Point.
      */
-    public Pose2d getClosestPoint(Pose2d pose, int searchStepLimit) {
+    public Pose getClosestPoint(Pose pose, int searchStepLimit) {
         double lower = 0;
         double upper = 1;
         Point returnPoint;
@@ -146,20 +145,27 @@ public class Path {
             } else {
                 upper -= (upper-lower)/2.0;
             }
+
+//            Log.d("Path_logger", "l_distance: " + MathFunctions.distance(pose, getPoint(lower + 0.25 * (upper-lower))) +
+//                    " | h_distance: " + MathFunctions.distance(pose, getPoint(lower + 0.75 * (upper-lower)))
+//                   + " | lower: " + lower
+//                    + " | upper: " + upper
+//                    + " | ( " + getFirstControlPoint().getX() + ", " + getFirstControlPoint().getY() + ")"
+//                    + " | ( " + getLastControlPoint().getX() + ", " + getLastControlPoint().getY() + ")"
+//            );
         }
 
         closestPointTValue = lower + 0.5 * (upper-lower);
 
         returnPoint = getPoint(closestPointTValue);
 
-        prev_closestPointTangentVector = closestPointTangentVector;
         closestPointTangentVector = curve.getDerivative(closestPointTValue);
 
         closestPointNormalVector = curve.getApproxSecondDerivative(closestPointTValue);
 
         closestPointCurvature = curve.getCurvature(closestPointTValue);
 
-        return new Pose2d(returnPoint.getX(), returnPoint.getY(), getClosestPointHeadingGoal());
+        return new Pose(returnPoint.getX(), returnPoint.getY(), getClosestPointHeadingGoal());
     }
 
     /**
@@ -256,10 +262,6 @@ public class Path {
      */
     public Vector getClosestPointTangentVector() {
         return MathFunctions.copyVector(closestPointTangentVector);
-    }
-
-    public Vector getPrevClosestPointTangentVector() {
-        return MathFunctions.copyVector(prev_closestPointTangentVector);
     }
 
     /**
@@ -369,10 +371,6 @@ public class Path {
         zeroPowerAccelerationMultiplier = set;
     }
 
-    public void setLateralZeroPowerAccelerationMultiplier(double set) {
-        lateralZeroPowerAccelerationMultiplier = set;
-    }
-
     /**
      * This sets the velocity stop criteria. When velocity is below this amount, then this is met.
      *
@@ -423,24 +421,12 @@ public class Path {
     }
 
     /**
-     * This gets the forward deceleration multiplier.
+     * This gets the deceleration multiplier.
      *
-     * @return This returns the forward deceleration multiplier.
+     * @return This returns the deceleration multiplier.
      */
     public double getZeroPowerAccelerationMultiplier() {
         return zeroPowerAccelerationMultiplier;
-    }
-
-    /**
-     * This gets the lateral deceleration multiplier.
-     *
-     * @return This returns the lateral deceleration multiplier.
-     */
-    public double getLateralZeroPowerAccelerationMultiplier() {
-        if(lateralZeroPowerAccelerationMultiplier == 0) {
-            return zeroPowerAccelerationMultiplier;
-        }
-        return lateralZeroPowerAccelerationMultiplier;
     }
 
     /**

@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration;
 
-import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.Vector2d;
+import org.firstinspires.ftc.teamcode.pedroPathing.localization.Pose;
 
 /**
  * This is the Point class. This class handles storing information about the location of points in
@@ -45,21 +44,13 @@ public class Point {
         setCoordinates(rOrX, thetaOrY, identifier);
     }
 
-    public Point(double rOrX, double thetaOrY) {
-        setCoordinates(rOrX, thetaOrY, CARTESIAN);
-    }
-
-    public Point(Vector2d vector) {
-        setCoordinates(vector.x, vector.y, CARTESIAN);
-    }
-
     /**
-     * This creates a new Point from a Pose2d.
+     * This creates a new Point from a Pose.
      *
-     * @param pose the Pose2d.
+     * @param pose the Pose.
      */
-    public Point(Pose2d pose) {
-        setCoordinates(pose.position.x, pose.position.y, CARTESIAN);
+    public Point(Pose pose) {
+        setCoordinates(pose.getX(), pose.getY(), CARTESIAN);
     }
 
     /**
@@ -180,5 +171,15 @@ public class Point {
      */
     public double getY() {
         return y;
+    }
+
+    /**
+     * This creates a new Point with the same information as this Point, just pointing to a different
+     * memory location. In other words, a deep copy.
+     *
+     * @return returns a copy of this Point.
+     */
+    public Point copy() {
+        return new Point(getX(), getY(), CARTESIAN);
     }
 }

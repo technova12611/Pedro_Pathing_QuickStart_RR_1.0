@@ -37,8 +37,7 @@ public class BezierLine extends BezierCurve {
         length = approximateLength();
         UNIT_TO_TIME = 1 / length;
         endTangent = MathFunctions.normalizeVector(getDerivative(1));
-
-        initializeDashboardDrawingPoints();
+        super.initializeDashboardDrawingPoints();
     }
 
     /**

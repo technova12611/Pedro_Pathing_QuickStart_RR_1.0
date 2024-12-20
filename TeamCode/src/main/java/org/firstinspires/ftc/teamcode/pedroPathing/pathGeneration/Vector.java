@@ -138,8 +138,4 @@ public class Vector {
     public double getYComponent() {
         return yComponent;
     }
-
-    public String toString() {
-        return String.format("(x=%3.2f,y=%3.3f,theta=%3.2f,m=%3.2f)", xComponent,yComponent,theta,magnitude);
-    }
 }

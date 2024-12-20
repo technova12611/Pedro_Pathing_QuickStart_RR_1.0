@@ -4,10 +4,12 @@ import android.util.Log;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Path;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.PathChain;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.Drawing;
+import org.firstinspires.ftc.teamcode.pedroPathing.util.PoseMessage;
 
 public class FollowPathAction implements Action {
 
@@ -53,7 +55,7 @@ public class FollowPathAction implements Action {
             started = true;
         }
 
-        m_follower.update();
+        //m_follower.update();
         Drawing.drawDebug(m_follower, packet);
 
         return m_follower.isBusy();

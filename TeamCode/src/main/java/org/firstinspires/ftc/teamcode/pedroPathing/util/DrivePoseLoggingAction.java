@@ -9,8 +9,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.follower.Follower;
 
-import java.text.DecimalFormat;
-
 public class DrivePoseLoggingAction implements Action {
     String label;
     String message;
@@ -59,7 +57,7 @@ public class DrivePoseLoggingAction implements Action {
         }
 
         Log.d("Drive_Logger",
-                         "  [" + this.label + "]"
+                         "  [" + this.label + "] "
                 + "Estimated Pose: " + new PoseMessage(follower.getPose())
                                  + " | Elapsed time: " + String.format("%3.1f", lastLogEndTimer.milliseconds())
                         + (message != null? " | { " + this.message + " }": "")

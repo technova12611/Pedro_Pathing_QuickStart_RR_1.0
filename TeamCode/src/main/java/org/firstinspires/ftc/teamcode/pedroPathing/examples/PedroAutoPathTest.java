@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.follower.FollowPathAction;
@@ -15,11 +16,12 @@ import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.BezierCurve;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Path;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.PathBuilder;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
-import org.firstinspires.ftc.teamcode.pedroPathing.util.AutoActionScheduler;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.DrivePoseLoggingAction;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.PoseMessage;
+import org.firstinspires.ftc.teamcode.utils.software.AutoActionScheduler;
 
 @Config
+@Disabled
 @Autonomous(name = "Test Blue Pedro",group = "Test")
 public final class PedroAutoPathTest extends LinearOpMode {
     public static Pose2d starting = new Pose2d(0, 0, 0);
@@ -60,8 +62,7 @@ public final class PedroAutoPathTest extends LinearOpMode {
                         new SleepAction(2.0),
                         new DrivePoseLoggingAction(follower, "backward_path_begin"),
                         new FollowPathAction(follower,
-                                builder.addPath(backwards).setLinearHeadingInterpolation(0.0,0.0).build(),
-                                false),
+                                builder.addPath(backwards).setLinearHeadingInterpolation(0.0,0.0).build()),
                         new DrivePoseLoggingAction(follower, "backward_path_end")
                 ));
         sched.run();

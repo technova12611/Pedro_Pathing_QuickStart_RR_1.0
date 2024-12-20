@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.util;
 
-import com.acmerobotics.roadrunner.Pose2d;
+import org.firstinspires.ftc.teamcode.pedroPathing.localization.Pose;
 
 public final class PoseMessage {
     public long timestamp;
@@ -8,16 +8,16 @@ public final class PoseMessage {
     public double y;
     public double heading;
 
-    public PoseMessage(Pose2d pose) {
+    public PoseMessage(Pose pose) {
         this.timestamp = System.nanoTime();
         if(pose == null) {
             this.x = 0.0;
             this.y = 0.0;
             this.heading = 0.0;
         } else {
-            this.x = pose.position.x;
-            this.y = pose.position.y;
-            this.heading = pose.heading.toDouble();
+            this.x = pose.getX();
+            this.y = pose.getY();
+            this.heading = pose.getHeading();
         }
     }
 

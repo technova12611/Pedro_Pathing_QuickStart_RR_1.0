@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.localization;
 
-import com.acmerobotics.roadrunner.Pose2d;
-
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.MathFunctions;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Vector;
 
@@ -40,10 +38,6 @@ public class Pose {
      */
     public Pose(double setX, double setY) {
         this(setX, setY, 0);
-    }
-
-    public Pose(Pose2d pose2d) {
-        this(pose2d.position.x, pose2d.position.y, pose2d.heading.toDouble());
     }
 
     /**

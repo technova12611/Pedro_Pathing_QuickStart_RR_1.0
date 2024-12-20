@@ -4,12 +4,16 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.pedroPathing.follower.Follower;
+import org.firstinspires.ftc.teamcode.pedroPathing.localization.Pose;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.BezierLine;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Path;
+import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.PathCallback;
+import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.PathChain;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
 
 /**
@@ -26,20 +30,22 @@ import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
  * @version 1.0, 3/12/2024
  */
 @Config
+@Disabled
 @Autonomous (name = "Straight Back And Forth", group = "Autonomous Pathing Tuning")
 public class StraightBackAndForth extends OpMode {
     private Telemetry telemetryA;
 
-    public static double DISTANCE = 24;
+    public static double DISTANCE = 30;
 
     private boolean forward = true;
 
     private Follower follower;
 
     private Path forwards;
-    private Path backwards;
 
-    private int mode = 1;
+    PathChain forwardChain;
+    private Path backwards;
+    private PathChain backwardsChain;
 
     /**
      * This initializes the Follower and creates the forward and backward Paths. Additionally, this
@@ -48,18 +54,33 @@ public class StraightBackAndForth extends OpMode {
     @Override
     public void init() {
         follower = new Follower(hardwareMap);
+        follower.setStartingPose(new Pose(8,-63, Math.toRadians(90.0)));
 
-        if(mode == 0 || mode == 2) {
-            forwards = new Path(new BezierLine(new Point(0, 0, Point.CARTESIAN), new Point(DISTANCE, 0, Point.CARTESIAN)));
-            backwards = new Path(new BezierLine(new Point(DISTANCE,0, Point.CARTESIAN), new Point(0,0, Point.CARTESIAN)));
-        } else if (mode == 1 || mode == 3){
-            forwards = new Path(new BezierLine(new Point(0, 0, Point.CARTESIAN), new Point(0, DISTANCE, Point.CARTESIAN)));
-            backwards = new Path(new BezierLine(new Point(0, DISTANCE, Point.CARTESIAN), new Point(0,0, Point.CARTESIAN)));
-        }
-        forwards.setConstantHeadingInterpolation(0);
+        forwards = new Path(new BezierLine(new Point(8,-63, Point.CARTESIAN), new Point(8,-63+DISTANCE, Point.CARTESIAN)));
+        //forwards.setLinearHeadingInterpolation(0, Math.toRadians(80));
+        forwards.setConstantHeadingInterpolation(Math.toRadians(90.0));
+
         forwards.setZeroPowerAccelerationMultiplier(3.5);
 
-        follower.followPath(forwards);
+        backwards = new Path(new BezierLine(new Point(8,-63+DISTANCE, Point.CARTESIAN), new Point(8,-63, Point.CARTESIAN)));
+        backwards.setConstantHeadingInterpolation(Math.toRadians(90.0));
+
+        backwardsChain = new PathChain(backwards);
+
+        backwardsChain.setCallbacks(new PathCallback(0.7, () -> {
+            follower.setMaxPower(0.5);
+        }, PathCallback.PARAMETRIC, 0));
+
+        backwards.setZeroPowerAccelerationMultiplier(3);
+
+        forwardChain = new PathChain(forwards);
+
+//        forwardChain.setCallbacks();
+//        forwardChain.setCallbacks(new PathCallback(0.5, () -> {
+//            follower.setMaxPower(0.6);
+//        }, PathCallback.PARAMETRIC, 0));
+
+        follower.followPath(forwardChain);
 
         telemetryA = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
         telemetryA.addLine("This will run the robot in a straight line going " + DISTANCE
@@ -75,17 +96,15 @@ public class StraightBackAndForth extends OpMode {
     @Override
     public void loop() {
         follower.update();
-//        if (!follower.isBusy()) {
-//            if (forward) {
-//                forward = false;
-//                backwards.setConstantHeadingInterpolation(0);
-//                backwards.setZeroPowerAccelerationMultiplier(2.0);
-//                follower.followPath(backwards);
-//            } else {
-//                forward = true;
-//                follower.followPath(forwards);
-//            }
-//        }
+        if (!follower.isBusy()) {
+            if (forward) {
+                forward = false;
+                //follower.followPath(backwardsChain);
+            } else {
+                forward = true;
+                //follower.followPath(forwardChain);
+            }
+        }
 
         telemetryA.addData("going forward", forward);
         follower.telemetryDebug(telemetryA);

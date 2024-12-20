@@ -30,8 +30,8 @@ public class DashboardPoseTracker {
         yPositions = new double[TRACKING_SIZE];
 
         for (int i = 0; i < TRACKING_SIZE; i++) {
-            xPositions[i] = poseUpdater.getPose().position.x;
-            yPositions[i] = poseUpdater.getPose().position.y;
+            xPositions[i] = poseUpdater.getPose().getX();
+            yPositions[i] = poseUpdater.getPose().getY();
         }
 
         lastUpdateTime = System.currentTimeMillis() - UPDATE_TIME;
@@ -48,8 +48,8 @@ public class DashboardPoseTracker {
                 xPositions[i] = xPositions[i - 1];
                 yPositions[i] = yPositions[i - 1];
             }
-            xPositions[0] = poseUpdater.getPose().position.x;
-            yPositions[0] = poseUpdater.getPose().position.y;
+            xPositions[0] = poseUpdater.getPose().getX();
+            yPositions[0] = poseUpdater.getPose().getY();
         }
     }
 

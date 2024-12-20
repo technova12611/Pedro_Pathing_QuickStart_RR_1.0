@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.localization;
 
-import com.acmerobotics.roadrunner.Pose2d;
+import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Vector;
 
@@ -20,8 +20,6 @@ public abstract class Localizer {
      * @return returns the pose as a Pose object.
      */
     public abstract Pose getPose();
-
-    public abstract Pose2d getPoseEstimate();
 
     /**
      * This returns the current velocity estimate from the Localizer.
@@ -45,8 +43,6 @@ public abstract class Localizer {
      */
     public abstract void setStartPose(Pose setStart);
 
-    public abstract void setStartPose(Pose2d setStart);
-
     /**
      * This sets the current pose estimate of the Localizer. Changing this should just change the
      * robot's current pose estimate, not anything to do with the start pose.
@@ -54,8 +50,6 @@ public abstract class Localizer {
      * @param setPose the new current pose estimate
      */
     public abstract void setPose(Pose setPose);
-
-    public abstract void setPoseEstimate(Pose2d setPose);
 
     /**
      * This calls an update to the Localizer, updating the current pose estimate and current velocity
@@ -71,4 +65,41 @@ public abstract class Localizer {
      */
     public abstract double getTotalHeading();
 
+    /**
+     * This returns the multiplier applied to forward movement measurement to convert from encoder
+     * ticks to inches. This is found empirically through a tuner.
+     *
+     * @return returns the forward ticks to inches multiplier
+     */
+    public abstract double getForwardMultiplier();
+
+    /**
+     * This returns the multiplier applied to lateral/strafe movement measurement to convert from
+     * encoder ticks to inches. This is found empirically through a tuner.
+     *
+     * @return returns the lateral/strafe ticks to inches multiplier
+     */
+    public abstract double getLateralMultiplier();
+
+    /**
+     * This returns the multiplier applied to turning movement measurement to convert from encoder
+     * ticks to radians. This is found empirically through a tuner.
+     *
+     * @return returns the turning ticks to radians multiplier
+     */
+    public abstract double getTurningMultiplier();
+
+    /**
+     * This resets the IMU of the localizer, if applicable.
+     */
+    public abstract void resetIMU();
+
+    /**
+     * This is overridden to return the IMU, if there is one.
+     *
+     * @return returns the IMU if it exists
+     */
+    public IMU getIMU() {
+        return null;
+    }
 }

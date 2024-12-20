@@ -3,16 +3,17 @@
  *
  * It is extraordinarily rare that you will ever need to edit this file.
  */
-
 buildscript {
-    ext.kotlin_version = '1.8.20'
+    ext {
+        kotlin_version = '1.9.25'
+    }
     repositories {
         mavenCentral()
         google()
     }
     dependencies {
         // Note for FTC Teams: Do not modify this yourself.
-        classpath 'com.android.tools.build:gradle:7.4.2'
+        classpath 'com.android.tools.build:gradle:8.7.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
