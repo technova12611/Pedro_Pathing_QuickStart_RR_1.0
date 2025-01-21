@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Path;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.PathCallback;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.PathChain;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
+import org.firstinspires.ftc.teamcode.pedroPathing.util.PoseMessage;
 
 /**
  * This is the StraightBackAndForth autonomous OpMode. It runs the robot in a specified distance
@@ -30,7 +31,6 @@ import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
  * @version 1.0, 3/12/2024
  */
 @Config
-@Disabled
 @Autonomous (name = "Straight Back And Forth", group = "Autonomous Pathing Tuning")
 public class StraightBackAndForth extends OpMode {
     private Telemetry telemetryA;
@@ -107,6 +107,7 @@ public class StraightBackAndForth extends OpMode {
         }
 
         telemetryA.addData("going forward", forward);
+        telemetryA.addData("Pose: ", new PoseMessage(follower.getPose()));
         follower.telemetryDebug(telemetryA);
     }
 }

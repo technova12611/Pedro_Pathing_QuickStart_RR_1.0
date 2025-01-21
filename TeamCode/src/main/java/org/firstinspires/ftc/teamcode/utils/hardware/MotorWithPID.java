@@ -21,7 +21,7 @@ public class MotorWithPID {
     private PIDCoefficients pid;
     private int targetPosition = 0;
     private int internalOffset = 0;
-    private int tolerance = 50;
+    private int tolerance = 30;
 
     private int maxElapsedTime = 2000;
 
@@ -64,10 +64,13 @@ public class MotorWithPID {
                     + " | target position: " + getTargetPosition()
                     + " | internal_offset: " + internalOffset);
         }
-        if(getTargetPosition() == 0 && !isBusy) {
+        if(getTargetPosition() <= 0 && !isBusy) {
             if(Math.abs(previousPower) != 0.0) {
                 motor.setPower(0.0);
                 previousPower = 0.0;
+                if(getTargetPosition() < -100) {
+                    motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                }
             }
         } else {
             if(Math.abs(previousPower-newPower) > 0.01) {
@@ -77,7 +80,7 @@ public class MotorWithPID {
         }
 
         if(previouslyBusy && !isBusy) {
-            Log.d("MotorWithPID_Logger", "Current position: " + getCurrentPosition()
+            Log.d("MotorWithPID_Logger", "Ending Current position: " + getCurrentPosition()
                     + " | target position: " + getTargetPosition()
                     + " | internal_offset: " + internalOffset
                     + "| Elapsed time: " + (System.currentTimeMillis() - startTime));
@@ -123,12 +126,14 @@ public class MotorWithPID {
      */
     public void setTargetPosition(int position) {
 
-        Log.d("MotorWithPID_Logger", "position to set: " + position + " | internal_offset: " + internalOffset + " | pid_target_position: " + (position - internalOffset));
+        Log.d("MotorWithPID_Logger", "target_position_to_set: " + position + " | internal_offset: " + internalOffset + " | pid_target_position: " + (position - internalOffset));
 
-        startTime = System.currentTimeMillis();
-        previousPower = 0.0;
-        this.targetPosition = position;
-        this.pidfController.setTargetPosition(position - internalOffset); // TODO: Verify sign
+        if(Math.abs(position - getTargetPosition()) > 0.01) {
+            startTime = System.currentTimeMillis();
+            previousPower = 0.0;
+            this.targetPosition = position;
+            this.pidfController.setTargetPosition(position - internalOffset); // TODO: Verify sign
+        }
     }
 
     private class TargetPositionAction implements Action {

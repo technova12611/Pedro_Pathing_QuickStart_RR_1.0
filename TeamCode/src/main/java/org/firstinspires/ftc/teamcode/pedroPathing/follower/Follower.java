@@ -28,6 +28,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.pedroPathing.localization.Pose;
@@ -147,6 +148,8 @@ public class Follower {
 
     private boolean logDebug = false;
 
+    private ElapsedTime zeroVelocityDetectedTimer;
+
     /**
      * This creates a new Follower given a HardwareMap.
      *
@@ -244,6 +247,7 @@ public class Follower {
      * @return returns the pose
      */
     public Pose getPose() {
+
         return poseUpdater.getPose();
     }
 
@@ -493,18 +497,22 @@ public class Follower {
                     }
 
                     if(logDebug && !currentPath.isAtParametricEnd()) {
-                        Log.d("Follower_logger::", "isAtParametricEnd:" + currentPath.isAtParametricEnd()
-                                + " | isBusy: " + isBusy
-                                + " | closestPose:" + new PoseMessage(closestPose)
-                                + " | Pose: " + new PoseMessage(getPose())
-                                + " | t-value: " + String.format("%3.5f",currentPath.getClosestPointTValue())
-                                + " | velocity: " + String.format("%3.2f",poseUpdater.getVelocity().getMagnitude())
-                                + " | distance: " +  String.format("%3.2f",MathFunctions.distance(poseUpdater.getPose(), closestPose))
-                                + " | heading (degree): " +  String.format("%3.2f",Math.toDegrees(MathFunctions.getSmallestAngleDifference(poseUpdater.getPose().getHeading(), currentPath.getClosestPointHeadingGoal())))
-                        );
+                        debugLog();
                     }
 
-                    if (currentPath.isAtParametricEnd()) {
+                    // try to fix the robot stop near the end issue
+                    // if robot is almost reach the end and velocity is close to zero
+                    // then, break the following if other criteria meet
+                    if(poseUpdater.getVelocity().getMagnitude() < 1.0 && currentPath.getClosestPointTValue() > 0.8
+                            && zeroVelocityDetectedTimer == null && isBusy) {
+                        zeroVelocityDetectedTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+                        Log.d("Follower_logger", "!!!! Robot stuck !!!!");
+
+                        debugLog();
+                    }
+
+                    if (currentPath.isAtParametricEnd() ||
+                            (zeroVelocityDetectedTimer!= null && zeroVelocityDetectedTimer.milliseconds() > 500.0)) {
                         if (followingPathChain && chainIndex < currentPathChain.size() - 1) {
 
                             if(logDebug) {
@@ -548,15 +556,9 @@ public class Follower {
 
                                     breakFollowing();
                                 }
-                            } else {
-                                if(logDebug) {
-                                    // do nothing
-                                }
                             }
                         }
                     }
-
-                    //RobotLog.d("Follower:: isBusy:" + isBusy);
                 }
             }
         } else {
@@ -713,6 +715,8 @@ public class Follower {
         for (int i = 0; i < motors.size(); i++) {
             motors.get(i).setPower(0);
         }
+
+        zeroVelocityDetectedTimer = null;
     }
 
     /**
@@ -1069,5 +1073,22 @@ public class Follower {
      */
     public void resetIMU() {
         poseUpdater.resetIMU();
+    }
+
+    private void debugLog() {
+        Log.d("Follower_logger::", "isAtParametricEnd:" + currentPath.isAtParametricEnd()
+                + " | isBusy: " + isBusy
+                + " | closestPose:" + new PoseMessage(closestPose)
+                + " | Pose: " + new PoseMessage(getPose())
+                + " | t-value: " + String.format("%3.5f",currentPath.getClosestPointTValue())
+                + " | zeroVelocityTimer: " +  String.format("%3.2f",(zeroVelocityDetectedTimer==null?0.0: zeroVelocityDetectedTimer.milliseconds()))
+                + " | velocity: " + String.format("%3.2f",poseUpdater.getVelocity().getMagnitude())
+                + " | distance: " +  String.format("%3.2f",MathFunctions.distance(poseUpdater.getPose(), closestPose))
+                + " | heading (degree): " +  String.format("%3.2f",Math.toDegrees(MathFunctions.getSmallestAngleDifference(poseUpdater.getPose().getHeading(), currentPath.getClosestPointHeadingGoal())))
+        );
+    }
+
+    public boolean isRobotStuck() {
+        return zeroVelocityDetectedTimer != null;
     }
 }

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.utils.hardware;
 
+import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.leftFrontMotorName;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -9,6 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.teamcode.pedroPathing.util.cachinghardware.CachingDcMotorEX;
 import org.firstinspires.ftc.teamcode.utils.hardware.fake.CRServoFake;
 import org.firstinspires.ftc.teamcode.utils.hardware.fake.DcMotorFake;
 import org.firstinspires.ftc.teamcode.utils.hardware.fake.ServoFake;
@@ -33,7 +36,7 @@ public class HardwareCreator {
     public static DcMotorEx createMotor(HardwareMap hardwareMap, String deviceName) {
         if (SIMULATE_HARDWARE) return new DcMotorFake();
         try {
-            return hardwareMap.get(DcMotorEx.class, deviceName);
+            return new CachingDcMotorEX(hardwareMap.get(DcMotorEx.class, deviceName));
         } catch (IllegalArgumentException e) { // Could not find device
             RobotLog.addGlobalWarningMessage("Failed to find DcMotorEx '%s'", deviceName);
             return new DcMotorFake();

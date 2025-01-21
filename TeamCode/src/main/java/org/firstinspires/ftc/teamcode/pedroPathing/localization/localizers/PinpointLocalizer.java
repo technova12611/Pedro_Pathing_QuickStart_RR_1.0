@@ -54,6 +54,7 @@ public class PinpointLocalizer extends Localizer {
     private GoBildaPinpointDriver odo;
     private double previousHeading;
     private double totalHeading;
+    private Pose previousPinpointPose;
 
     private ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
@@ -78,8 +79,8 @@ public class PinpointLocalizer extends Localizer {
         odo = hardwareMap.get(GoBildaPinpointDriver.class,"odo");
 
         //This uses mm, to use inches divide these numbers by 25.4
-        odo.setOffsets(-69.0, 43.5); //these are tuned for 3110-0002-0001 Product Insight #1
-        //57.35, 62.35
+        odo.setOffsets(-21.2, -10.5); //these are tuned for 3110-0002-0001 Product Insight #1
+        //-16.5, -38.0
         //TODO: If you find that the gobilda Yaw Scaling is incorrect you can edit this here
         //odo.setYawScalar(1.0);
         //TODO: Set your encoder resolution here, I have the Gobilda Odometry products already included.
@@ -87,13 +88,15 @@ public class PinpointLocalizer extends Localizer {
         odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         //odo.setEncoderResolution(13.26291192);
         //TODO: Set encoder directions
-        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.REVERSED);
+        //odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.REVERSED);
+        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
-        odo.resetPosAndIMU();
+        //odo.resetPosAndIMU();
 
         setStartPose(setStartPose);
         totalHeading = 0;
         previousHeading = startPose.getHeading();
+        previousPinpointPose = startPose;
 
         resetPinpoint();
         timer.reset();
@@ -105,8 +108,8 @@ public class PinpointLocalizer extends Localizer {
      */
     @Override
     public Pose getPose() {
-        Pose2D rawPose = odo.getPosition();
-        Pose pose = new Pose(rawPose.getX(DistanceUnit.INCH), rawPose.getY(DistanceUnit.INCH), rawPose.getHeading(AngleUnit.RADIANS));
+        //Pose2D rawPose = odo.getPosition();
+       // Pose pose = new Pose(rawPose.getX(DistanceUnit.INCH), rawPose.getY(DistanceUnit.INCH), rawPose.getHeading(AngleUnit.RADIANS));
 
 //        Pose pose1 = MathFunctions.addPoses(startPose, MathFunctions.rotatePose(pose, startPose.getHeading(), false));
 //        Pose pose2 = MathFunctions.addPoses(startPose, MathFunctions.rotatePose(pose, startPose.getHeading(), true));
@@ -114,8 +117,8 @@ public class PinpointLocalizer extends Localizer {
 //        Log.d("PinpointLocalizer_logger", "PP pose: " + new PoseMessage(pose));
 //        Log.d("PinpointLocalizer_logger", "PP pose heading false: " + new PoseMessage(pose1));
 //        Log.d("PinpointLocalizer_logger", "PP pose heading true: " + new PoseMessage(pose2));
-
-        return MathFunctions.addPoses(startPose, MathFunctions.rotatePose(pose, startPose.getHeading(), false));
+        //return MathFunctions.addPoses(startPose, MathFunctions.rotatePose(pose, startPose.getHeading(), false));
+        return MathFunctions.addPoses(startPose, MathFunctions.rotatePose(previousPinpointPose, startPose.getHeading(), false));
     }
 
     /**
@@ -172,6 +175,8 @@ public class PinpointLocalizer extends Localizer {
         odo.update();
         totalHeading += MathFunctions.getSmallestAngleDifference(odo.getHeading(), previousHeading);
         previousHeading = odo.getHeading();
+        Pose2D rawPose = odo.getPosition();
+        previousPinpointPose = new Pose(rawPose.getX(DistanceUnit.INCH), rawPose.getY(DistanceUnit.INCH), rawPose.getHeading(AngleUnit.RADIANS));
     }
 
     /**
@@ -215,15 +220,26 @@ public class PinpointLocalizer extends Localizer {
     /**
      * This resets the IMU.
      */
-    @Override
     public void resetIMU() {
         odo.recalibrateIMU();
+
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
-     * This resets the OTOS.
+     * This resets the pinpoint.
      */
-    public void resetPinpoint(){
+    private void resetPinpoint() {
         odo.resetPosAndIMU();
+
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
